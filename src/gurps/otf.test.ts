@@ -1,0 +1,42 @@
+import { describe, expect, it, test } from "vitest";
+import { attackOtf, quotedAttackName } from "./otf";
+
+describe("quotedAttackName", () => {
+  it("wraps a bare name in double quotes", () => {
+    expect(quotedAttackName({ name: "Punch" })).toBe('"Punch"');
+  });
+
+  it("appends the usage mode in parentheses", () => {
+    expect(quotedAttackName({ name: "Spear", mode: "Thrust" })).toBe('"Spear (Thrust)"');
+  });
+
+  test("a name containing a double quote", () => {
+    expect(quotedAttackName({ name: '12" Blade' })).toBe("'12\" Blade'");
+  });
+
+  test("a double-quoted name that also contains a single quote", () => {
+    expect(quotedAttackName({ name: `Bob's 12" Blade` })).toBe(`'Bob\\'s 12" Blade'`);
+  });
+});
+
+describe("attackOtf", () => {
+  it("prefixes a melee attack roll with M:", () => {
+    expect(attackOtf("M", { name: "Spear", mode: "Thrust" })).toBe('M:"Spear (Thrust)"');
+  });
+
+  it("prefixes a ranged attack roll with R:", () => {
+    expect(attackOtf("R", { name: "Spear", mode: "Thrown" })).toBe('R:"Spear (Thrown)"');
+  });
+
+  it("prefixes a parry roll with P:", () => {
+    expect(attackOtf("P", { name: "Punch" })).toBe('P:"Punch"');
+  });
+
+  it("prefixes a block roll with B:", () => {
+    expect(attackOtf("B", { name: "Shield" })).toBe('B:"Shield"');
+  });
+
+  it("prefixes a damage roll with D:", () => {
+    expect(attackOtf("D", { name: "Kick" })).toBe('D:"Kick"');
+  });
+});

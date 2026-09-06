@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import path from "node:path";
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync } from "node:fs";
 import tailwindcss from "@tailwindcss/vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
     svelte({ configFile: path.resolve(import.meta.dirname, "svelte.config.js") }),
     tailwindcss(),
     {
-      name: "copy-manifest",
+      name: "copy-static",
       closeBundle() {
         const dist = path.resolve(import.meta.dirname, "dist");
         mkdirSync(dist, { recursive: true });
@@ -54,6 +54,15 @@ export default defineConfig(({ mode }) => ({
           path.resolve(import.meta.dirname, "src/module.json"),
           path.resolve(dist, "module.json"),
         );
+
+        // The stylesheet references the fonts by their served module path rather than relatively,
+        // because Vite's library build base64-inlines any asset a stylesheet resolves.
+        const fontsSrc = path.resolve(import.meta.dirname, "src/styles/fonts");
+        const fontsOut = path.resolve(dist, "styles/fonts");
+        mkdirSync(fontsOut, { recursive: true });
+        for (const file of readdirSync(fontsSrc)) {
+          copyFileSync(path.resolve(fontsSrc, file), path.resolve(fontsOut, file));
+        }
       },
     },
   ],

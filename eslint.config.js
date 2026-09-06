@@ -22,6 +22,10 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: { parser: tseslint.parser },
     },
+    rules: {
+      // tsc and svelte-check already resolve identifiers, and they know about Foundry's globals.
+      "no-undef": "off",
+    },
   },
   {
     ignores: ["dist/**", "node_modules/**"],

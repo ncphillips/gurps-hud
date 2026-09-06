@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "harness": "vite --config vite.harness.config.ts",
     "build": "vite build",
     "check": "tsc --noEmit && svelte-check --tsconfig ./tsconfig.json",
     "lint": "eslint src",

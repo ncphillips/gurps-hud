@@ -29,11 +29,16 @@ ESLint 9 flat config · Prettier · Vitest
 npm install            # first time
 npm run build          # produces dist/
 npm run dev            # Vite dev server on :30001 — load Foundry via http://localhost:30001
+npm run harness        # HUD only, no Foundry, on :30099 — see src/dev-harness
 npm run check          # tsc --noEmit + svelte-check
 npm run lint           # ESLint
 npm run format         # Prettier
 npm run test           # Vitest
 ```
+
+`npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with
+`design-handoff/` without a running world. `?panel=attrs|maneuver` opens a hover panel for
+screenshotting; `?measure` dumps bounding boxes to compare against the mock.
 
 `dist/` is already symlinked into Foundry:
 
@@ -50,12 +55,20 @@ src/
   module.ts                # entry point — registers hooks/keybindings, built to dist/module.js
   module.json              # manifest source of truth — Vite copies to dist/module.json
   log.ts                   # console helpers namespaced to "gurps-hud |"
-  gurps-hud.d.ts           # fvtt-types module augmentation (flags, etc.)
+  gurps-hud.d.ts           # fvtt-types module augmentation (custom hooks, flags)
+  gurps/                   # everything that knows about the GURPS system
+    system-types.ts        # structural types for the slice of actor.system we read
+    game-aid.ts            # the only file that touches the `GURPS` global
+    hud-view.ts            # pure actor -> view model; where the data-model quirks live
+    otf.ts                 # On-The-Fly roll string builders
+    maneuvers.ts           # the twelve maneuvers the HUD offers
   apps/
     SvelteApp.ts           # ApplicationV2 <-> Svelte 5 mount/unmount bridge
-    scaffold-check/        # throwaway smoke test — delete once real HUDs land
+    persistent-hud/        # the always-mounted bottom-left strip
+  dev-harness/             # renders the HUD outside Foundry (npm run harness)
   styles/
-    gurps-hud.css          # Tailwind entry + Foundry overrides
+    gurps-hud.css          # Tailwind entry, design tokens, @font-face, Foundry overrides
+    fonts/                 # self-hosted Barlow Semi Condensed + JetBrains Mono (SIL OFL 1.1)
 dist/                      # build output (gitignored) — symlinked into Foundry
 ```
 
@@ -68,4 +81,12 @@ dist/                      # build output (gitignored) — symlinked into Foundr
 - Tailwind for layout and most styling; `src/styles/gurps-hud.css` only for overriding Foundry's
   own selectors (e.g. `.window-content` padding) which Tailwind classes can't reach.
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
-  into the rest of Foundry.
+  into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
+  Tailwind utility on the same element.
+- Keep GURPS knowledge in `src/gurps/`. Components stay presentational: `hud-view.ts` turns the
+  actor into a flat view model, and that is what gets unit tested.
+- The design mock in `design-handoff/` was authored under `content-box`; the HUD renders under
+  `border-box`. Its fixed pixel widths therefore need padding and borders added in — the strip is
+  pixel-matched to the mock, so check `npm run harness -- ?measure` before changing a fixed width.
+- Hover states may only change `color`, `background-color` and `border-color`. Anything that gains a
+  border on hover carries a 1px transparent border at rest, so hover can never move geometry.

@@ -1,3 +1,175 @@
 /* GURPS HUD */
-@import "tailwindcss/utilities";
-@import "tailwindcss/theme";
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+@source "../**/*.{svelte,ts}";
+
+/*
+ * Barlow Semi Condensed and JetBrains Mono, both SIL OFL 1.1, self-hosted (latin subset) rather
+ * than hotlinked from Google Fonts so the HUD renders on an offline Foundry server.
+ */
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/BarlowSemiCondensed-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/BarlowSemiCondensed-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/BarlowSemiCondensed-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Barlow Semi Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/BarlowSemiCondensed-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/JetBrainsMono-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/JetBrainsMono-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/JetBrainsMono-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/modules/gurps-hud/styles/fonts/JetBrainsMono-700.woff2") format("woff2");
+}
+
+/* Design tokens from design-handoff/README.md. */
+@theme {
+  --color-hud-panel: #16171b;
+  --color-hud-deep: #0f1013;
+  --color-hud-popover: #101114;
+  --color-hud-drawer: #131418;
+
+  --color-hud-ink: #e8e6e1;
+  --color-hud-on-accent: #17181b;
+
+  --color-hud-accent: #d99a4e;
+  --color-hud-accent-hi: #eab472;
+  --color-hud-defence: #a9cbe4;
+  --color-hud-defence-bg: #1f2530;
+
+  --color-hud-hp: #cf5c4a;
+  --color-hud-fp: #5f9ea8;
+  --color-hud-ok: #7fb08a;
+
+  --font-hud: "Barlow Semi Condensed", system-ui, sans-serif;
+  --font-hud-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-hud-xs: 2px;
+  --radius-hud-sm: 3px;
+  --radius-hud-md: 4px;
+  --radius-hud-lg: 5px;
+  --radius-hud: 6px;
+
+  --shadow-hud-popover: 0 6px 22px rgb(0 0 0 / 0.65);
+}
+
+/*
+ * Foundry overrides. Everything here is scoped to a `#gurps-hud-*` id or the `.gurps-hud` class so
+ * nothing leaks into the rest of the application.
+ */
+/*
+ * Docked to the bottom-left of the canvas. `#interface` is `position: relative`, so anchoring to it
+ * sidesteps `#ui-middle` (60% wide and centred, therefore unable to reach the left edge). The UI
+ * scale is applied by hand because only Foundry's own regions get it from core.
+ */
+#interface #gurps-hud-persistent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: fit-content;
+  pointer-events: auto;
+  z-index: var(--z-index-app, 30);
+  transform: scale(var(--ui-scale, 1));
+  transform-origin: bottom left;
+}
+
+/*
+ * Make room for the strip. Both regions are inside a `scale(var(--ui-scale))` transform and so are
+ * laid out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion.
+ */
+body.gurps-hud-active #ui-left {
+  padding-bottom: calc(16px + var(--gurps-hud-height, 0px));
+}
+
+/* The Game Aid appends its modifier bucket into `#ui-bottom > div`. */
+body.gurps-hud-active #ui-middle #ui-bottom {
+  padding-bottom: var(--gurps-hud-height, 0px);
+}
+
+/*
+ * Foundry styles its own `button` and `img` elements globally. Reset them inside our base layer,
+ * never unlayered: an unlayered rule would outrank every Tailwind utility on the same element.
+ */
+@layer base {
+  /* Foundry sets this globally; state it here too so the strip measures the same on a bare page. */
+  .gurps-hud,
+  .gurps-hud *,
+  .gurps-hud *::before,
+  .gurps-hud *::after {
+    box-sizing: border-box;
+  }
+
+  .gurps-hud button {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+    height: auto;
+    line-height: inherit;
+    margin: 0;
+    padding: 0;
+    text-align: inherit;
+    width: auto;
+  }
+
+  .gurps-hud button:hover,
+  .gurps-hud button:focus {
+    box-shadow: none;
+    outline: none;
+  }
+
+  .gurps-hud img {
+    border: none;
+  }
+}
+
+/* The strip's macro footer replaces the stock macro bar while the HUD is up. */
+body.gurps-hud-active #hotbar {
+  display: none;
+}
