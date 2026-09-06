@@ -13,10 +13,10 @@
   import { buildHudView } from "@/gurps/hud-view";
   import { maneuverById } from "@/gurps/maneuvers";
   import type { GurpsActorLike } from "@/gurps/system-types";
-  import AttrsColumn from "./AttrsColumn.svelte";
-  import ManeuverBar from "./ManeuverBar.svelte";
   import MacroBar from "./MacroBar.svelte";
   import PortraitBlock from "./PortraitBlock.svelte";
+  import TopBar from "./TopBar.svelte";
+  import type { Panel } from "./TopBar.svelte";
   import WeaponTables from "./WeaponTables.svelte";
 
   let actor = $state<GurpsActorLike | null>(currentActor());
@@ -27,7 +27,7 @@
    */
   let revision = $state(0);
 
-  let openPanel = $state<"attrs" | "maneuver" | null>(null);
+  let openPanel = $state<Panel | null>(null);
   let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Makes `revision` an explicit input of a read, so bumping it re-runs the derivation. */
@@ -81,7 +81,7 @@
     };
   });
 
-  function open(panel: "attrs" | "maneuver"): void {
+  function open(panel: Panel): void {
     if (closeTimer) clearTimeout(closeTimer);
     openPanel = panel;
   }
@@ -109,27 +109,17 @@
     <PortraitBlock {view} />
 
     <div class="flex min-h-0 min-w-0 flex-col">
-      <div class="flex min-h-0 min-w-0 flex-1">
-        <AttrsColumn
-          {view}
-          open={openPanel === "attrs"}
-          onopen={() => open("attrs")}
-          onclose={close}
-          onroll={roll}
-        />
-
-        <div class="flex min-h-0 min-w-0 flex-col">
-          <ManeuverBar
-            {maneuver}
-            enabled={maneuverEnabled}
-            open={openPanel === "maneuver"}
-            onopen={() => open("maneuver")}
-            onclose={close}
-            onselect={selectManeuver}
-          />
-          <WeaponTables {view} onroll={roll} />
-        </div>
-      </div>
+      <TopBar
+        {view}
+        {maneuver}
+        {maneuverEnabled}
+        {openPanel}
+        onopen={open}
+        onclose={close}
+        onselect={selectManeuver}
+        onroll={roll}
+      />
+      <WeaponTables {view} onroll={roll} />
 
       <MacroBar
         slots={macroSlots}
