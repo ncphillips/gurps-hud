@@ -103,11 +103,13 @@
 </script>
 
 {#if view}
-  <div class="flex w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink">
+  <div
+    class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
+  >
     <PortraitBlock {view} />
 
-    <div class="flex min-w-0 flex-col">
-      <div class="flex min-w-0">
+    <div class="flex min-h-0 min-w-0 flex-col">
+      <div class="flex min-h-0 min-w-0 flex-1">
         <AttrsColumn
           {view}
           open={openPanel === "attrs"}
@@ -116,7 +118,7 @@
           onroll={roll}
         />
 
-        <div class="flex min-w-0 flex-col">
+        <div class="flex min-h-0 min-w-0 flex-col">
           <ManeuverBar
             {maneuver}
             enabled={maneuverEnabled}

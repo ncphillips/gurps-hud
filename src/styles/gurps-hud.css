@@ -95,6 +95,9 @@
   --radius-hud: 6px;
 
   --shadow-hud-popover: 0 6px 22px rgb(0 0 0 / 0.65);
+
+  /* The strip never grows past this; the weapon list scrolls instead. */
+  --spacing-hud-max: 200px;
 }
 
 /*

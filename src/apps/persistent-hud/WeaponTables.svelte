@@ -27,7 +27,13 @@
   }
 </script>
 
-<div class="flex flex-1 flex-col gap-px px-[12px] pb-[7px]">
+<!--
+  The strip has a maximum height (see --spacing-hud-max in gurps-hud.css); this is the one region
+  allowed to scroll when an actor carries more attacks than fit.
+-->
+<div
+  class="flex min-h-0 flex-1 flex-col gap-px overflow-y-auto px-[12px] pb-[7px] [scrollbar-color:rgb(255_255_255/.18)_transparent] [scrollbar-width:thin]"
+>
   {#if view.melee.length > 0}
     <div class={HEADER}>
       <span class="flex-1">MELEE</span>
