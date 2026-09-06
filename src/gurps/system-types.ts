@@ -47,8 +47,6 @@ export interface GurpsRanged extends GurpsAttack {
 export interface GurpsSkill {
   name?: string;
   level?: Numeric;
-  /** Relative skill level as text, e.g. "DX+2". */
-  relativelevel?: string;
 }
 
 export interface GurpsHitLocation {

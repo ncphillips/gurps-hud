@@ -53,8 +53,6 @@ export interface RangedRow {
 export interface SkillRow {
   key: string;
   name: string;
-  /** Relative level, e.g. "DX+2"; empty when the source has none. */
-  rsl: string;
   level: RollableCell;
 }
 
@@ -294,7 +292,6 @@ export function skillRows(system: GurpsSystem): SkillRow[] {
       return {
         key: `skill-${index}`,
         name,
-        rsl: str(skill.relativelevel),
         level: level ? { text: level, otf: skillOtf(name) } : { text: EM_DASH, otf: null },
       };
     });

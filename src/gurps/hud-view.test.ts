@@ -359,7 +359,6 @@ describe("skillRows", () => {
       {
         key: "skill-0",
         name: "Brawling",
-        rsl: "DX+2",
         level: { text: "12", otf: 'Sk:"Brawling"' },
       },
     ]);
