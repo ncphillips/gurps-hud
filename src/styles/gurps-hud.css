@@ -170,6 +170,9 @@ body.gurps-hud-active #ui-left {
     min-height: 0;
     min-width: 0;
     padding: 0;
+    /* Foundry also makes buttons inline-flex with centred content and a gap; our rows set their own. */
+    justify-content: normal;
+    gap: 0;
     text-align: inherit;
     width: auto;
   }
