@@ -70,6 +70,25 @@ const actor = {
       "00001": { name: "Punch", level: 10, damage: "1d−3 cr", reach: "C", parry: "8", block: "" },
       "00002": { name: "Kick", level: 8, damage: "1d−2 cr", reach: "C,1", parry: "", block: "" },
     },
+    skills: Object.fromEntries(
+      [
+        ["Spear", 5, "DX-5"],
+        ["Brawling", 10, "DX"],
+        ["Stealth", 9, "DX-1"],
+        ["First Aid", 12, "IQ"],
+        ["Survival (Woodlands)", 11, "Per-1"],
+        ["Climbing", 9, "DX-1"],
+        ["Knife", 10, "DX"],
+        ["Area Knowledge (Home)", 13, "IQ+1"],
+        ["Carousing", 11, "HT"],
+        ["Scrounging", 12, "Per"],
+        ["Swimming", 11, "HT"],
+        ["Throwing", 6, "DX-4"],
+      ].map(([name, level, relativelevel], index) => [
+        String(index).padStart(5, "0"),
+        { name, level, relativelevel },
+      ]),
+    ),
     ranged: {
       "00000": {
         name: "Spear",

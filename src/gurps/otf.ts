@@ -15,16 +15,23 @@ export interface AttackRef {
 /** `M` melee · `R` ranged · `P` parry · `B` block · `D` damage. */
 export type AttackOtfPrefix = "M" | "R" | "P" | "B" | "D";
 
-/** Mirrors the Game Aid's own `quotedAttackName`, so names with quotes in them still parse. */
-export function quotedAttackName(attack: AttackRef): string {
-  const base = attack.name ?? "";
-  const name = base && attack.mode ? `${base} (${attack.mode})` : base;
-
+/** Mirrors the Game Aid's own quoting, so names with quotes in them still parse. */
+function quotedName(name: string): string {
   if (name.includes(DOUBLE_QUOTE)) {
     return SINGLE_QUOTE + name.replace(/'/g, "\\'") + SINGLE_QUOTE;
   }
 
   return DOUBLE_QUOTE + name + DOUBLE_QUOTE;
+}
+
+export function quotedAttackName(attack: AttackRef): string {
+  const base = attack.name ?? "";
+  return quotedName(base && attack.mode ? `${base} (${attack.mode})` : base);
+}
+
+/** `Sk:"Brawling"` -- the string the Game Aid's own sheet emits for a skill roll. */
+export function skillOtf(name: string): string {
+  return `Sk:${quotedName(name)}`;
 }
 
 export function attackOtf(prefix: AttackOtfPrefix, attack: AttackRef): string {

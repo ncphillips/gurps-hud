@@ -10,6 +10,7 @@ import {
   postureBadge,
   rangedRows,
   shockPenalty,
+  skillRows,
 } from "./hud-view";
 import type { GurpsSystem } from "./system-types";
 
@@ -44,6 +45,7 @@ function system(overrides: Partial<GurpsSystem> = {}): GurpsSystem {
     equipment: { carried: {}, other: {} },
     melee: {},
     ranged: {},
+    skills: {},
     ...overrides,
   } as GurpsSystem;
 }
@@ -343,5 +345,40 @@ describe("buildHudView, maneuver", () => {
   test("an actor whose conditions have no maneuver at all", () => {
     const actor = { name: "Brent", system: system({ conditions: { posture: "standing" } }) };
     expect(buildHudView(actor, localize).maneuverId).toBeNull();
+  });
+});
+
+describe("skillRows", () => {
+  it("builds a rollable row per skill", () => {
+    const skills = { "00000": { name: "Brawling", level: 12, relativelevel: "DX+2" } };
+    expect(skillRows(system({ skills }))).toEqual([
+      {
+        key: "skill-0",
+        name: "Brawling",
+        rsl: "DX+2",
+        level: { text: "12", otf: 'Sk:"Brawling"' },
+      },
+    ]);
+  });
+
+  it("follows skills nested under a container", () => {
+    const skills = {
+      "00000": {
+        name: "Combat",
+        level: "",
+        contains: { "00000": { name: "Knife", level: 10, relativelevel: "DX" } },
+      },
+    };
+    expect(skillRows(system({ skills })).map((row) => row.name)).toEqual(["Combat", "Knife"]);
+  });
+
+  test("a container skill with no level", () => {
+    const skills = { "00000": { name: "Combat", level: "" } };
+    expect(skillRows(system({ skills }))[0].level).toEqual({ text: "—", otf: null });
+  });
+
+  test("a skill with no name", () => {
+    const skills = { "00000": { name: "", level: 10 } };
+    expect(skillRows(system({ skills }))).toEqual([]);
   });
 });

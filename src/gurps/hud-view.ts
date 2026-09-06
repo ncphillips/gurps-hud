@@ -1,10 +1,11 @@
-import { attackOtf } from "./otf";
+import { attackOtf, skillOtf } from "./otf";
 import type {
   GurpsActorLike,
   GurpsEquipment,
   GurpsList,
   GurpsMelee,
   GurpsRanged,
+  GurpsSkill,
   GurpsSystem,
   Numeric,
 } from "./system-types";
@@ -48,6 +49,14 @@ export interface RangedRow {
   equipped: boolean;
 }
 
+export interface SkillRow {
+  key: string;
+  name: string;
+  /** Relative level, e.g. "DX+2"; empty when the source has none. */
+  rsl: string;
+  level: RollableCell;
+}
+
 export interface AttrRow {
   label: string;
   value: string;
@@ -85,6 +94,7 @@ export interface HudView {
   attrs: { basic: AttrColumn; secondary: AttrColumn };
   melee: MeleeRow[];
   ranged: RangedRow[];
+  skills: SkillRow[];
   /** The Game Aid's maneuver id, or `null` when the actor has none -- i.e. is not in combat. */
   maneuverId: string | null;
 }
@@ -253,6 +263,22 @@ export function rangedRows(system: GurpsSystem): RangedRow[] {
   }));
 }
 
+/** Container entries -- a GCS folder of skills has a name but no level -- stay as unrollable rows. */
+export function skillRows(system: GurpsSystem): SkillRow[] {
+  return flattenList<GurpsSkill>(system?.skills)
+    .filter((skill) => str(skill.name).trim() !== "")
+    .map((skill, index) => {
+      const name = str(skill.name);
+      const level = str(skill.level).trim();
+      return {
+        key: `skill-${index}`,
+        name,
+        rsl: str(skill.relativelevel),
+        level: level ? { text: level, otf: skillOtf(name) } : { text: EM_DASH, otf: null },
+      };
+    });
+}
+
 export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary: AttrColumn } {
   const attributes = system?.attributes ?? ({} as GurpsSystem["attributes"]);
 
@@ -316,6 +342,7 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     attrs: attrColumns(system),
     melee: meleeRows(system),
     ranged: rangedRows(system),
+    skills: skillRows(system),
     // Outside combat the Game Aid leaves this as the literal string "undefined".
     maneuverId:
       !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver,

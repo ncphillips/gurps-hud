@@ -3,12 +3,13 @@
   import { HUD_MANEUVERS } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
   import AttrsPanel from "./AttrsPanel.svelte";
+  import SkillsPanel from "./SkillsPanel.svelte";
 
-  export type Panel = "attrs" | "maneuver";
+  export type Panel = "attrs" | "skills" | "maneuver";
 
   /**
-   * One row across the top of the strip: the maneuver pill, the three at-a-glance stats and the
-   * attributes trigger. Both popovers anchor here so they open upward, clear of the strip.
+   * One row across the top of the strip: attributes and skills triggers, the maneuver pill and
+   * Dodge. Every popover anchors here so it opens upward, clear of the strip.
    */
   let {
     view,
@@ -54,6 +55,63 @@
 </script>
 
 <div class="flex items-center gap-[4px] p-[3px]">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="relative"
+    data-hud-trigger="attrs"
+    onmouseenter={() => onopen("attrs")}
+    onmouseleave={onclose}
+  >
+    <div
+      class="group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
+      title="Attributes"
+    >
+      <span
+        class="font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60 group-hover:text-hud-on-accent"
+        >ATTRS</span
+      >
+      <span
+        class="font-hud-mono text-[9px] font-bold text-hud-ink/45 group-hover:text-hud-on-accent/55"
+        >▴</span
+      >
+    </div>
+    {#if openPanel === "attrs"}
+      <AttrsPanel
+        basic={view.attrs.basic}
+        secondary={view.attrs.secondary}
+        class="{POPOVER} right-0"
+        {onroll}
+      />
+    {/if}
+  </div>
+
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="relative"
+    data-hud-trigger="skills"
+    onmouseenter={() => onopen("skills")}
+    onmouseleave={onclose}
+  >
+    <div
+      class="group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
+      title="Skills"
+    >
+      <span
+        class="font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60 group-hover:text-hud-on-accent"
+        >SKILLS</span
+      >
+      <span
+        class="font-hud-mono text-[9px] font-bold text-hud-ink/45 group-hover:text-hud-on-accent/55"
+        >▴</span
+      >
+    </div>
+    {#if openPanel === "skills"}
+      <SkillsPanel skills={view.skills} class="{POPOVER} left-0" {onroll} />
+    {/if}
+  </div>
+
+  <div class="mx-[2px] h-[18px] w-px bg-white/[.09]"></div>
+
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="relative"
@@ -117,8 +175,6 @@
     {/if}
   </div>
 
-  <div class="mx-[4px] h-[18px] w-px bg-white/[.09]"></div>
-
   <div
     class="flex items-baseline gap-[6px] rounded-hud-sm border border-transparent px-[7px] py-[3px] transition-colors duration-75 hover:border-hud-defence/45 hover:bg-hud-defence-bg"
   >
@@ -131,35 +187,5 @@
     >
       {view.dodge}
     </button>
-  </div>
-
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="relative ml-auto"
-    data-hud-trigger="attrs"
-    onmouseenter={() => onopen("attrs")}
-    onmouseleave={onclose}
-  >
-    <div
-      class="group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
-      title="Attributes"
-    >
-      <span
-        class="font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60 group-hover:text-hud-on-accent"
-        >ATTRS</span
-      >
-      <span
-        class="font-hud-mono text-[9px] font-bold text-hud-ink/45 group-hover:text-hud-on-accent/55"
-        >▴</span
-      >
-    </div>
-    {#if openPanel === "attrs"}
-      <AttrsPanel
-        basic={view.attrs.basic}
-        secondary={view.attrs.secondary}
-        class="{POPOVER} right-0"
-        {onroll}
-      />
-    {/if}
   </div>
 </div>

@@ -44,6 +44,13 @@ export interface GurpsRanged extends GurpsAttack {
   rcl?: string;
 }
 
+export interface GurpsSkill {
+  name?: string;
+  level?: Numeric;
+  /** Relative skill level as text, e.g. "DX+2". */
+  relativelevel?: string;
+}
+
 export interface GurpsEquipment {
   name: string;
   equipped?: boolean;
@@ -86,6 +93,7 @@ export interface GurpsSystem {
   equipment: { carried: GurpsList<GurpsEquipment>; other: GurpsList<GurpsEquipment> };
   melee: GurpsList<GurpsMelee>;
   ranged: GurpsList<GurpsRanged>;
+  skills: GurpsList<GurpsSkill>;
 }
 
 /**

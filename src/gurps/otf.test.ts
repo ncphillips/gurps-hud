@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { attackOtf, quotedAttackName } from "./otf";
+import { attackOtf, quotedAttackName, skillOtf } from "./otf";
 
 describe("quotedAttackName", () => {
   it("wraps a bare name in double quotes", () => {
@@ -38,5 +38,15 @@ describe("attackOtf", () => {
 
   it("prefixes a damage roll with D:", () => {
     expect(attackOtf("D", { name: "Kick" })).toBe('D:"Kick"');
+  });
+});
+
+describe("skillOtf", () => {
+  it("rolls the skill by quoted name", () => {
+    expect(skillOtf("Brawling")).toBe('Sk:"Brawling"');
+  });
+
+  test("a skill name containing a double quote", () => {
+    expect(skillOtf('Guns (12" Cannon)')).toBe("Sk:'Guns (12\" Cannon)'");
   });
 });
