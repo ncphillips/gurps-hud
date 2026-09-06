@@ -37,3 +37,8 @@ export function skillOtf(name: string): string {
 export function attackOtf(prefix: AttackOtfPrefix, attack: AttackRef): string {
   return `${prefix}:${quotedAttackName(attack)}`;
 }
+
+/** Whether an OTF is an attack *roll* -- the one place a targeted hit location's penalty belongs. */
+export function isAttackOtf(otf: string): boolean {
+  return /^[MR]:/.test(otf);
+}

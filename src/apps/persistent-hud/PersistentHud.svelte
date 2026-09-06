@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    addBucketModifier,
     assignMacroSlot,
     canSetManeuver,
     currentActor,
@@ -14,6 +15,7 @@
     updatePool,
   } from "@/gurps/game-aid";
   import { buildHudView } from "@/gurps/hud-view";
+  import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
   import type { GurpsActorLike } from "@/gurps/system-types";
   import MacroBar from "./MacroBar.svelte";
@@ -31,6 +33,15 @@
   let revision = $state(0);
 
   let openPanel = $state<Panel | null>(null);
+
+  /**
+   * Where the actor is aiming. The Game Aid has no such state of its own -- its sheet pushes a
+   * location's penalty into the bucket per click -- so this lives here and does the same push on
+   * every attack roll. It resets to the torso whenever the strip follows a different actor.
+   */
+  const DEFAULT_TARGET = "Torso";
+  let target = $state(DEFAULT_TARGET);
+  let targetActorId = $state<string | null | undefined>(null);
   let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** Makes `revision` an explicit input of a read, so bumping it re-runs the derivation. */
@@ -53,6 +64,16 @@
   });
 
   const maneuverEnabled = $derived(atRevision(revision, () => canSetManeuver(actor)));
+
+  const targetLocation = $derived(
+    view?.hitLocations.find((location) => location.where === target) ?? null,
+  );
+
+  $effect(() => {
+    if (actor?.id === targetActorId) return;
+    targetActorId = actor?.id;
+    target = DEFAULT_TARGET;
+  });
 
   $effect(() => {
     // Re-reading the actor on every hook, rather than only on `updateLastActorGURPS`, keeps the
@@ -96,7 +117,15 @@
   }
 
   function roll(otf: string, event: MouseEvent): void {
+    if (isAttackOtf(otf) && targetLocation && targetLocation.penalty !== 0) {
+      addBucketModifier(targetLocation.penalty, `to hit ${targetLocation.where}`);
+    }
     executeOtf(otf, actor, event);
+  }
+
+  function selectTarget(where: string): void {
+    openPanel = null;
+    target = where;
   }
 
   function selectManeuver(id: string): void {
@@ -133,6 +162,8 @@
         onopen={open}
         onclose={close}
         onselect={selectManeuver}
+        {target}
+        onselecttarget={selectTarget}
         onroll={roll}
       />
       <WeaponTables {view} onroll={roll} />

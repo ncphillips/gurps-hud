@@ -7,8 +7,8 @@
   import type { Panel } from "./panels";
 
   /**
-   * One row across the top of the strip: attributes, skills, Dodge and the maneuver. Every popover
-   * anchors here so it opens upward, clear of the strip.
+   * One row across the top of the strip: attributes, skills, Dodge, the maneuver and the target hit
+   * location. Every popover anchors here so it opens upward, clear of the strip.
    */
   let {
     view,
@@ -18,6 +18,8 @@
     onopen,
     onclose,
     onselect,
+    target,
+    onselecttarget,
     onroll,
   }: {
     view: HudView;
@@ -29,8 +31,22 @@
     onopen: (panel: Panel) => void;
     onclose: () => void;
     onselect: (id: string) => void;
+    /** The hit location attacks are aimed at, by the Game Aid's `where` name. */
+    target: string;
+    onselecttarget: (where: string) => void;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
+
+  const targetRow = $derived(view.hitLocations.find((location) => location.where === target));
+  const targetTitle = $derived(
+    targetRow && targetRow.penalty !== 0
+      ? `Attacks aimed at ${target}: ${targetRow.penalty} to hit`
+      : `Attacks aimed at ${target}`,
+  );
+
+  function penaltyText(penalty: number): string {
+    return penalty === 0 ? "—" : String(penalty);
+  }
 
   const maneuverTitle = $derived(
     maneuverEnabled
@@ -163,6 +179,81 @@
               {option.hint}
             </span>
           </button>
+        {/each}
+      </div>
+    {/if}
+  </div>
+
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="relative"
+    data-hud-trigger="target"
+    onmouseenter={() => onopen("target")}
+    onmouseleave={onclose}
+  >
+    <div class="{TRIGGER} {TRIGGER_HOVER}" title={targetTitle}>
+      <span class="{LABEL} {LABEL_HOVER}">TARGET</span>
+      <span
+        class="font-hud text-[13px]/none font-bold tracking-[.02em] whitespace-nowrap text-hud-ink group-hover:text-hud-on-accent"
+      >
+        {target}
+      </span>
+      {#if targetRow && targetRow.penalty !== 0}
+        <span
+          class="font-hud-mono text-[10.5px]/none font-bold text-hud-hp group-hover:text-hud-on-accent/70"
+        >
+          {targetRow.penalty}
+        </span>
+      {/if}
+      <span class="{CARET} {CARET_HOVER}">▴</span>
+    </div>
+
+    {#if openPanel === "target"}
+      <div class="{POPOVER} right-0 flex w-[236px] flex-col p-[5px]">
+        <div
+          class="flex gap-[6px] px-[7px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/30"
+        >
+          <span class="w-[36px]">ROLL</span>
+          <span class="flex-1">LOCATION</span>
+          <span class="w-[28px] text-right">HIT</span>
+          <span class="w-[22px] text-right">DR</span>
+        </div>
+        {#each view.hitLocations as location (location.key)}
+          {@const isSelected = location.where === target}
+          <button
+            type="button"
+            class="flex cursor-pointer items-baseline gap-[6px] rounded-hud-sm px-[7px] py-[2px] text-left transition-colors duration-75 {isSelected
+              ? 'bg-hud-accent text-hud-on-accent'
+              : 'hover:bg-white/[.08]'}"
+            onclick={() => onselecttarget(location.where)}
+          >
+            <span
+              class="w-[36px] font-hud-mono text-[9.5px] font-medium {isSelected
+                ? 'text-hud-on-accent/70'
+                : 'text-hud-ink/40'}">{location.roll || "—"}</span
+            >
+            <span
+              class="flex-1 truncate font-hud text-[12px]/[1.3] font-semibold {isSelected
+                ? ''
+                : 'text-hud-ink/80'}">{location.where}</span
+            >
+            <span
+              class="w-[28px] text-right font-hud-mono text-[11px] font-bold {isSelected
+                ? ''
+                : location.penalty === 0
+                  ? 'text-hud-ink/30'
+                  : 'text-hud-hp'}">{penaltyText(location.penalty)}</span
+            >
+            <span
+              class="w-[22px] text-right font-hud-mono text-[10.5px] font-medium {isSelected
+                ? 'text-hud-on-accent/70'
+                : 'text-hud-ink/50'}">{location.dr || "—"}</span
+            >
+          </button>
+        {:else}
+          <div class="px-[7px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
+            No hit location table on this actor.
+          </div>
         {/each}
       </div>
     {/if}

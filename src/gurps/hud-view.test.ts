@@ -4,6 +4,7 @@ import {
   buildHudView,
   conditionVital,
   flattenList,
+  hitLocationRows,
   isEquipped,
   meleeRows,
   poolTone,
@@ -47,6 +48,7 @@ function system(overrides: Partial<GurpsSystem> = {}): GurpsSystem {
     melee: {},
     ranged: {},
     skills: {},
+    hitlocations: {},
     ...overrides,
   } as GurpsSystem;
 }
@@ -405,5 +407,24 @@ describe("postureOptions", () => {
 describe("postureBadge", () => {
   it("carries the posture id so the badge can mark the current option", () => {
     expect(postureBadge("kneel", localize).id).toBe("kneel");
+  });
+});
+
+describe("hitLocationRows", () => {
+  it("builds a row per location with its to-hit penalty as a number", () => {
+    const hitlocations = { "00000": { where: "Face", penalty: "-5", dr: "0", roll: "5" } };
+    expect(hitLocationRows(system({ hitlocations }))).toEqual([
+      { key: "loc-0", where: "Face", penalty: -5, dr: "0", roll: "5" },
+    ]);
+  });
+
+  test("a location with a blank penalty", () => {
+    const hitlocations = { "00000": { where: "Torso", penalty: "", dr: "2", roll: "9-10" } };
+    expect(hitLocationRows(system({ hitlocations }))[0].penalty).toBe(0);
+  });
+
+  test("a location with no name", () => {
+    const hitlocations = { "00000": { where: "", penalty: "-2", dr: "0", roll: "" } };
+    expect(hitLocationRows(system({ hitlocations }))).toEqual([]);
   });
 });

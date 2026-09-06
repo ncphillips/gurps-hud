@@ -14,6 +14,9 @@ interface GameAidGlobal {
     /** Resolves any maneuver id the system knows, falling back to Do Nothing. */
     getManeuver(id?: string): { label?: string; name?: string } | undefined;
   };
+  ModifierBucket?: {
+    addModifier(mod: number | string, reason: string): void;
+  };
 }
 
 declare global {
@@ -74,6 +77,14 @@ export async function updatePool(
 ): Promise<void> {
   if (!actor?.update) return;
   await actor.update({ [`system.${pool}.value`]: value });
+}
+
+/**
+ * Pushes a modifier into the bucket ahead of a roll -- the same thing clicking a hit location's
+ * penalty on the sheet does. The Game Aid empties the bucket after the roll unless it is pinned.
+ */
+export function addBucketModifier(mod: number, reason: string): void {
+  gameAid()?.ModifierBucket?.addModifier(mod, reason);
 }
 
 /**

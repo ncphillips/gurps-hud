@@ -51,6 +51,15 @@ export interface GurpsSkill {
   relativelevel?: string;
 }
 
+export interface GurpsHitLocation {
+  where?: string;
+  /** To-hit penalty as text, e.g. "-5"; blank for the torso. */
+  penalty?: Numeric;
+  dr?: Numeric;
+  /** The 3d roll range that hits this location, e.g. "9-10". */
+  roll?: string;
+}
+
 export interface GurpsEquipment {
   name: string;
   equipped?: boolean;
@@ -94,6 +103,7 @@ export interface GurpsSystem {
   melee: GurpsList<GurpsMelee>;
   ranged: GurpsList<GurpsRanged>;
   skills: GurpsList<GurpsSkill>;
+  hitlocations: GurpsList<GurpsHitLocation>;
 }
 
 /**

@@ -95,6 +95,26 @@ const actor = {
       "00001": { name: "Punch", level: 10, damage: "1d−3 cr", reach: "C", parry: "8", block: "" },
       "00002": { name: "Kick", level: 8, damage: "1d−2 cr", reach: "C,1", parry: "", block: "" },
     },
+    hitlocations: Object.fromEntries(
+      [
+        ["Eye", "-9", "0", "-"],
+        ["Skull", "-7", "2", "3-4"],
+        ["Face", "-5", "0", "5"],
+        ["Right Leg", "-2", "1", "6-7"],
+        ["Right Arm", "-2", "1", "8"],
+        ["Torso", "0", "1", "9-10"],
+        ["Groin", "-3", "1", "11"],
+        ["Left Arm", "-2", "1", "12"],
+        ["Left Leg", "-2", "1", "13-14"],
+        ["Hand", "-4", "0", "15"],
+        ["Foot", "-4", "0", "16"],
+        ["Neck", "-5", "0", "17-18"],
+        ["Vitals", "-3", "1", "-"],
+      ].map(([where, penalty, dr, roll], index) => [
+        String(index).padStart(5, "0"),
+        { where, penalty, dr, roll },
+      ]),
+    ),
     skills: Object.fromEntries(
       [
         ["Spear", 5, "DX-5"],
@@ -131,7 +151,13 @@ const actor = {
 Object.assign(globalThis, {
   GURPS: {
     LastActor: actor,
-    executeOTF: async () => true,
+    executeOTF: async (otf: string) => {
+      console.log("harness: roll", otf);
+      return true;
+    },
+    ModifierBucket: {
+      addModifier: (mod: number, reason: string) => console.log("harness: bucket", mod, reason),
+    },
     Maneuvers: {
       getManeuver: (id?: string) =>
         id === "aoa_determined" ? { label: "GURPS.maneuverAllOutAttackDetermined" } : undefined,

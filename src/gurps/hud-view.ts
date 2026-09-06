@@ -2,6 +2,7 @@ import { attackOtf, skillOtf } from "./otf";
 import type {
   GurpsActorLike,
   GurpsEquipment,
+  GurpsHitLocation,
   GurpsList,
   GurpsMelee,
   GurpsRanged,
@@ -57,6 +58,15 @@ export interface SkillRow {
   level: RollableCell;
 }
 
+export interface HitLocationRow {
+  key: string;
+  where: string;
+  /** To-hit penalty; 0 for the torso. */
+  penalty: number;
+  dr: string;
+  roll: string;
+}
+
 export interface AttrRow {
   label: string;
   value: string;
@@ -96,6 +106,7 @@ export interface HudView {
   melee: MeleeRow[];
   ranged: RangedRow[];
   skills: SkillRow[];
+  hitLocations: HitLocationRow[];
   /** The Game Aid's maneuver id, or `null` when the actor has none -- i.e. is not in combat. */
   maneuverId: string | null;
 }
@@ -289,6 +300,19 @@ export function skillRows(system: GurpsSystem): SkillRow[] {
     });
 }
 
+/** The actor's own hit location table, so a non-humanoid body plan lists its own parts. */
+export function hitLocationRows(system: GurpsSystem): HitLocationRow[] {
+  return flattenList<GurpsHitLocation>(system?.hitlocations)
+    .filter((location) => str(location.where).trim() !== "")
+    .map((location, index) => ({
+      key: `loc-${index}`,
+      where: str(location.where),
+      penalty: num(location.penalty),
+      dr: str(location.dr),
+      roll: str(location.roll),
+    }));
+}
+
 export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary: AttrColumn } {
   const attributes = system?.attributes ?? ({} as GurpsSystem["attributes"]);
 
@@ -354,6 +378,7 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     melee: meleeRows(system),
     ranged: rangedRows(system),
     skills: skillRows(system),
+    hitLocations: hitLocationRows(system),
     // Outside combat the Game Aid leaves this as the literal string "undefined".
     maneuverId:
       !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver,
