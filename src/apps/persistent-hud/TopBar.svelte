@@ -8,8 +8,8 @@
   export type Panel = "attrs" | "skills" | "maneuver";
 
   /**
-   * One row across the top of the strip: attributes and skills triggers, the maneuver pill and
-   * Dodge. Every popover anchors here so it opens upward, clear of the strip.
+   * One row across the top of the strip: attributes, skills, Dodge and the maneuver. Every popover
+   * anchors here so it opens upward, clear of the strip.
    */
   let {
     view,
@@ -39,12 +39,17 @@
       : "Maneuvers can only be set for a token in the active combat",
   );
 
-  const STAT_LABEL = "font-hud text-[10.5px] font-semibold text-hud-ink/50";
-
   /*
-   * The pill has a floor width so that switching between "Move" and "All-Out Defence" doesn't
-   * change the width of the whole strip. Longer names still widen it.
+   * Every control in the bar shares one chrome: a mono label, an optional value, and for hover
+   * panels a caret. Hover only recolours, so the bar never shifts under the cursor.
    */
+  const TRIGGER =
+    "group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75";
+  const TRIGGER_HOVER = "hover:border-hud-accent hover:bg-hud-accent";
+  const LABEL = "font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60";
+  const LABEL_HOVER = "group-hover:text-hud-on-accent";
+  const CARET = "font-hud-mono text-[9px] font-bold text-hud-ink/45";
+  const CARET_HOVER = "group-hover:text-hud-on-accent/55";
 
   /*
    * Popovers sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
@@ -54,6 +59,13 @@
     "absolute bottom-[calc(100%+10px)] z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover";
 </script>
 
+{#snippet trigger(label: string, title: string)}
+  <div class="{TRIGGER} {TRIGGER_HOVER}" {title}>
+    <span class="{LABEL} {LABEL_HOVER}">{label}</span>
+    <span class="{CARET} {CARET_HOVER}">▴</span>
+  </div>
+{/snippet}
+
 <div class="flex items-center gap-[4px] p-[3px]">
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
@@ -62,24 +74,12 @@
     onmouseenter={() => onopen("attrs")}
     onmouseleave={onclose}
   >
-    <div
-      class="group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
-      title="Attributes"
-    >
-      <span
-        class="font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60 group-hover:text-hud-on-accent"
-        >ATTRS</span
-      >
-      <span
-        class="font-hud-mono text-[9px] font-bold text-hud-ink/45 group-hover:text-hud-on-accent/55"
-        >▴</span
-      >
-    </div>
+    {@render trigger("ATTRS", "Attributes")}
     {#if openPanel === "attrs"}
       <AttrsPanel
         basic={view.attrs.basic}
         secondary={view.attrs.secondary}
-        class="{POPOVER} right-0"
+        class="{POPOVER} left-0"
         {onroll}
       />
     {/if}
@@ -92,25 +92,27 @@
     onmouseenter={() => onopen("skills")}
     onmouseleave={onclose}
   >
-    <div
-      class="group flex items-center gap-[8px] rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[4px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
-      title="Skills"
-    >
-      <span
-        class="font-hud-mono text-[9px] font-bold tracking-[.12em] text-hud-ink/60 group-hover:text-hud-on-accent"
-        >SKILLS</span
-      >
-      <span
-        class="font-hud-mono text-[9px] font-bold text-hud-ink/45 group-hover:text-hud-on-accent/55"
-        >▴</span
-      >
-    </div>
+    {@render trigger("SKILLS", "Skills")}
     {#if openPanel === "skills"}
       <SkillsPanel skills={view.skills} class="{POPOVER} left-0" {onroll} />
     {/if}
   </div>
 
   <div class="mx-[2px] h-[18px] w-px bg-white/[.09]"></div>
+
+  <button
+    type="button"
+    title="Roll Dodge"
+    class="{TRIGGER} cursor-pointer hover:border-hud-defence hover:bg-hud-defence"
+    onclick={(event) => onroll("Dodge", event)}
+  >
+    <span class="{LABEL} {LABEL_HOVER}">DODGE</span>
+    <span
+      class="font-hud-mono text-[13px]/none font-bold text-hud-defence group-hover:text-hud-on-accent"
+    >
+      {view.dodge}
+    </span>
+  </button>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
@@ -120,27 +122,19 @@
     onmouseleave={onclose}
   >
     <div
-      class="flex min-w-[170px] items-center gap-[9px] rounded-hud-md px-[11px] py-[5px] {maneuverEnabled
-        ? 'bg-hud-accent'
-        : 'bg-white/[.06]'}"
+      class="{TRIGGER} min-w-[150px] {maneuverEnabled ? TRIGGER_HOVER : ''}"
       title={maneuverTitle}
     >
+      <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'text-hud-ink/32'}">MANEUVER</span>
       <span
-        class="font-hud-mono text-[8px] font-bold tracking-[.14em] {maneuverEnabled
-          ? 'text-hud-on-accent/60'
-          : 'text-hud-ink/32'}"
-      >
-        MANEUVER
-      </span>
-      <span
-        class="font-hud text-[15px]/none font-bold tracking-[.02em] whitespace-nowrap {maneuverEnabled
-          ? 'text-hud-on-accent'
+        class="font-hud text-[13px]/none font-bold tracking-[.02em] whitespace-nowrap {maneuverEnabled
+          ? 'text-hud-ink group-hover:text-hud-on-accent'
           : 'text-hud-ink/35'}"
       >
         {maneuver?.name ?? "—"}
       </span>
       {#if maneuverEnabled}
-        <span class="font-hud-mono text-[9px] font-bold text-hud-on-accent/55">▴</span>
+        <span class="{CARET} {CARET_HOVER} ml-auto">▴</span>
       {/if}
     </div>
 
@@ -173,19 +167,5 @@
         {/each}
       </div>
     {/if}
-  </div>
-
-  <div
-    class="flex items-baseline gap-[6px] rounded-hud-sm border border-transparent px-[7px] py-[3px] transition-colors duration-75 hover:border-hud-defence/45 hover:bg-hud-defence-bg"
-  >
-    <span class={STAT_LABEL}>Dodge</span>
-    <button
-      type="button"
-      title="Roll this defence"
-      class="cursor-pointer rounded-hud-sm bg-transparent px-[3px] font-hud-mono text-[13px]/none font-bold text-hud-defence transition-colors duration-75 hover:bg-hud-defence hover:text-hud-on-accent"
-      onclick={(event) => onroll("Dodge", event)}
-    >
-      {view.dodge}
-    </button>
   </div>
 </div>
