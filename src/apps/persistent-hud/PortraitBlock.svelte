@@ -46,6 +46,13 @@
     >
       {view.posture.label}
     </span>
+    <span
+      class="absolute top-[4px] right-[5px] flex items-baseline gap-[4px] rounded-hud-xs bg-hud-deep/80 px-[5px] py-px"
+      title="Current Move"
+    >
+      <span class="font-hud-mono text-[9px] font-semibold uppercase text-hud-ink/55">Move</span>
+      <span class="font-hud-mono text-[11px] font-bold text-hud-ink">{view.move}</span>
+    </span>
   </div>
 
   <div class="grid grid-cols-2 gap-[3px] px-[5px] pt-[4px] pb-[5px]">

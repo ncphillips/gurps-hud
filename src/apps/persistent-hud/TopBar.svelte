@@ -38,7 +38,6 @@
       : "Maneuvers can only be set for a token in the active combat",
   );
 
-  const STAT = "flex items-baseline gap-[6px] rounded-hud-sm bg-white/5 px-[7px] py-[3px]";
   const STAT_LABEL = "font-hud text-[10.5px] font-semibold text-hud-ink/50";
 
   /*
@@ -132,11 +131,6 @@
     >
       {view.dodge}
     </button>
-  </div>
-
-  <div class={STAT}>
-    <span class={STAT_LABEL}>Move</span>
-    <span class="font-hud-mono text-[12px]/none font-bold text-hud-ink">{view.move}</span>
   </div>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
