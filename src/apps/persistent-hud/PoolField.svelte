@@ -6,7 +6,7 @@
   /**
    * An HP or FP readout that turns into a text box on click. Only the current value is editable;
    * the maximum is the character's and belongs on the sheet. Enter or blur commits, Escape cancels,
-   * and a signed entry like "-3" adjusts rather than replaces.
+   * a signed entry like "-3" adjusts rather than replaces, and the arrow keys step by one.
    */
   let {
     pool,
@@ -46,11 +46,25 @@
     editing = false;
   }
 
+  const STEP: Record<string, number> = { ArrowUp: 1, ArrowDown: -1 };
+
+  /** While editing, the arrows nudge the draft; on the idle box they change the actor directly. */
   function keydown(event: KeyboardEvent): void {
+    const step = STEP[event.key];
     if (event.key === "Enter") commit();
     else if (event.key === "Escape") cancel();
-    else return;
+    else if (step) {
+      const base = /^[+-]?\d+$/.test(draft.trim()) ? Number(draft) : Number(pool.value);
+      draft = String(base + step);
+    } else return;
     event.preventDefault();
+  }
+
+  function idleKeydown(event: KeyboardEvent): void {
+    const step = STEP[event.key];
+    if (!step) return;
+    event.preventDefault();
+    onchange(Number(pool.value) + step);
   }
 
   /* The box keeps one geometry in both states so toggling never moves its neighbours. */
@@ -74,6 +88,7 @@
     {title}
     class="{BOX} cursor-text transition-colors duration-75 hover:bg-white/[.14] {TEXT[pool.tone]}"
     onclick={begin}
+    onkeydown={idleKeydown}
   >
     {pool.value}<span class="text-[9.5px] text-hud-ink/45">/{pool.max}</span>
   </button>
