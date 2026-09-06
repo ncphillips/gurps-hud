@@ -107,19 +107,57 @@ export function executeMacroSlot(slot: number): void {
   void macro?.execute();
 }
 
+interface DroppableDocumentClass {
+  fromDropData(data: object): Promise<foundry.abstract.Document.Any | null | undefined>;
+  create(data: object): Promise<foundry.abstract.Document.Any | undefined>;
+}
+
 /**
  * The HUD's footer stands in for the stock macro bar, so it has to accept the same drops -- with the
- * real bar hidden there would otherwise be nowhere to put a macro.
+ * real bar hidden there would otherwise be nowhere to put anything. This mirrors `Hotbar#_onDrop`:
+ * the `hotbarDrop` hook goes first, which is how the Game Aid turns a skill, attack or attribute
+ * dragged off the character sheet into an On-The-Fly macro; only then do Foundry's own document
+ * fallbacks run.
  */
 export async function assignMacroSlot(slot: number, event: DragEvent): Promise<void> {
-  const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event) as {
-    type?: string;
-    uuid?: string;
-  } | null;
-  if (data?.type !== "Macro" || !data.uuid) return;
+  const hotbar = ui.hotbar;
+  if (!hotbar) return;
 
-  const macro = await fromUuid(data.uuid);
-  if (!(macro instanceof Macro)) return;
+  const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(
+    event,
+  ) as Macro.DropData;
+  if (!data || typeof data !== "object") return;
 
+  if (Hooks.call("hotbarDrop", hotbar, data, slot) === false) return;
+  if (hotbar.locked) return;
+
+  const type = (data as { type?: string }).type;
+  if (!type) return;
+  // The drop may name any document type, so the class is looked up loosely and typed to the two
+  // static methods this needs.
+  const cls = (
+    foundry.utils.getDocumentClass as unknown as (
+      type: string,
+    ) => DroppableDocumentClass | undefined
+  )(type);
+  const doc = await cls?.fromDropData(data);
+  if (!doc) return;
+
+  // The two document-to-macro helpers are protected on Hotbar; there is no public equivalent.
+  const helpers = hotbar as unknown as {
+    _createRollTableRollMacro(table: unknown): Promise<Macro.Implementation | undefined>;
+    _createDocumentSheetToggle(doc: unknown): Promise<Macro.Implementation | undefined>;
+  };
+
+  let macro: Macro.Implementation | undefined;
+  if (type === "Macro") {
+    const existing = doc as Macro.Implementation;
+    macro = game.macros?.has(existing.id!)
+      ? existing
+      : ((await cls!.create(existing.toObject())) as Macro.Implementation | undefined);
+  } else if (type === "RollTable") macro = await helpers._createRollTableRollMacro(doc);
+  else macro = await helpers._createDocumentSheetToggle(doc);
+
+  if (!macro) return;
   await game.user?.assignHotbarMacro(macro as Macro.Stored, slot);
 }
