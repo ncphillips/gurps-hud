@@ -106,4 +106,6 @@ export interface GurpsActorLike {
   img?: string | null;
   system: GurpsSystem;
   statuses?: Iterable<string>;
+  /** Foundry's `Document#update`; optional so a bare fixture can stand in for an actor. */
+  update?: (changes: Record<string, unknown>) => Promise<unknown>;
 }

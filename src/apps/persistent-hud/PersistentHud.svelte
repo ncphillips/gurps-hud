@@ -9,6 +9,7 @@
     localize,
     maneuverLabel,
     setManeuver,
+    updatePool,
   } from "@/gurps/game-aid";
   import { buildHudView } from "@/gurps/hud-view";
   import { maneuverById } from "@/gurps/maneuvers";
@@ -106,7 +107,7 @@
   <div
     class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
   >
-    <PortraitBlock {view} />
+    <PortraitBlock {view} onpool={(pool, value) => void updatePool(actor, pool, value)} />
 
     <div class="flex min-h-0 min-w-0 flex-col">
       <TopBar

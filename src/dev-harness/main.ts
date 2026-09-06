@@ -7,6 +7,7 @@
  * Query parameters:
  *   ?panel=attrs|maneuver   opens that hover panel on load, so it can be screenshotted
  *   ?maneuver=<id>          puts the actor in combat performing that maneuver
+ *   ?edit=hp|fp             opens that pool's box for editing on load
  *   ?measure                appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
@@ -19,10 +20,24 @@ const LABELS: Record<string, string> = {
 };
 
 const harnessParams = new URLSearchParams(location.search);
+
+/** Hooks registered by the HUD, so the harness's fake actor can trigger a rerender. */
+const hooks = new Map<string, Array<() => void>>();
 const maneuver = harnessParams.get("maneuver");
 
 /** Brent Mitton, the character the design mock is drawn from. */
 const actor = {
+  /** Mimics Document#update closely enough for the HP/FP boxes: flatten the key path and rerender. */
+  async update(changes: Record<string, unknown>) {
+    for (const [path, value] of Object.entries(changes)) {
+      const keys = path.split(".");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let target: any = actor;
+      for (const key of keys.slice(0, -1)) target = target[key];
+      target[keys[keys.length - 1]] = value;
+    }
+    for (const hook of hooks.get("updateActor") ?? []) hook();
+  },
   name: "Brent Mitton",
   img: null,
   statuses: [] as string[],
@@ -112,7 +127,10 @@ Object.assign(globalThis, {
         id === "aoa_determined" ? { label: "GURPS.maneuverAllOutAttackDetermined" } : undefined,
     },
   },
-  Hooks: { on: () => 0, off: () => undefined },
+  Hooks: {
+    on: (name: string, fn: () => void) => hooks.set(name, [...(hooks.get(name) ?? []), fn]),
+    off: () => undefined,
+  },
   canvas: { tokens: { controlled: [] } },
   ui: { hotbar: { page: 1 } },
   game: {
@@ -152,6 +170,16 @@ setTimeout(() => {
   host
     .querySelector<HTMLElement>(`[data-hud-trigger="${panel}"]`)
     ?.dispatchEvent(new MouseEvent("mouseenter"));
+}, 300);
+
+setTimeout(() => {
+  const pool = params.get("edit");
+  if (!pool) return;
+
+  const needle = pool === "fp" ? "Fatigue" : "Hit Points";
+  [...host.querySelectorAll<HTMLButtonElement>("button[title]")]
+    .find((el) => el.title.startsWith(needle))
+    ?.click();
 }, 300);
 
 setTimeout(() => {

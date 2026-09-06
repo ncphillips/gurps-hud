@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { HudView, Tone } from "@/gurps/hud-view";
+  import type { Pool } from "@/gurps/game-aid";
+  import PoolField from "./PoolField.svelte";
   import VitalIcon from "./VitalIcon.svelte";
 
-  let { view }: { view: HudView } = $props();
+  let { view, onpool }: { view: HudView; onpool: (pool: Pool, value: number) => void } = $props();
 
   const TONE_TEXT: Record<Tone, string> = {
     ok: "text-hud-ok",
@@ -10,16 +12,10 @@
     danger: "text-hud-hp",
   };
 
-  const POOL_TEXT: Record<Tone, string> = {
-    ok: "text-hud-ink",
-    warn: "text-hud-accent",
-    danger: "text-hud-hp",
-  };
-
   const idle = $derived(view.condition.label === "—");
 
   const VITAL_BOX =
-    "flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono text-[12px] font-bold";
+    "flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono text-[12px]/[1.35] font-bold";
 </script>
 
 <div
@@ -57,18 +53,22 @@
   </div>
 
   <div class="grid grid-cols-2 gap-[3px] px-[5px] pt-[4px] pb-[5px]">
-    <div class="flex items-center gap-[4px]" title="Hit Points">
+    <div class="flex items-center gap-[4px]">
       <VitalIcon kind="hp" class="text-hud-hp" />
-      <span class="{VITAL_BOX} {POOL_TEXT[view.hp.tone]}">
-        {view.hp.value}<span class="text-[9.5px] text-hud-ink/45">/{view.hp.max}</span>
-      </span>
+      <PoolField
+        pool={view.hp}
+        title="Hit Points -- click to edit"
+        onchange={(value) => onpool("HP", value)}
+      />
     </div>
 
-    <div class="flex items-center gap-[4px]" title="Fatigue Points">
+    <div class="flex items-center gap-[4px]">
       <VitalIcon kind="fp" class="text-hud-fp" />
-      <span class="{VITAL_BOX} {POOL_TEXT[view.fp.tone]}">
-        {view.fp.value}<span class="text-[9.5px] text-hud-ink/45">/{view.fp.max}</span>
-      </span>
+      <PoolField
+        pool={view.fp}
+        title="Fatigue Points -- click to edit"
+        onchange={(value) => onpool("FP", value)}
+      />
     </div>
 
     <div class="flex items-center gap-[4px]" title="Shock penalty to DX and IQ">

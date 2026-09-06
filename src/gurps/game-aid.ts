@@ -48,6 +48,21 @@ export function executeOtf(otf: string, actor: GurpsActorLike | null, event?: Ev
   void api.executeOTF(otf, false, event ?? null, actor);
 }
 
+export type Pool = "HP" | "FP";
+
+/**
+ * Writes a new current value for HP or FP through the actor, so the Game Aid's own hooks -- reeling
+ * and exhausted flags, the sheet, token bars -- all see the change as if the sheet had made it.
+ */
+export async function updatePool(
+  actor: GurpsActorLike | null,
+  pool: Pool,
+  value: number,
+): Promise<void> {
+  if (!actor?.update) return;
+  await actor.update({ [`system.${pool}.value`]: value });
+}
+
 /**
  * Whether the Game Aid will accept a maneuver for this actor. It models maneuvers as active effects
  * on the token and only stores them for a token in the active combat -- `GurpsToken#setManeuver` is
