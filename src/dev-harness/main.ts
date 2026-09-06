@@ -40,6 +40,7 @@ const actor = {
   },
   name: "Brent Mitton",
   img: null,
+  sheet: { render: () => console.log("harness: open character sheet") },
   statuses: [] as string[],
   system: {
     attributes: {

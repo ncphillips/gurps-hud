@@ -48,6 +48,10 @@ export function executeOtf(otf: string, actor: GurpsActorLike | null, event?: Ev
   void api.executeOTF(otf, false, event ?? null, actor);
 }
 
+export function openSheet(actor: GurpsActorLike | null): void {
+  actor?.sheet?.render(true);
+}
+
 export type Pool = "HP" | "FP";
 
 /**

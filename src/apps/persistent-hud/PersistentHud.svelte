@@ -8,6 +8,7 @@
     hotbarSlots,
     localize,
     maneuverLabel,
+    openSheet,
     setManeuver,
     updatePool,
   } from "@/gurps/game-aid";
@@ -107,7 +108,11 @@
   <div
     class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
   >
-    <PortraitBlock {view} onpool={(pool, value) => void updatePool(actor, pool, value)} />
+    <PortraitBlock
+      {view}
+      onpool={(pool, value) => void updatePool(actor, pool, value)}
+      onopensheet={() => openSheet(actor)}
+    />
 
     <div class="flex min-h-0 min-w-0 flex-col">
       <TopBar

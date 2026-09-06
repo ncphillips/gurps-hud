@@ -4,7 +4,15 @@
   import PoolField from "./PoolField.svelte";
   import VitalIcon from "./VitalIcon.svelte";
 
-  let { view, onpool }: { view: HudView; onpool: (pool: Pool, value: number) => void } = $props();
+  let {
+    view,
+    onpool,
+    onopensheet,
+  }: {
+    view: HudView;
+    onpool: (pool: Pool, value: number) => void;
+    onopensheet: () => void;
+  } = $props();
 
   const TONE_TEXT: Record<Tone, string> = {
     ok: "text-hud-ok",
@@ -28,7 +36,12 @@
     {view.name}
   </div>
 
-  <div class="relative flex min-h-[96px] flex-1 items-end justify-center">
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="relative flex min-h-[96px] flex-1 items-end justify-center"
+    title="Double-click to open the character sheet"
+    ondblclick={onopensheet}
+  >
     {#if view.img}
       <img src={view.img} alt="" class="absolute inset-0 h-full w-full object-cover" />
     {:else}

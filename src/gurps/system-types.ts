@@ -108,4 +108,6 @@ export interface GurpsActorLike {
   statuses?: Iterable<string>;
   /** Foundry's `Document#update`; optional so a bare fixture can stand in for an actor. */
   update?: (changes: Record<string, unknown>) => Promise<unknown>;
+  /** Foundry's `Document#sheet`; optional for the same reason. */
+  sheet?: { render(force?: boolean): unknown } | null;
 }
