@@ -170,7 +170,11 @@ body.gurps-hud-active #ui-left {
     min-height: 0;
     min-width: 0;
     padding: 0;
-    /* Foundry also makes buttons inline-flex with centred content and a gap; our rows set their own. */
+    /*
+     * Foundry makes buttons inline-flex with centred content and a gap, which both centres flex rows
+     * and stops text-align working on plain cells. Back to inline-block; rows that want flex say so.
+     */
+    display: inline-block;
     justify-content: normal;
     gap: 0;
     text-align: inherit;
