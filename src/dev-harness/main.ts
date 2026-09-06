@@ -5,7 +5,7 @@
  *   npm run harness   ->  http://localhost:30099/modules/gurps-hud/dev-harness/index.html
  *
  * Query parameters:
- *   ?panel=attrs|maneuver   opens that hover panel on load, so it can be screenshotted
+ *   ?panel=attrs|maneuver|actor   opens that hover panel on load, so it can be screenshotted
  *   ?target                 targets a goblin, so the TARGET pill lists its hit locations
  *   ?maneuver=<id>          puts the actor in combat performing that maneuver
  *   ?edit=hp|fp             opens that pool's box for editing on load
@@ -172,9 +172,38 @@ const goblin = {
   },
 };
 
+/** The tokens on the harness's scene, so the name menu has something to switch between. */
+const tokens = [
+  {
+    id: "t-brent",
+    name: "Brent Mitton",
+    document: { texture: { src: null } },
+    actor,
+    isOwner: true,
+  },
+  {
+    id: "t-goblin",
+    name: "Goblin Grunt",
+    document: { texture: { src: null } },
+    actor: goblin,
+    isOwner: true,
+  },
+  {
+    id: "t-dragon",
+    name: "Dragon",
+    document: { texture: { src: null } },
+    actor: { name: "Dragon" },
+    isOwner: false,
+  },
+];
+
 Object.assign(globalThis, {
   GURPS: {
     LastActor: actor,
+    SetLastActor: (next: unknown) => {
+      (globalThis as { GURPS: { LastActor: unknown } }).GURPS.LastActor = next;
+      for (const hook of hooks.get("updateLastActorGURPS") ?? []) hook();
+    },
     executeOTF: async (otf: string) => {
       console.log("harness: roll", otf);
       return true;
@@ -191,7 +220,13 @@ Object.assign(globalThis, {
     on: (name: string, fn: () => void) => hooks.set(name, [...(hooks.get(name) ?? []), fn]),
     off: () => undefined,
   },
-  canvas: { tokens: { controlled: [] } },
+  canvas: {
+    tokens: {
+      controlled: [],
+      placeables: tokens,
+      get: (id: string) => tokens.find((token) => token.id === id),
+    },
+  },
   ui: { hotbar: { page: 1 } },
   game: {
     // A maneuver on the actor implies it is in the active combat, which is what enables the pill.

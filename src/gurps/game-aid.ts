@@ -1,4 +1,5 @@
 import type { GurpsActorLike } from "./system-types";
+import type { TokenLike } from "./actor-choices";
 import { warn } from "@/log";
 
 /**
@@ -9,6 +10,8 @@ import { warn } from "@/log";
 
 interface GameAidGlobal {
   LastActor: GurpsActorLike | null;
+  /** Makes an actor current and fires `updateLastActorGURPS`, as selecting its token would. */
+  SetLastActor?(actor: GurpsActorLike, tokenDocument?: unknown): void;
   executeOTF(otf: string, priv?: boolean, event?: Event | null, actor?: unknown): Promise<boolean>;
   Maneuvers?: {
     /** Resolves any maneuver id the system knows, falling back to Do Nothing. */
@@ -38,6 +41,28 @@ export function currentActor(): GurpsActorLike | null {
 
   const controlled = canvas?.tokens?.controlled?.[0]?.actor;
   return (controlled as GurpsActorLike | undefined) ?? null;
+}
+
+/**
+ * Points the Game Aid at an actor without selecting its token, so the bucket and chat commands agree
+ * with the strip about who is acting. Falls back to nothing when the Game Aid is missing: the strip
+ * still switches, it just does so alone.
+ */
+export function setCurrentActor(actor: GurpsActorLike, tokenId: string | null): void {
+  const tokenDocument = tokenId ? canvas?.tokens?.get(tokenId)?.document : undefined;
+  gameAid()?.SetLastActor?.(actor, tokenDocument);
+}
+
+/** Every token on the current scene, in the shape the actor switcher reads. */
+export function canvasTokens(): TokenLike[] {
+  const placeables = canvas?.tokens?.placeables ?? [];
+  return placeables.map((token) => ({
+    id: token.id,
+    name: token.name,
+    img: token.document.texture?.src ?? null,
+    actor: (token.actor as GurpsActorLike | null | undefined) ?? null,
+    isOwner: token.isOwner,
+  }));
 }
 
 /**

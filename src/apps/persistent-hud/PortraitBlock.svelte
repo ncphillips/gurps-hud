@@ -1,26 +1,45 @@
 <script lang="ts">
   import type { HudView, Tone } from "@/gurps/hud-view";
+  import type { ActorChoice } from "@/gurps/actor-choices";
   import type { Pool } from "@/gurps/game-aid";
+  import type { GurpsActorLike } from "@/gurps/system-types";
   import PoolField from "./PoolField.svelte";
   import VitalIcon from "./VitalIcon.svelte";
+  import type { Panel } from "./panels";
 
   let {
     view,
+    actor,
     onpool,
     onopensheet,
-    postureOpen,
+    locked,
+    ontogglelock,
+    choices,
+    onselectactor,
+    openPanel,
     onposture,
     onopen,
     onclose,
   }: {
     view: HudView;
+    /** The actor behind `view`, so the switcher can mark the current choice. */
+    actor: GurpsActorLike;
     onpool: (pool: Pool, value: number) => void;
     onopensheet: () => void;
-    postureOpen: boolean;
+    /** Whether the strip is pinned to this actor, ignoring token selection. */
+    locked: boolean;
+    ontogglelock: () => void;
+    /** The actors the user could switch to; the name only opens a menu when there is more than one. */
+    choices: ActorChoice[];
+    onselectactor: (choice: ActorChoice) => void;
+    openPanel: Panel | null;
     onposture: (id: string) => void;
-    onopen: () => void;
+    onopen: (panel: Panel) => void;
     onclose: () => void;
   } = $props();
+
+  const switchable = $derived(choices.length > 1);
+  const isCurrent = (choice: ActorChoice) => choice.actor === actor;
 
   const TONE_TEXT: Record<Tone, string> = {
     ok: "text-hud-ok",
@@ -37,11 +56,76 @@
 <div
   class="flex w-[143px] flex-none flex-col rounded-l-hud border-r border-white/[.08] bg-hud-deep"
 >
-  <div
-    class="truncate px-[7px] py-[2px] text-center font-hud text-[12.5px]/[1.25] font-semibold text-hud-ink"
-    title={view.name}
-  >
-    {view.name}
+  <div class="flex items-center gap-[2px] pr-[7px] pl-[3px] py-[2px]">
+    <button
+      type="button"
+      class="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center rounded-hud-xs border border-transparent transition-colors duration-75 hover:border-white/[.18] hover:bg-white/[.08] {locked
+        ? 'text-hud-accent'
+        : 'text-hud-ink/35 hover:text-hud-ink/70'}"
+      title={locked
+        ? "Locked to this character -- click to follow token selection again"
+        : "Click to lock the HUD to this character"}
+      aria-pressed={locked}
+      onclick={ontogglelock}
+    >
+      <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
+        <rect x="2" y="5.5" width="8" height="6" rx="1" />
+        {#if locked}
+          <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5h-1.2V4a.8.8 0 0 0-1.6 0v1.5Z" />
+        {:else}
+          <path d="M4 5.5V3.5a2 2 0 0 1 4 0V4H6.8v-.5a.8.8 0 0 0-1.6 0v2Z" />
+        {/if}
+      </svg>
+    </button>
+
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="relative min-w-0 flex-1"
+      data-hud-trigger="actor"
+      onmouseenter={switchable ? () => onopen("actor") : undefined}
+      onmouseleave={switchable ? onclose : undefined}
+    >
+      <div
+        class="flex items-center justify-center gap-[4px] rounded-hud-xs border border-transparent px-[3px] font-hud text-[12.5px]/[1.25] font-semibold text-hud-ink transition-colors duration-75 {switchable
+          ? 'hover:border-white/[.18] hover:bg-white/[.06]'
+          : ''}"
+        title={switchable ? `${view.name} -- hover to switch character` : view.name}
+      >
+        <span class="truncate">{view.name}</span>
+        {#if switchable}
+          <span class="flex-none text-[8px] text-hud-ink/45">▴</span>
+        {/if}
+      </div>
+
+      {#if openPanel === "actor" && switchable}
+        <!-- The name row sits 1px inside the strip, so 7px lifts the menu 6px clear of its top edge. -->
+        <div
+          class="absolute bottom-[calc(100%+7px)] left-0 z-20 flex max-h-[320px] w-[180px] flex-col gap-px overflow-y-auto rounded-hud-lg border border-white/[.15] bg-hud-popover p-[4px] shadow-hud-popover"
+        >
+          {#each choices as choice (choice.key)}
+            {@const selected = isCurrent(choice)}
+            <button
+              type="button"
+              class="flex cursor-pointer items-center gap-[6px] rounded-hud-sm px-[5px] py-[3px] text-left font-hud text-[12px]/[1.2] font-semibold transition-colors duration-75 {selected
+                ? 'bg-hud-accent text-hud-on-accent'
+                : 'bg-white/[.045] text-hud-ink/85 hover:bg-white/[.09]'}"
+              onclick={() => onselectactor(choice)}
+            >
+              {#if choice.img}
+                <img
+                  src={choice.img}
+                  alt=""
+                  class="h-[18px] w-[18px] flex-none rounded-hud-xs object-cover"
+                />
+              {:else}
+                <span class="h-[18px] w-[18px] flex-none rounded-hud-xs bg-white/[.08]"></span>
+              {/if}
+              <span class="truncate">{choice.name}</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
   </div>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -61,7 +145,7 @@
     <div
       class="absolute top-[4px] left-[5px]"
       data-hud-trigger="posture"
-      onmouseenter={onopen}
+      onmouseenter={() => onopen("posture")}
       onmouseleave={onclose}
       ondblclick={(event) => event.stopPropagation()}
     >
@@ -75,7 +159,7 @@
         <span class="text-[8px] text-hud-ink/45">▴</span>
       </span>
 
-      {#if postureOpen}
+      {#if openPanel === "posture"}
         <!--
           The badge sits 24px inside the strip (name row, border, offset), so 30px lifts the menu
           6px clear of the strip's top edge like the top bar's panels.

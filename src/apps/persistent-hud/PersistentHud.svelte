@@ -3,6 +3,7 @@
     addBucketModifier,
     assignMacroSlot,
     canSetManeuver,
+    canvasTokens,
     currentActor,
     executeMacroSlot,
     executeOtf,
@@ -10,11 +11,14 @@
     localize,
     maneuverLabel,
     openSheet,
+    setCurrentActor,
     setManeuver,
     setPosture,
     targetedActor,
     updatePool,
   } from "@/gurps/game-aid";
+  import { actorChoices } from "@/gurps/actor-choices";
+  import type { ActorChoice } from "@/gurps/actor-choices";
   import { buildHudView, buildTargetView } from "@/gurps/hud-view";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
@@ -25,8 +29,16 @@
   import type { Panel } from "./panels";
   import WeaponTables from "./WeaponTables.svelte";
 
-  let actor = $state<GurpsActorLike | null>(currentActor());
-  let targetActor = $state<GurpsActorLike | null>(targetedActor());
+  // Raw, not proxied: these are Foundry documents mutated in place, and the switcher marks the
+  // current choice by identity.
+  let actor = $state.raw<GurpsActorLike | null>(currentActor());
+  let targetActor = $state.raw<GurpsActorLike | null>(targetedActor());
+
+  /**
+   * Pins the strip to its actor so selecting other tokens no longer changes it. Only token selection
+   * is held off: picking a character from the name menu still switches, lock or no lock.
+   */
+  let locked = $state(false);
 
   /**
    * Foundry mutates actor documents in place, so there is nothing for Svelte to subscribe to. Every
@@ -54,6 +66,7 @@
   const view = $derived(atRevision(revision, () => (actor ? buildHudView(actor, localize) : null)));
   const targetView = $derived(atRevision(revision, () => buildTargetView(targetActor)));
   const macroSlots = $derived(atRevision(revision, hotbarSlots));
+  const choices = $derived(atRevision(revision, () => actorChoices(canvasTokens())));
 
   /**
    * The maneuver comes from the actor, never from local state: whatever set it -- this menu, the
@@ -82,7 +95,7 @@
     // Re-reading the actor on every hook, rather than only on `updateLastActorGURPS`, keeps the
     // strip correct when a token is selected before the Game Aid gets round to announcing it.
     const refresh = () => {
-      actor = currentActor();
+      if (!locked || !actor) actor = currentActor();
       targetActor = targetedActor();
       revision++;
     };
@@ -101,6 +114,9 @@
       "deleteActiveEffect",
       "updateUser",
       "targetToken",
+      "canvasReady",
+      "createToken",
+      "deleteToken",
     ] as const;
     for (const hook of refreshed) Hooks.on(hook, refresh);
 
@@ -142,6 +158,23 @@
     openPanel = null;
     void setPosture(actor, id);
   }
+
+  /**
+   * Switches the strip -- and the Game Aid's notion of who is acting -- to another actor without
+   * touching token selection. The strip's own actor is set directly because, when locked, the
+   * `updateLastActorGURPS` hook this fires is deliberately ignored.
+   */
+  function selectActor(choice: ActorChoice): void {
+    openPanel = null;
+    actor = choice.actor;
+    setCurrentActor(choice.actor, choice.key);
+  }
+
+  function toggleLock(): void {
+    locked = !locked;
+    // Unlocking hands control back to whichever token is selected right now.
+    if (!locked) actor = currentActor() ?? actor;
+  }
 </script>
 
 {#if view}
@@ -150,11 +183,16 @@
   >
     <PortraitBlock
       {view}
+      actor={actor!}
       onpool={(pool, value) => void updatePool(actor, pool, value)}
       onopensheet={() => openSheet(actor)}
-      postureOpen={openPanel === "posture"}
+      {locked}
+      ontogglelock={toggleLock}
+      {choices}
+      onselectactor={selectActor}
+      {openPanel}
       onposture={selectPosture}
-      onopen={() => open("posture")}
+      onopen={open}
       onclose={close}
     />
 
