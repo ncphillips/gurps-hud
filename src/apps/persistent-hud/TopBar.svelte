@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { HudView } from "@/gurps/hud-view";
+  import type { HudView, TargetView } from "@/gurps/hud-view";
   import { HUD_MANEUVERS } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
   import AttrsPanel from "./AttrsPanel.svelte";
@@ -18,6 +18,7 @@
     onopen,
     onclose,
     onselect,
+    targetView,
     target,
     onselecttarget,
     onroll,
@@ -31,18 +32,22 @@
     onopen: (panel: Panel) => void;
     onclose: () => void;
     onselect: (id: string) => void;
+    /** The token the user is targeting, or `null` when there is none to aim at. */
+    targetView: TargetView | null;
     /** The hit location attacks are aimed at, by the Game Aid's `where` name. */
     target: string;
     onselecttarget: (where: string) => void;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
 
-  const targetRow = $derived(view.hitLocations.find((location) => location.where === target));
-  const targetTitle = $derived(
-    targetRow && targetRow.penalty !== 0
-      ? `Attacks aimed at ${target}: ${targetRow.penalty} to hit`
-      : `Attacks aimed at ${target}`,
+  const targetRow = $derived(
+    targetView?.hitLocations.find((location) => location.where === target),
   );
+  const targetTitle = $derived.by(() => {
+    if (!targetView) return "Target a token to select a hit location";
+    const aimed = `Attacks aimed at ${targetView.name}'s ${target}`;
+    return targetRow && targetRow.penalty !== 0 ? `${aimed}: ${targetRow.penalty} to hit` : aimed;
+  });
 
   function penaltyText(penalty: number): string {
     return penalty === 0 ? "—" : String(penalty);
@@ -188,15 +193,17 @@
   <div
     class="relative"
     data-hud-trigger="target"
-    onmouseenter={() => onopen("target")}
+    onmouseenter={targetView ? () => onopen("target") : undefined}
     onmouseleave={onclose}
   >
-    <div class="{TRIGGER} {TRIGGER_HOVER}" title={targetTitle}>
-      <span class="{LABEL} {LABEL_HOVER}">TARGET</span>
+    <div class="{TRIGGER} {targetView ? TRIGGER_HOVER : ''}" title={targetTitle}>
+      <span class="{LABEL} {targetView ? LABEL_HOVER : 'text-hud-ink/32'}">TARGET</span>
       <span
-        class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap text-hud-ink group-hover:text-hud-on-accent"
+        class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap {targetView
+          ? 'text-hud-ink group-hover:text-hud-on-accent'
+          : 'text-hud-ink/35'}"
       >
-        {target}
+        {targetView ? target : "—"}
       </span>
       {#if targetRow && targetRow.penalty !== 0}
         <span
@@ -205,10 +212,12 @@
           {targetRow.penalty}
         </span>
       {/if}
-      <span class="{CARET} {CARET_HOVER}">▴</span>
+      {#if targetView}
+        <span class="{CARET} {CARET_HOVER}">▴</span>
+      {/if}
     </div>
 
-    {#if openPanel === "target"}
+    {#if openPanel === "target" && targetView}
       <div class="{POPOVER} right-0 flex w-[236px] flex-col p-[5px]">
         <div
           class="flex gap-[6px] px-[7px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/30"
@@ -218,7 +227,7 @@
           <span class="w-[28px] text-right">HIT</span>
           <span class="w-[22px] text-right">DR</span>
         </div>
-        {#each view.hitLocations as location (location.key)}
+        {#each targetView.hitLocations as location (location.key)}
           {@const isSelected = location.where === target}
           <button
             type="button"
@@ -252,7 +261,7 @@
           </button>
         {:else}
           <div class="px-[7px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
-            No hit location table on this actor.
+            {targetView.name} has no hit location table.
           </div>
         {/each}
       </div>

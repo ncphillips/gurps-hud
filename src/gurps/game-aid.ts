@@ -40,6 +40,15 @@ export function currentActor(): GurpsActorLike | null {
   return (controlled as GurpsActorLike | undefined) ?? null;
 }
 
+/**
+ * The actor behind the user's first targeted token -- Foundry's `T` key. Attacks are aimed at a
+ * target's body, so the hit location table comes from here, whoever the strip is showing.
+ */
+export function targetedActor(): GurpsActorLike | null {
+  const token = game.user?.targets.first();
+  return (token?.actor as GurpsActorLike | null | undefined) ?? null;
+}
+
 /** Hands the roll to the Game Aid so it goes through the modifier bucket and chat like any other. */
 export function executeOtf(otf: string, actor: GurpsActorLike | null, event?: Event): void {
   const api = gameAid();

@@ -6,6 +6,7 @@
  *
  * Query parameters:
  *   ?panel=attrs|maneuver   opens that hover panel on load, so it can be screenshotted
+ *   ?target                 targets a goblin, so the TARGET pill lists its hit locations
  *   ?maneuver=<id>          puts the actor in combat performing that maneuver
  *   ?edit=hp|fp             opens that pool's box for editing on load
  *   ?measure                appends a <pre id="measurements"> of key bounding boxes
@@ -148,6 +149,29 @@ const actor = {
   },
 };
 
+/** Something for Brent to aim at, with a body plan of its own so the table visibly isn't his. */
+const goblin = {
+  name: "Goblin Grunt",
+  system: {
+    hitlocations: Object.fromEntries(
+      [
+        ["Eye", "-9", "0", "-"],
+        ["Skull", "-7", "2", "3-4"],
+        ["Face", "-5", "0", "5"],
+        ["Torso", "0", "0", "9-11"],
+        ["Groin", "-3", "0", "12"],
+        ["Arm", "-2", "0", "13-14"],
+        ["Leg", "-2", "0", "15-16"],
+        ["Neck", "-5", "0", "17"],
+        ["Vitals", "-3", "0", "18"],
+      ].map(([where, penalty, dr, roll], index) => [
+        String(index).padStart(5, "0"),
+        { where, penalty, dr, roll },
+      ]),
+    ),
+  },
+};
+
 Object.assign(globalThis, {
   GURPS: {
     LastActor: actor,
@@ -174,6 +198,8 @@ Object.assign(globalThis, {
     combats: { active: maneuver ? { combatants: [{ actor }] } : null },
     i18n: { localize: (key: string) => LABELS[key] ?? key },
     user: {
+      // Foundry's `UserTargets` is a Set of tokens; the HUD only ever asks it for the first one.
+      targets: { first: () => (harnessParams.has("target") ? { actor: goblin } : undefined) },
       getHotbarMacros: () =>
         Array.from({ length: 10 }, (_, index) => ({
           slot: index + 1,

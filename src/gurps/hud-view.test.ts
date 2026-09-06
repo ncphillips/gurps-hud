@@ -2,6 +2,7 @@ import { describe, expect, it, test } from "vitest";
 import {
   attrColumns,
   buildHudView,
+  buildTargetView,
   conditionVital,
   flattenList,
   hitLocationRows,
@@ -425,5 +426,27 @@ describe("hitLocationRows", () => {
   test("a location with no name", () => {
     const hitlocations = { "00000": { where: "", penalty: "-2", dr: "0", roll: "" } };
     expect(hitLocationRows(system({ hitlocations }))).toEqual([]);
+  });
+});
+
+describe("buildTargetView", () => {
+  it("is null with nothing targeted", () => {
+    expect(buildTargetView(null)).toBeNull();
+  });
+
+  it("names the targeted actor", () => {
+    const hitlocations = { "00000": { where: "Torso", penalty: "0", dr: "1", roll: "9-10" } };
+    expect(buildTargetView({ name: "Goblin Grunt", system: system({ hitlocations }) })?.name).toBe(
+      "Goblin Grunt",
+    );
+  });
+
+  it("lists the targeted actor's own hit locations", () => {
+    const hitlocations = { "00000": { where: "Wing", penalty: "-2", dr: "0", roll: "6-7" } };
+    expect(
+      buildTargetView({ name: "Bat", system: system({ hitlocations }) })?.hitLocations.map(
+        (location) => location.where,
+      ),
+    ).toEqual(["Wing"]);
   });
 });

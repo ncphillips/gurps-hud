@@ -12,9 +12,10 @@
     openSheet,
     setManeuver,
     setPosture,
+    targetedActor,
     updatePool,
   } from "@/gurps/game-aid";
-  import { buildHudView } from "@/gurps/hud-view";
+  import { buildHudView, buildTargetView } from "@/gurps/hud-view";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
   import type { GurpsActorLike } from "@/gurps/system-types";
@@ -25,6 +26,7 @@
   import WeaponTables from "./WeaponTables.svelte";
 
   let actor = $state<GurpsActorLike | null>(currentActor());
+  let targetActor = $state<GurpsActorLike | null>(targetedActor());
 
   /**
    * Foundry mutates actor documents in place, so there is nothing for Svelte to subscribe to. Every
@@ -35,9 +37,9 @@
   let openPanel = $state<Panel | null>(null);
 
   /**
-   * Where the actor is aiming. The Game Aid has no such state of its own -- its sheet pushes a
-   * location's penalty into the bucket per click -- so this lives here and does the same push on
-   * every attack roll. It resets to the torso whenever the strip follows a different actor.
+   * Where attacks are aimed on the targeted token's body. The Game Aid has no such state of its
+   * own -- its sheet pushes a location's penalty into the bucket per click -- so this lives here and
+   * does the same push on every attack roll. It resets to the torso whenever the target changes.
    */
   const DEFAULT_TARGET = "Torso";
   let target = $state(DEFAULT_TARGET);
@@ -50,6 +52,7 @@
   }
 
   const view = $derived(atRevision(revision, () => (actor ? buildHudView(actor, localize) : null)));
+  const targetView = $derived(atRevision(revision, () => buildTargetView(targetActor)));
   const macroSlots = $derived(atRevision(revision, hotbarSlots));
 
   /**
@@ -66,12 +69,12 @@
   const maneuverEnabled = $derived(atRevision(revision, () => canSetManeuver(actor)));
 
   const targetLocation = $derived(
-    view?.hitLocations.find((location) => location.where === target) ?? null,
+    targetView?.hitLocations.find((location) => location.where === target) ?? null,
   );
 
   $effect(() => {
-    if (actor?.id === targetActorId) return;
-    targetActorId = actor?.id;
+    if (targetActor?.id === targetActorId) return;
+    targetActorId = targetActor?.id;
     target = DEFAULT_TARGET;
   });
 
@@ -80,6 +83,7 @@
     // strip correct when a token is selected before the Game Aid gets round to announcing it.
     const refresh = () => {
       actor = currentActor();
+      targetActor = targetedActor();
       revision++;
     };
 
@@ -96,6 +100,7 @@
       "updateActiveEffect",
       "deleteActiveEffect",
       "updateUser",
+      "targetToken",
     ] as const;
     for (const hook of refreshed) Hooks.on(hook, refresh);
 
@@ -162,6 +167,7 @@
         onopen={open}
         onclose={close}
         onselect={selectManeuver}
+        {targetView}
         {target}
         onselecttarget={selectTarget}
         onroll={roll}

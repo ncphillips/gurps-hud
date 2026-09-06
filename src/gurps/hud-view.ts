@@ -104,7 +104,6 @@ export interface HudView {
   melee: MeleeRow[];
   ranged: RangedRow[];
   skills: SkillRow[];
-  hitLocations: HitLocationRow[];
   /** The Game Aid's maneuver id, or `null` when the actor has none -- i.e. is not in combat. */
   maneuverId: string | null;
 }
@@ -297,6 +296,21 @@ export function skillRows(system: GurpsSystem): SkillRow[] {
     });
 }
 
+/** What the strip shows about the token the user is targeting: whose body, and its parts. */
+export interface TargetView {
+  name: string;
+  hitLocations: HitLocationRow[];
+}
+
+/**
+ * The hit location table belongs to the target, not the attacker: aiming is a choice about the
+ * other body. `null` with nothing targeted, so the pill can say so rather than show a stale table.
+ */
+export function buildTargetView(actor: GurpsActorLike | null): TargetView | null {
+  if (!actor) return null;
+  return { name: actor.name, hitLocations: hitLocationRows(actor.system) };
+}
+
 /** The actor's own hit location table, so a non-humanoid body plan lists its own parts. */
 export function hitLocationRows(system: GurpsSystem): HitLocationRow[] {
   return flattenList<GurpsHitLocation>(system?.hitlocations)
@@ -375,7 +389,6 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     melee: meleeRows(system),
     ranged: rangedRows(system),
     skills: skillRows(system),
-    hitLocations: hitLocationRows(system),
     // Outside combat the Game Aid leaves this as the literal string "undefined".
     maneuverId:
       !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver,
