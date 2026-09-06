@@ -1,0 +1,136 @@
+name: Release
+
+# Cut a release by publishing a GitHub Release whose tag is `v<semver>` (e.g. v0.2.0).
+# The manifest version is stamped from the tag, so src/module.json's version is never
+# hand-edited. Foundry's package listing is only updated when FOUNDRY_PACKAGE_TOKEN is set,
+# which requires the package to have been approved on foundryvtt.com first.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  FOUNDRY_PACKAGE_TOKEN: ${{ secrets.FOUNDRY_PACKAGE_TOKEN }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run check
+
+      - run: npm test
+
+      - name: Derive version from tag
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          # Foundry compares versions with isNewerVersion, which does not understand
+          # pre-release or build suffixes, so only plain MAJOR.MINOR.PATCH is accepted.
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag '$TAG' must be v<MAJOR>.<MINOR>.<PATCH>"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - run: npm run build
+
+      - name: Stamp manifest
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          jq --arg version "$VERSION" \
+             --arg download "$REPO_URL/releases/download/$TAG/module.zip" \
+             --arg manifest "$REPO_URL/releases/latest/download/module.json" \
+             '.version = $version | .download = $download | .manifest = $manifest' \
+             dist/module.json > dist/module.json.tmp
+          mv dist/module.json.tmp dist/module.json
+          cat dist/module.json
+
+      - name: Create module.zip
+        working-directory: dist
+        run: zip -r ../module.zip .
+
+      - name: Attach assets to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: gh release upload "$TAG" module.zip dist/module.json --clobber
+
+      - name: Publish to Foundry package listing
+        if: env.FOUNDRY_PACKAGE_TOKEN != '' && !github.event.release.prerelease
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          NOTES_URL: ${{ github.event.release.html_url }}
+        run: |
+          # The manifest URL must be version-specific: only that copy has a `download`
+          # pointing at this version's zip, which is what lets users install old versions.
+          payload() {
+            jq -n --argjson dry_run "$1" \
+                  --arg version "$VERSION" \
+                  --arg manifest "$REPO_URL/releases/download/$TAG/module.json" \
+                  --arg notes "$NOTES_URL" \
+                  --slurpfile module dist/module.json \
+                  '{
+                    id: $module[0].id,
+                    "dry-run": $dry_run,
+                    release: {
+                      version: $version,
+                      manifest: $manifest,
+                      notes: $notes,
+                      compatibility: {
+                        minimum: $module[0].compatibility.minimum,
+                        verified: $module[0].compatibility.verified,
+                        maximum: ($module[0].compatibility.maximum // "")
+                      }
+                    }
+                  }'
+          }
+
+          submit() {
+            payload "$1" | curl --silent --show-error \
+              --output response.json --write-out '%{http_code}' \
+              --request POST https://foundryvtt.com/_api/packages/release_version/ \
+              --header "Content-Type: application/json" \
+              --header "Authorization: $FOUNDRY_PACKAGE_TOKEN" \
+              --data @-
+          }
+
+          echo "Dry run"
+          code=$(submit true)
+          cat response.json; echo
+          if [ "$code" != "200" ]; then
+            echo "::error::Foundry dry run failed with HTTP $code"
+            exit 1
+          fi
+
+          # Foundry rate-limits to one submission per package per 60 seconds.
+          sleep 61
+
+          echo "Release"
+          code=$(submit false)
+          cat response.json; echo
+          if [ "$code" != "200" ]; then
+            echo "::error::Foundry release failed with HTTP $code"
+            exit 1
+          fi
