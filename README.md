@@ -1,7 +1,46 @@
-# GURPS HUD (Prototype)
+# GURPS HUD
 
 A clean, concise heads-up display for playing [GURPS 4e](https://github.com/crnormand/gurps) in
 Foundry VTT, inspired by [pf2e-hud](https://github.com/reonZ/pf2e-hud).
+
+![GURPS HUD](./assets/0-hud.png)
+
+## Features
+
+### Switching Characters
+
+By default, selecting a token you can control switches it to that 
+actor. Disable this behaviour by clicking the "lock" icon.
+
+Hover the character name to reveal all the selectable actors. Click
+on their name to switch.
+
+![GURPS HUD: Character switcher](./assets/2-character.png)
+
+### Always Available
+#### Attributes
+
+![GURPS HUD: Attributes Access](./assets/3-attributes.png)
+
+#### Skills
+
+![GURPS HUD: SKills Access](./assets/4-skills.png)### 
+#### Posture
+
+![GURPS HUD: Posture Switcher](./assets/7-posture.png)
+
+### Combat
+
+#### Select your Maneuver
+![GURPS HUD: Maneuver Selection](./assets/5-maneuvers.png)
+
+#### Target a Hit Location
+
+Select an enemy and press `t` to target them. 
+
+The target box will now list _their_ hit locations.
+
+![GURPS HUD: Target Hit Locations](./assets/6-hit-locations.png)
 
 ## Development
 
