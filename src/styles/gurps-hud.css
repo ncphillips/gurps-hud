@@ -129,6 +129,8 @@
  * transform meant for its original home, hence the `!important`s.
  */
 #gurps-hud-persistent #bucket-container {
+  /* The strip mounts after the bucket is adopted, so DOM order alone would put the bucket first. */
+  order: 1;
   margin: 0 0 10px !important;
   transform: none !important;
 }
