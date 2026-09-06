@@ -1,0 +1,35 @@
+{
+  "id": "gurps-hud",
+  "title": "GURPS HUD",
+  "description": "A clean, concise heads-up display for playing GURPS 4e in Foundry VTT.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.367",
+    "maximum": "14"
+  },
+  "authors": [
+    {
+      "name": "Nolan"
+    }
+  ],
+  "esmodules": ["module.js"],
+  "styles": ["styles/gurps-hud.css"],
+  "languages": [],
+  "socket": false,
+  "relationships": {
+    "systems": [
+      {
+        "id": "gurps",
+        "type": "system",
+        "manifest": "https://raw.githubusercontent.com/crnormand/gurps/main/system.json",
+        "compatibility": {
+          "minimum": "0.18.0"
+        }
+      }
+    ]
+  },
+  "url": "https://github.com/ncphillips/gurps-hud",
+  "manifest": "https://github.com/ncphillips/gurps-hud/releases/latest/download/module.json",
+  "download": "https://github.com/ncphillips/gurps-hud/releases/download/v{{version}}/module.zip"
+}
