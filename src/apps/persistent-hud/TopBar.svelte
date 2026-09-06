@@ -137,12 +137,12 @@
     onmouseleave={onclose}
   >
     <div
-      class="{TRIGGER} min-w-[150px] {maneuverEnabled ? TRIGGER_HOVER : ''}"
+      class="{TRIGGER} min-w-[140px] {maneuverEnabled ? TRIGGER_HOVER : ''}"
       title={maneuverTitle}
     >
       <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'text-hud-ink/32'}">MANEUVER</span>
       <span
-        class="font-hud text-[13px]/none font-bold tracking-[.02em] whitespace-nowrap {maneuverEnabled
+        class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap {maneuverEnabled
           ? 'text-hud-ink group-hover:text-hud-on-accent'
           : 'text-hud-ink/35'}"
       >
@@ -194,7 +194,7 @@
     <div class="{TRIGGER} {TRIGGER_HOVER}" title={targetTitle}>
       <span class="{LABEL} {LABEL_HOVER}">TARGET</span>
       <span
-        class="font-hud text-[13px]/none font-bold tracking-[.02em] whitespace-nowrap text-hud-ink group-hover:text-hud-on-accent"
+        class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap text-hud-ink group-hover:text-hud-on-accent"
       >
         {target}
       </span>
