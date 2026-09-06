@@ -7,11 +7,9 @@ const HEIGHT_VAR = "--gurps-hud-height";
 const BUCKET_ID = "bucket-container";
 
 /**
- * The always-mounted strip, docked to the bottom-left of the canvas.
+ * PersistentHUD
  *
- * It anchors to `#interface` rather than to one of Foundry's flex regions. `#ui-bottom` -- the
- * obvious home, next to the hotbar -- lives inside `#ui-middle`, which is only 60% of the viewport
- * wide and centred, so nothing placed there can reach the left edge.
+ * The always-mounted strip, docked to the bottom-left of the canvas.
  */
 export class PersistentHudApp extends SvelteApp {
   static override DEFAULT_OPTIONS = {
@@ -35,10 +33,16 @@ export class PersistentHudApp extends SvelteApp {
   props = () => ({});
 
   protected override _insertElement(element: HTMLElement): void {
+    /*
+     * It anchors to `#interface` rather than to one of Foundry's flex regions. `#ui-bottom` -- the
+     * obvious home, next to the hotbar -- lives inside `#ui-middle`, which is only 60% of the viewport
+     * wide and centred, so nothing placed there can reach the left edge.
+     */
     const anchor = document.getElementById("interface");
 
-    if (anchor) anchor.append(element);
-    else {
+    if (anchor) {
+      anchor.append(element);
+    } else {
       log("#interface is missing; falling back to the document body");
       super._insertElement(element);
     }

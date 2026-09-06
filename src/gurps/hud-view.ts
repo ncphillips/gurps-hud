@@ -133,7 +133,11 @@ export interface PostureOption {
   tone: Tone;
 }
 
-/** In the Game Aid's own order; the ids double as its status-effect ids. */
+/**
+  * In the Game Aid's own order; the ids double as its status-effect ids.
+  *
+  * @todo Pull directly from the Game Aid instead of duplicating here.
+  */
 const POSTURES: Array<{ id: string; key: string; tone: Tone }> = [
   { id: "standing", key: "GURPS.status.Standing", tone: "ok" },
   { id: "crouch", key: "GURPS.status.Crouch", tone: "warn" },
@@ -169,6 +173,8 @@ export function shockPenalty(statuses: Iterable<string> | undefined): number {
  * The design's fourth vitals cell. GURPS has no per-roll "wound penalty", so this shows the two
  * states the Game Aid does track: reeling (HP at or below a third) and exhausted (FP likewise),
  * both of which halve Move and Dodge.
+ *
+ * @todo Translate titles
  */
 export function conditionVital(conditions: {
   reeling?: boolean;

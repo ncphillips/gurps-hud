@@ -4,8 +4,10 @@ import type { Component } from "svelte";
 const AppV2 = foundry.applications.api.ApplicationV2;
 
 /**
- * Bridges Svelte 5 into Foundry's ApplicationV2 lifecycle: Foundry owns the window
- * frame and positioning, Svelte owns everything inside `.window-content`.
+ * Bridges Svelte 5 into Foundry's ApplicationV2 lifecycle.
+ *
+ * Foundry owns the window frame and positioning
+ * Svelte owns everything inside `.window-content`
  */
 export abstract class SvelteApp extends AppV2 {
   #instance: Record<string, unknown> | null = null;

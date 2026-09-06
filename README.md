@@ -1,10 +1,7 @@
-# GURPS HUD
+# GURPS HUD (Prototype)
 
 A clean, concise heads-up display for playing [GURPS 4e](https://github.com/crnormand/gurps) in
 Foundry VTT, inspired by [pf2e-hud](https://github.com/reonZ/pf2e-hud).
-
-Status: **scaffolding.** The build pipeline (Vite + Svelte 5 + Tailwind 4 + ApplicationV2) is
-wired up; HUD features are pending design.
 
 ## Development
 

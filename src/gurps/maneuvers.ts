@@ -2,6 +2,7 @@
  * The twelve maneuvers the HUD offers, in the order the design lays them out (two columns, filled
  * row-wise). The Game Aid knows more than these -- every All-Out Attack variant, the On Target
  * additions -- but the HUD trades completeness for a menu you can read in one glance.
+ * @todo Include additional variants as sub-options. e.g pick "All-Out Attack" and then specify "strong"
  */
 
 export interface HudManeuver {
