@@ -10,6 +10,8 @@ declare module "fvtt-types/configuration" {
        * selection, sheet focus, or an explicit `GURPS.SetLastActor`. The persistent HUD follows it.
        */
       updateLastActorGURPS: (actor: GurpsActorLike | null) => void;
+      /** Foundry's per-class render hook for the Game Aid's `ModifierBucket` application. */
+      renderModifierBucket: (app: object, html: unknown, data: object) => void;
     }
   }
 

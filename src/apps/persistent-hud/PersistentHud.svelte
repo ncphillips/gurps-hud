@@ -103,9 +103,7 @@
 </script>
 
 {#if view}
-  <div
-    class="flex w-fit self-start rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
-  >
+  <div class="flex w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink">
     <PortraitBlock {view} />
 
     <div class="flex min-w-0 flex-col">

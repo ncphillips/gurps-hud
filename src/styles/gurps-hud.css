@@ -110,6 +110,9 @@
   position: absolute;
   bottom: 0;
   left: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
   width: fit-content;
   pointer-events: auto;
   z-index: var(--z-index-app, 30);
@@ -118,16 +121,21 @@
 }
 
 /*
- * Make room for the strip. Both regions are inside a `scale(var(--ui-scale))` transform and so are
- * laid out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion.
+ * The Game Aid's modifier bucket, adopted into the HUD element so it sits to the right of the strip
+ * (see PersistentHudApp#adoptBucket). The Game Aid keeps writing an inline margin and `--offset`
+ * transform meant for its original home, hence the `!important`s.
+ */
+#gurps-hud-persistent #bucket-container {
+  margin: 0 0 10px !important;
+  transform: none !important;
+}
+
+/*
+ * Make room for the strip. `#ui-left` is inside a `scale(var(--ui-scale))` transform and so is laid
+ * out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion.
  */
 body.gurps-hud-active #ui-left {
   padding-bottom: calc(16px + var(--gurps-hud-height, 0px));
-}
-
-/* The Game Aid appends its modifier bucket into `#ui-bottom > div`. */
-body.gurps-hud-active #ui-middle #ui-bottom {
-  padding-bottom: var(--gurps-hud-height, 0px);
 }
 
 /*
