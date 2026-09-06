@@ -131,11 +131,9 @@ setTimeout(() => {
   const panel = params.get("panel");
   if (!panel) return;
 
-  const needle = panel === "attrs" ? "ATTRS" : "MANEUVER";
-  const trigger = [...host.querySelectorAll<HTMLElement>(".relative")].find((el) =>
-    el.textContent?.includes(needle),
-  );
-  trigger?.dispatchEvent(new MouseEvent("mouseenter"));
+  host
+    .querySelector<HTMLElement>(`[data-hud-trigger="${panel}"]`)
+    ?.dispatchEvent(new MouseEvent("mouseenter"));
 }, 300);
 
 setTimeout(() => {

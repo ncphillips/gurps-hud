@@ -27,9 +27,12 @@
   const STAT_LABEL = "font-hud text-[10.5px] font-semibold text-hud-ink/50";
 </script>
 
-<div class="flex w-[115px] flex-none flex-col gap-[4px] border-r border-white/[.08] p-[9px]">
+<div
+  class="relative flex w-[115px] flex-none flex-col gap-[4px] border-r border-white/[.08] p-[9px]"
+>
+  <!-- The panel is positioned against the column, so it sits above the strip rather than over its top edge. -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="relative" onmouseenter={onopen} onmouseleave={onclose}>
+  <div data-hud-trigger="attrs" onmouseenter={onopen} onmouseleave={onclose}>
     <div
       class="group flex items-center justify-between rounded-hud-sm border border-white/[.09] bg-white/[.06] px-[7px] py-[3px] transition-colors duration-75 hover:border-hud-accent hover:bg-hud-accent"
       title="Attributes"

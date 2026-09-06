@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { AttrColumn } from "@/gurps/hud-view";
 
+  /**
+   * Laid out like the character sheet's attribute boxes: two side-by-side columns, value first in a
+   * fixed left-aligned column, label after, hairlines between groups, rows at text height.
+   */
   let {
     basic,
     secondary,
@@ -12,55 +16,45 @@
   } = $props();
 
   const columns = $derived([basic, secondary]);
+
+  const ROW = "flex w-full items-baseline gap-[6px] rounded-hud-xs px-[5px] py-0";
+  const VALUE = "w-[30px] flex-none text-left font-hud-mono text-[11.5px]/[1.5] font-bold";
+  const LABEL = "truncate font-hud text-[11.5px]/[1.5] font-medium text-hud-ink/60";
 </script>
 
 <div
-  class="absolute bottom-[calc(100%+5px)] left-0 z-20 grid w-[368px] grid-cols-2 gap-[10px] rounded-hud-lg border border-white/[.15] bg-hud-popover p-[7px] shadow-hud-popover"
+  class="absolute bottom-[calc(100%+7px)] left-0 z-20 flex gap-[6px] rounded-hud-lg border border-white/[.15] bg-hud-popover p-[5px] shadow-hud-popover"
 >
   {#each columns as column (column.header)}
-    <div>
+    <div class="w-[142px] rounded-hud-sm bg-white/[.04] px-[2px] pb-[3px]">
       <div
-        class="mb-[3px] border-b border-white/[.09] px-[5px] pt-[2px] pb-[3px] font-hud-mono text-[8.5px] font-bold tracking-[.13em] text-hud-ink/40"
+        class="mb-[2px] border-b border-white/[.09] px-[5px] pt-[3px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/40"
       >
         {column.header}
       </div>
       {#each column.groups as group, groupIndex (groupIndex)}
         {#if groupIndex > 0}
-          <div class="mx-[5px] my-[4px] h-px bg-white/[.08]"></div>
+          <div class="mx-[5px] my-[2px] h-px bg-white/[.08]"></div>
         {/if}
         {#each group as row (row.label)}
           {#if row.otf}
             <button
               type="button"
               title="Roll against {row.label}"
-              class="flex w-full cursor-pointer items-baseline gap-[7px] rounded-hud-xs px-[5px] py-px transition-colors duration-75 hover:bg-hud-accent/22"
+              class="{ROW} cursor-pointer transition-colors duration-75 hover:bg-hud-accent/22"
               onclick={(event) => onroll(row.otf!, event)}
             >
-              <span
-                class="w-[34px] flex-none text-right font-hud-mono text-[12.5px] font-bold text-hud-ink"
-              >
-                {row.value}
-              </span>
-              <span class="font-hud text-[12px] font-medium text-hud-ink/60">{row.label}</span>
+              <span class="{VALUE} text-hud-accent">{row.value}</span>
+              <span class={LABEL}>{row.label}</span>
             </button>
           {:else}
-            <div
-              class="flex items-baseline gap-[7px] rounded-hud-xs px-[5px] py-px transition-colors duration-75 hover:bg-white/[.07]"
-            >
-              <span
-                class="w-[34px] flex-none text-right font-hud-mono text-[12.5px] font-bold text-hud-ink/60"
-              >
-                {row.value}
-              </span>
-              <span class="font-hud text-[12px] font-medium text-hud-ink/60">{row.label}</span>
+            <div class={ROW}>
+              <span class="{VALUE} text-hud-ink/70">{row.value}</span>
+              <span class={LABEL}>{row.label}</span>
             </div>
           {/if}
         {/each}
       {/each}
     </div>
   {/each}
-
-  <div class="col-span-full font-hud text-[10px] font-medium text-hud-ink/30">
-    Click any value to roll against it.
-  </div>
 </div>

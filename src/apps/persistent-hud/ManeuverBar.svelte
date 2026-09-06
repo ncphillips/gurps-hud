@@ -25,7 +25,12 @@
 
 <div class="flex items-center gap-[10px] px-[12px] pt-[9px] pb-[8px]">
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="relative" onmouseenter={enabled ? onopen : undefined} onmouseleave={onclose}>
+  <div
+    class="relative"
+    data-hud-trigger="maneuver"
+    onmouseenter={enabled ? onopen : undefined}
+    onmouseleave={onclose}
+  >
     <div
       class="flex items-center gap-[9px] rounded-hud-md px-[11px] py-[5px] {enabled
         ? 'bg-hud-accent'
@@ -53,7 +58,7 @@
 
     {#if open && enabled}
       <div
-        class="absolute bottom-[calc(100%+5px)] left-0 z-20 grid w-[464px] grid-cols-2 gap-[2px] rounded-hud-lg border border-white/[.15] bg-hud-popover p-[5px] shadow-hud-popover"
+        class="absolute bottom-[calc(100%+16px)] left-0 z-20 grid w-[464px] grid-cols-2 gap-[2px] rounded-hud-lg border border-white/[.15] bg-hud-popover p-[5px] shadow-hud-popover"
       >
         {#each HUD_MANEUVERS as option (option.id)}
           {@const isSelected = option.id === maneuver?.id}
