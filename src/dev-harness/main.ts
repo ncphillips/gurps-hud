@@ -15,7 +15,6 @@ import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 
 const LABELS: Record<string, string> = {
   "GURPS.status.Standing": "Standing",
-  "GURPS.encumbranceLevel-00000": "None (0)",
   "GURPS.maneuverAllOutAttackDetermined": "All-out Attack (Determined)",
 };
 

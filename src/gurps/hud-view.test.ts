@@ -3,7 +3,6 @@ import {
   attrColumns,
   buildHudView,
   conditionVital,
-  encumbranceOf,
   flattenList,
   isEquipped,
   meleeRows,
@@ -125,36 +124,6 @@ describe("conditionVital", () => {
 
   test("reeling and exhausted at once", () => {
     expect(conditionVital({ reeling: true, exhausted: true }).label).toBe("RLNG+TIRED");
-  });
-});
-
-describe("encumbranceOf", () => {
-  it("labels the encumbrance level the actor is currently at", () => {
-    const enc = {
-      "00000": { key: "enc0", level: 0, current: false },
-      "00002": { key: "enc2", level: 2, current: true },
-    };
-    expect(
-      encumbranceOf(system({ encumbrance: enc } as Partial<GurpsSystem>), localize).label,
-    ).toBe("[GURPS.encumbranceLevel-00002]");
-  });
-
-  it("escalates out of the ok tone once the actor is carrying something", () => {
-    const enc = { "00001": { key: "enc1", level: 1, current: true } };
-    expect(encumbranceOf(system({ encumbrance: enc } as Partial<GurpsSystem>), localize).tone).toBe(
-      "warn",
-    );
-  });
-
-  test("no encumbrance level flagged as current", () => {
-    expect(encumbranceOf(system(), localize).label).toBe("[GURPS.encumbranceLevel-00000]");
-  });
-
-  test("heavy encumbrance", () => {
-    const enc = { "00003": { key: "enc3", level: 3, current: true } };
-    expect(encumbranceOf(system({ encumbrance: enc } as Partial<GurpsSystem>), localize).tone).toBe(
-      "danger",
-    );
   });
 });
 

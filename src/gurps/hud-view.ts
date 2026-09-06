@@ -1,7 +1,6 @@
 import { attackOtf } from "./otf";
 import type {
   GurpsActorLike,
-  GurpsEncumbrance,
   GurpsEquipment,
   GurpsList,
   GurpsMelee,
@@ -83,7 +82,6 @@ export interface HudView {
   condition: ConditionVital;
   dodge: string;
   move: string;
-  encumbrance: { label: string; tone: Tone };
   attrs: { basic: AttrColumn; secondary: AttrColumn };
   melee: MeleeRow[];
   ranged: RangedRow[];
@@ -255,20 +253,6 @@ export function rangedRows(system: GurpsSystem): RangedRow[] {
   }));
 }
 
-export function encumbranceOf(
-  system: GurpsSystem,
-  localize: Localize,
-): { label: string; tone: Tone } {
-  const entries = Object.entries(system?.encumbrance ?? {}) as [string, GurpsEncumbrance][];
-  const [key, entry] = entries.find(([, e]) => e?.current) ?? ["00000", undefined];
-  const level = num(entry?.level);
-
-  return {
-    label: localize(`GURPS.encumbranceLevel-${key}`),
-    tone: level === 0 ? "ok" : level >= 3 ? "danger" : "warn",
-  };
-}
-
 export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary: AttrColumn } {
   const attributes = system?.attributes ?? ({} as GurpsSystem["attributes"]);
 
@@ -329,7 +313,6 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,
-    encumbrance: encumbranceOf(system, localize),
     attrs: attrColumns(system),
     melee: meleeRows(system),
     ranged: rangedRows(system),

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { HudView, Tone } from "@/gurps/hud-view";
+  import type { HudView } from "@/gurps/hud-view";
   import { HUD_MANEUVERS } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
   import AttrsPanel from "./AttrsPanel.svelte";
@@ -31,12 +31,6 @@
     onselect: (id: string) => void;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
-
-  const ENC_TONE: Record<Tone, string> = {
-    ok: "text-hud-ok",
-    warn: "text-hud-accent",
-    danger: "text-hud-hp",
-  };
 
   const maneuverTitle = $derived(
     maneuverEnabled
@@ -143,17 +137,6 @@
   <div class={STAT}>
     <span class={STAT_LABEL}>Move</span>
     <span class="font-hud-mono text-[12px]/none font-bold text-hud-ink">{view.move}</span>
-  </div>
-
-  <div class={STAT} title="Encumbrance level">
-    <span class={STAT_LABEL}>Enc</span>
-    <span
-      class="font-hud-mono text-[11px]/none font-bold whitespace-nowrap {ENC_TONE[
-        view.encumbrance.tone
-      ]}"
-    >
-      {view.encumbrance.label}
-    </span>
   </div>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
