@@ -166,6 +166,9 @@ body.gurps-hud-active #ui-left {
     height: auto;
     line-height: inherit;
     margin: 0;
+    /* Foundry sets min-height: var(--button-size); left in place it makes every weapon row a button tall. */
+    min-height: 0;
+    min-width: 0;
     padding: 0;
     text-align: inherit;
     width: auto;
