@@ -46,14 +46,14 @@
    */
 
   /*
-   * Popovers sit 16px above their trigger: the trigger's top is 10px inside the strip (1px border,
-   * 9px padding), so this puts each panel 6px clear of the strip's top edge.
+   * Popovers sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
+   * 3px padding), so this puts each panel 6px clear of the strip's top edge.
    */
   const POPOVER =
-    "absolute bottom-[calc(100%+16px)] z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover";
+    "absolute bottom-[calc(100%+10px)] z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover";
 </script>
 
-<div class="flex items-center gap-[6px] px-[12px] pt-[9px] pb-[8px]">
+<div class="flex items-center gap-[4px] p-[3px]">
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="relative"
