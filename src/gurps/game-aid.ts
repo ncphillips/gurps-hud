@@ -48,6 +48,15 @@ export function executeOtf(otf: string, actor: GurpsActorLike | null, event?: Ev
   void api.executeOTF(otf, false, event ?? null, actor);
 }
 
+/**
+ * Postures are status effects in the Game Aid, and `replacePosture` swaps whichever is active for
+ * the new one -- or, given "standing", clears it -- so the token icon and move penalty follow.
+ */
+export async function setPosture(actor: GurpsActorLike | null, id: string): Promise<void> {
+  if (!actor?.replacePosture) return;
+  await actor.replacePosture(id);
+}
+
 export function openSheet(actor: GurpsActorLike | null): void {
   actor?.sheet?.render(true);
 }

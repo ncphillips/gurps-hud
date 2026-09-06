@@ -8,10 +8,18 @@
     view,
     onpool,
     onopensheet,
+    postureOpen,
+    onposture,
+    onopen,
+    onclose,
   }: {
     view: HudView;
     onpool: (pool: Pool, value: number) => void;
     onopensheet: () => void;
+    postureOpen: boolean;
+    onposture: (id: string) => void;
+    onopen: () => void;
+    onclose: () => void;
   } = $props();
 
   const TONE_TEXT: Record<Tone, string> = {
@@ -27,7 +35,7 @@
 </script>
 
 <div
-  class="flex w-[143px] flex-none flex-col overflow-hidden rounded-l-hud border-r border-white/[.08] bg-hud-deep"
+  class="flex w-[143px] flex-none flex-col rounded-l-hud border-r border-white/[.08] bg-hud-deep"
 >
   <div
     class="truncate px-[7px] py-[2px] text-center font-hud text-[12.5px]/[1.25] font-semibold text-hud-ink"
@@ -49,13 +57,47 @@
         class="absolute inset-0 bg-[repeating-linear-gradient(135deg,#2a2c33_0_6px,#23252b_6px_12px)]"
       ></div>
     {/if}
-    <span
-      class="absolute top-[4px] left-[5px] rounded-hud-xs bg-hud-deep/80 px-[5px] py-px font-hud-mono text-[9px] font-semibold uppercase {TONE_TEXT[
-        view.posture.tone
-      ]}"
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="absolute top-[4px] left-[5px]"
+      data-hud-trigger="posture"
+      onmouseenter={onopen}
+      onmouseleave={onclose}
+      ondblclick={(event) => event.stopPropagation()}
     >
-      {view.posture.label}
-    </span>
+      <span
+        class="flex items-center gap-[5px] rounded-hud-xs border border-transparent bg-hud-deep/80 px-[5px] py-px font-hud-mono text-[9px] font-semibold uppercase transition-colors duration-75 hover:border-white/[.18] {TONE_TEXT[
+          view.posture.tone
+        ]}"
+        title="Posture -- hover to change"
+      >
+        {view.posture.label}
+        <span class="text-[8px] text-hud-ink/45">▴</span>
+      </span>
+
+      {#if postureOpen}
+        <!--
+          The badge sits 24px inside the strip (name row, border, offset), so 30px lifts the menu
+          6px clear of the strip's top edge like the top bar's panels.
+        -->
+        <div
+          class="absolute bottom-[calc(100%+30px)] left-0 z-20 flex w-[124px] flex-col gap-px rounded-hud-lg border border-white/[.15] bg-hud-popover p-[4px] shadow-hud-popover"
+        >
+          {#each view.postures as option (option.id)}
+            {@const isSelected = option.id === view.posture.id}
+            <button
+              type="button"
+              class="flex cursor-pointer items-center justify-between rounded-hud-sm px-[7px] py-[3px] text-left font-hud text-[12px]/[1.2] font-semibold transition-colors duration-75 {isSelected
+                ? 'bg-hud-accent text-hud-on-accent'
+                : `bg-white/[.045] hover:bg-white/[.09] ${TONE_TEXT[option.tone]}`}"
+              onclick={() => onposture(option.id)}
+            >
+              {option.label}
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
     <span
       class="absolute top-[4px] right-[5px] flex items-baseline gap-[4px] rounded-hud-xs bg-hud-deep/80 px-[5px] py-px"
       title="Current Move"

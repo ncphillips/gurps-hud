@@ -4,8 +4,7 @@
   import type { HudManeuver } from "@/gurps/maneuvers";
   import AttrsPanel from "./AttrsPanel.svelte";
   import SkillsPanel from "./SkillsPanel.svelte";
-
-  export type Panel = "attrs" | "skills" | "maneuver";
+  import type { Panel } from "./panels";
 
   /**
    * One row across the top of the strip: attributes, skills, Dodge and the maneuver. Every popover

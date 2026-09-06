@@ -10,6 +10,7 @@
     maneuverLabel,
     openSheet,
     setManeuver,
+    setPosture,
     updatePool,
   } from "@/gurps/game-aid";
   import { buildHudView } from "@/gurps/hud-view";
@@ -18,7 +19,7 @@
   import MacroBar from "./MacroBar.svelte";
   import PortraitBlock from "./PortraitBlock.svelte";
   import TopBar from "./TopBar.svelte";
-  import type { Panel } from "./TopBar.svelte";
+  import type { Panel } from "./panels";
   import WeaponTables from "./WeaponTables.svelte";
 
   let actor = $state<GurpsActorLike | null>(currentActor());
@@ -102,6 +103,11 @@
     openPanel = null;
     void setManeuver(actor, id);
   }
+
+  function selectPosture(id: string): void {
+    openPanel = null;
+    void setPosture(actor, id);
+  }
 </script>
 
 {#if view}
@@ -112,6 +118,10 @@
       {view}
       onpool={(pool, value) => void updatePool(actor, pool, value)}
       onopensheet={() => openSheet(actor)}
+      postureOpen={openPanel === "posture"}
+      onposture={selectPosture}
+      onopen={() => open("posture")}
+      onclose={close}
     />
 
     <div class="flex min-h-0 min-w-0 flex-col">

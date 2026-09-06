@@ -108,6 +108,8 @@ export interface GurpsActorLike {
   statuses?: Iterable<string>;
   /** Foundry's `Document#update`; optional so a bare fixture can stand in for an actor. */
   update?: (changes: Record<string, unknown>) => Promise<unknown>;
+  /** The Game Aid's posture setter, taking one of its posture status ids. */
+  replacePosture?: (id: string) => Promise<unknown>;
   /** Foundry's `Document#sheet`; optional for the same reason. */
   sheet?: { render(force?: boolean): unknown } | null;
 }

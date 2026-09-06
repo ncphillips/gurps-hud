@@ -84,7 +84,8 @@ export interface ConditionVital {
 export interface HudView {
   name: string;
   img: string | null;
-  posture: { label: string; tone: Tone };
+  posture: PostureOption;
+  postures: PostureOption[];
   hp: PoolVital;
   fp: PoolVital;
   shock: number;
@@ -117,21 +118,30 @@ export function poolTone(value: number, max: number): Tone {
   return "ok";
 }
 
-const POSTURES: Record<string, { key: string; tone: Tone }> = {
-  standing: { key: "GURPS.status.Standing", tone: "ok" },
-  crouch: { key: "GURPS.status.Crouch", tone: "warn" },
-  kneel: { key: "GURPS.status.Kneel", tone: "warn" },
-  sit: { key: "GURPS.status.Sit", tone: "warn" },
-  crawl: { key: "GURPS.status.Crawling", tone: "danger" },
-  prone: { key: "GURPS.status.Prone", tone: "danger" },
-};
+export interface PostureOption {
+  /** The Game Aid's status id, which is also what `replacePosture` takes. */
+  id: string;
+  label: string;
+  tone: Tone;
+}
 
-export function postureBadge(
-  posture: string | undefined,
-  localize: Localize,
-): { label: string; tone: Tone } {
-  const entry = POSTURES[posture ?? "standing"] ?? POSTURES.standing;
-  return { label: localize(entry.key), tone: entry.tone };
+/** In the Game Aid's own order; the ids double as its status-effect ids. */
+const POSTURES: Array<{ id: string; key: string; tone: Tone }> = [
+  { id: "standing", key: "GURPS.status.Standing", tone: "ok" },
+  { id: "crouch", key: "GURPS.status.Crouch", tone: "warn" },
+  { id: "kneel", key: "GURPS.status.Kneel", tone: "warn" },
+  { id: "sit", key: "GURPS.status.Sit", tone: "warn" },
+  { id: "crawl", key: "GURPS.status.Crawling", tone: "danger" },
+  { id: "prone", key: "GURPS.status.Prone", tone: "danger" },
+];
+
+export function postureOptions(localize: Localize): PostureOption[] {
+  return POSTURES.map(({ id, key, tone }) => ({ id, label: localize(key), tone }));
+}
+
+export function postureBadge(posture: string | undefined, localize: Localize): PostureOption {
+  const entry = POSTURES.find((candidate) => candidate.id === posture) ?? POSTURES[0];
+  return { id: entry.id, label: localize(entry.key), tone: entry.tone };
 }
 
 /**
@@ -333,6 +343,7 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     name: actor.name,
     img: actor.img ?? null,
     posture: postureBadge(conditions.posture, localize),
+    postures: postureOptions(localize),
     hp: poolVital(system.HP),
     fp: poolVital(system.FP),
     shock: shockPenalty(actor.statuses),

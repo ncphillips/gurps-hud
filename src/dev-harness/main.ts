@@ -16,6 +16,11 @@ import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 
 const LABELS: Record<string, string> = {
   "GURPS.status.Standing": "Standing",
+  "GURPS.status.Crouch": "Crouching",
+  "GURPS.status.Kneel": "Kneeling",
+  "GURPS.status.Sit": "Sitting",
+  "GURPS.status.Crawling": "Crawling",
+  "GURPS.status.Prone": "Prone",
   "GURPS.maneuverAllOutAttackDetermined": "All-out Attack (Determined)",
 };
 
@@ -41,6 +46,10 @@ const actor = {
   name: "Brent Mitton",
   img: null,
   sheet: { render: () => console.log("harness: open character sheet") },
+  async replacePosture(id: string) {
+    actor.system.conditions.posture = id;
+    for (const hook of hooks.get("updateActor") ?? []) hook();
+  },
   statuses: [] as string[],
   system: {
     attributes: {

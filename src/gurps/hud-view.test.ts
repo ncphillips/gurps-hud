@@ -8,6 +8,7 @@ import {
   meleeRows,
   poolTone,
   postureBadge,
+  postureOptions,
   rangedRows,
   shockPenalty,
   skillRows,
@@ -71,6 +72,7 @@ describe("poolTone", () => {
 describe("postureBadge", () => {
   it("reads STANDING in the ok tone when upright", () => {
     expect(postureBadge("standing", localize)).toEqual({
+      id: "standing",
       label: "[GURPS.status.Standing]",
       tone: "ok",
     });
@@ -380,5 +382,28 @@ describe("skillRows", () => {
   test("a skill with no name", () => {
     const skills = { "00000": { name: "", level: 10 } };
     expect(skillRows(system({ skills }))).toEqual([]);
+  });
+});
+
+describe("postureOptions", () => {
+  it("lists every posture the Game Aid tracks, standing first", () => {
+    expect(postureOptions(localize).map((option) => option.id)).toEqual([
+      "standing",
+      "crouch",
+      "kneel",
+      "sit",
+      "crawl",
+      "prone",
+    ]);
+  });
+
+  it("labels each option with the Game Aid's own status name", () => {
+    expect(postureOptions(localize)[5].label).toBe("[GURPS.status.Prone]");
+  });
+});
+
+describe("postureBadge", () => {
+  it("carries the posture id so the badge can mark the current option", () => {
+    expect(postureBadge("kneel", localize).id).toBe("kneel");
   });
 });
