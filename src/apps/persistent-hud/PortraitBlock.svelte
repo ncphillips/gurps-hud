@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { HudView, Tone } from "@/gurps/hud-view";
+  import VitalIcon from "./VitalIcon.svelte";
 
   let { view }: { view: HudView } = $props();
 
@@ -57,32 +58,31 @@
 
   <div class="grid grid-cols-2 gap-[3px] px-[5px] pt-[4px] pb-[5px]">
     <div class="flex items-center gap-[4px]" title="Hit Points">
-      <span
-        class="h-[9px] w-[9px] flex-none bg-hud-hp [clip-path:polygon(50%_0,100%_50%,50%_100%,0_50%)]"
-      ></span>
+      <VitalIcon kind="hp" class="text-hud-hp" />
       <span class="{VITAL_BOX} {POOL_TEXT[view.hp.tone]}">
         {view.hp.value}<span class="text-[9.5px] text-hud-ink/45">/{view.hp.max}</span>
       </span>
     </div>
 
     <div class="flex items-center gap-[4px]" title="Fatigue Points">
-      <span class="h-[9px] w-[9px] flex-none rounded-full bg-hud-fp"></span>
+      <VitalIcon kind="fp" class="text-hud-fp" />
       <span class="{VITAL_BOX} {POOL_TEXT[view.fp.tone]}">
         {view.fp.value}<span class="text-[9.5px] text-hud-ink/45">/{view.fp.max}</span>
       </span>
     </div>
 
     <div class="flex items-center gap-[4px]" title="Shock penalty to DX and IQ">
-      <span class="h-[9px] w-[9px] flex-none bg-hud-accent"></span>
+      <VitalIcon kind="shock" class="text-hud-accent" />
       <span class="{VITAL_BOX} {view.shock < 0 ? 'text-hud-accent' : 'text-hud-ink/72'}">
         {view.shock}
       </span>
     </div>
 
     <div class="flex items-center gap-[4px]" title={view.condition.title}>
-      <span
-        class="h-[9px] w-[9px] flex-none bg-hud-ink/50 [clip-path:polygon(50%_0,100%_100%,0_100%)]"
-      ></span>
+      <VitalIcon
+        kind="condition"
+        class={idle ? "text-hud-ink/40" : TONE_TEXT[view.condition.tone]}
+      />
       <span
         class="flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono font-bold {idle
           ? 'text-[12px] text-hud-ink/28'
