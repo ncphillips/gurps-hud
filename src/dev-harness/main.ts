@@ -15,7 +15,9 @@
 import "@/styles/gurps-hud.css";
 import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
+import { foundryI18n } from "@/i18n/stub";
 
+/** Keys the GURPS system owns; the HUD's own come from `lang/en.json` through the stub. */
 const LABELS: Record<string, string> = {
   "GURPS.status.Standing": "Standing",
   "GURPS.status.Crouch": "Crouching",
@@ -254,7 +256,7 @@ Object.assign(globalThis, {
   game: {
     // A maneuver on the actor implies it is in the active combat, which is what enables the pill.
     combats: { active: maneuver ? { combatants: [{ actor }] } : null },
-    i18n: { localize: (key: string) => LABELS[key] ?? key },
+    i18n: foundryI18n(LABELS),
     user: {
       // Foundry's `UserTargets` is a Set of tokens; the HUD only ever asks it for the first one.
       targets: { first: () => (harnessParams.has("target") ? { actor: goblin } : undefined) },

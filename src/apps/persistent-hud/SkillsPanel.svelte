@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SkillRow } from "@/gurps/hud-view";
+  import { t } from "@/i18n";
 
   /**
    * Every skill on the actor, two to a row, name left and level right. The whole row is the roll
@@ -29,7 +30,7 @@
     {#if skill.level.otf}
       <button
         type="button"
-        title="Roll against {skill.name}"
+        title={t("skills.roll", { name: skill.name })}
         class="{ROW} group cursor-pointer transition-colors duration-75 hover:bg-hud-accent"
         onclick={(event) => onroll(skill.level.otf!, event)}
       >
@@ -46,7 +47,7 @@
     {/if}
   {:else}
     <div class="col-span-full px-[6px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
-      No skills on this actor.
+      {t("skills.empty")}
     </div>
   {/each}
 </div>

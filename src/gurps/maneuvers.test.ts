@@ -1,9 +1,9 @@
 import { describe, expect, it, test } from "vitest";
-import { HUD_MANEUVER_GROUPS, maneuverById } from "./maneuvers";
+import { maneuverGroups, maneuverById } from "./maneuvers";
 
-describe("HUD_MANEUVER_GROUPS", () => {
+describe("maneuverGroups", () => {
   it("opens with Attack, the default maneuver", () => {
-    expect(HUD_MANEUVER_GROUPS[0].maneuvers[0]).toEqual({
+    expect(maneuverGroups()[0].maneuvers[0]).toEqual({
       id: "attack",
       name: "Attack",
       hint: "1 action · Move ≤ 1 hex",
@@ -11,12 +11,12 @@ describe("HUD_MANEUVER_GROUPS", () => {
   });
 
   it("heads the two groups that need one after the maneuver they narrow", () => {
-    const headings = HUD_MANEUVER_GROUPS.map((group) => group.heading);
+    const headings = maneuverGroups().map((group) => group.heading);
     expect(headings).toEqual([null, "All-Out Attack", "All-Out Defence"]);
   });
 
   it("uses the Game Aid's own maneuver ids", () => {
-    const ids = HUD_MANEUVER_GROUPS.flatMap((group) => group.maneuvers.map((m) => m.id));
+    const ids = maneuverGroups().flatMap((group) => group.maneuvers.map((m) => m.id));
     expect(ids).toEqual([
       "attack",
       "move_and_attack",
@@ -42,7 +42,7 @@ describe("HUD_MANEUVER_GROUPS", () => {
   });
 
   it("labels a tile under a heading with the qualifier alone", () => {
-    const allOutAttack = HUD_MANEUVER_GROUPS.find((g) => g.heading === "All-Out Attack");
+    const allOutAttack = maneuverGroups().find((g) => g.heading === "All-Out Attack");
     expect(allOutAttack?.maneuvers.map((m) => m.name)).toEqual([
       "Determined",
       "Double",
@@ -58,7 +58,7 @@ describe("HUD_MANEUVER_GROUPS", () => {
    * hole beside its last one and push the next heading half a row out of alignment.
    */
   it("fills whole rows, so every group holds an even number of tiles", () => {
-    const odd = HUD_MANEUVER_GROUPS.filter((group) => group.maneuvers.length % 2 !== 0);
+    const odd = maneuverGroups().filter((group) => group.maneuvers.length % 2 !== 0);
     expect(odd).toEqual([]);
   });
 });

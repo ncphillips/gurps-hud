@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MacroPage } from "@/gurps/game-aid";
+  import { t } from "@/i18n";
   import type { MacroDrag } from "./macro-drag";
   import MacroSlotButton from "./MacroSlotButton.svelte";
   import { tick } from "svelte";
@@ -60,9 +61,9 @@
   <div
     class="mb-[5px] flex items-baseline justify-between gap-[10px] px-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/40"
   >
-    <span>ALL MACROS</span>
+    <span>{t("macros.library.label")}</span>
     <span class="font-hud text-[9.5px] font-medium tracking-normal normal-case text-hud-ink/30">
-      Drag to reorder or move between pages
+      {t("macros.library.hint")}
     </span>
   </div>
 
@@ -71,7 +72,7 @@
       <div class="flex items-center gap-[6px]">
         <button
           type="button"
-          title="Switch to page {entry.page}"
+          title={t("macros.library.switchPage", { page: entry.page })}
           aria-current={entry.page === page ? "true" : undefined}
           class={[
             "h-[22px] w-[22px] flex-none cursor-pointer rounded-hud-sm border text-center font-hud-mono text-[11px]/[20px] font-bold transition-colors duration-75 hover:border-hud-accent hover:text-hud-ink",

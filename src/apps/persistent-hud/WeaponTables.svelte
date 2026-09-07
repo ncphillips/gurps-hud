@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { HudView } from "@/gurps/hud-view";
+  import { t } from "@/i18n";
   import RollValue from "./RollValue.svelte";
 
   let {
@@ -36,16 +37,16 @@
 >
   {#if view.melee.length > 0}
     <div class={HEADER}>
-      <span class="flex-1">MELEE</span>
-      <span class="w-[38px] text-center">REACH</span>
-      <span class="w-[30px] text-center">LVL</span>
-      <span class="w-[62px] px-[4px]">DAMAGE</span>
-      <span class="w-[30px] text-center">BLOCK</span>
-      <span class="w-[30px] text-center">PARRY</span>
+      <span class="flex-1">{t("weapons.melee")}</span>
+      <span class="w-[38px] text-center">{t("weapons.reach")}</span>
+      <span class="w-[30px] text-center">{t("weapons.level")}</span>
+      <span class="w-[62px] px-[4px]">{t("weapons.damage")}</span>
+      <span class="w-[30px] text-center">{t("weapons.block")}</span>
+      <span class="w-[30px] text-center">{t("weapons.parry")}</span>
     </div>
 
     {#each view.melee as row (row.key)}
-      <div class={rowClass(row.equipped)} title={row.equipped ? "Readied" : undefined}>
+      <div class={rowClass(row.equipped)} title={row.equipped ? t("weapons.readied") : undefined}>
         <span class="flex-1 truncate font-hud text-[12.5px]/[1.35] font-semibold text-hud-ink"
           >{row.name}</span
         >
@@ -53,28 +54,28 @@
         <RollValue
           cell={row.level}
           variant="accent"
-          title="Roll against this level"
+          title={t("weapons.rollLevel")}
           class="w-[30px] text-center font-hud-mono text-[13px]/[1.35] font-bold"
           {onroll}
         />
         <RollValue
           cell={row.damage}
           variant="damage"
-          title="Roll damage"
+          title={t("weapons.rollDamage")}
           class="w-[62px] px-[4px] font-hud-mono text-[10.5px]/[1.35] font-medium"
           {onroll}
         />
         <RollValue
           cell={row.block}
           variant="defence"
-          title="Roll this defence"
+          title={t("weapons.rollDefence")}
           class="w-[30px] text-center font-hud-mono text-[13px]/[1.35] font-bold"
           {onroll}
         />
         <RollValue
           cell={row.parry}
           variant="defence"
-          title="Roll this defence"
+          title={t("weapons.rollDefence")}
           class="w-[30px] text-center font-hud-mono text-[13px]/[1.35] font-bold"
           {onroll}
         />
@@ -84,16 +85,16 @@
 
   {#if view.ranged.length > 0}
     <div class="{HEADER} pt-[5px]">
-      <span class="flex-1">RANGED</span>
-      <span class="w-[38px] text-center">ACC</span>
-      <span class="w-[30px] text-center">LVL</span>
-      <span class="w-[62px] px-[4px]">DAMAGE</span>
-      <span class="w-[30px] text-center">RANGE</span>
-      <span class="w-[30px] text-center">ROF</span>
+      <span class="flex-1">{t("weapons.ranged")}</span>
+      <span class="w-[38px] text-center">{t("weapons.acc")}</span>
+      <span class="w-[30px] text-center">{t("weapons.level")}</span>
+      <span class="w-[62px] px-[4px]">{t("weapons.damage")}</span>
+      <span class="w-[30px] text-center">{t("weapons.range")}</span>
+      <span class="w-[30px] text-center">{t("weapons.rof")}</span>
     </div>
 
     {#each view.ranged as row (row.key)}
-      <div class={rowClass(row.equipped)} title={row.equipped ? "Readied" : undefined}>
+      <div class={rowClass(row.equipped)} title={row.equipped ? t("weapons.readied") : undefined}>
         <span class="flex-1 truncate font-hud text-[12.5px]/[1.35] font-semibold text-hud-ink"
           >{row.name}</span
         >
@@ -101,14 +102,14 @@
         <RollValue
           cell={row.level}
           variant="accent"
-          title="Roll against this level"
+          title={t("weapons.rollLevel")}
           class="w-[30px] text-center font-hud-mono text-[13px]/[1.35] font-bold"
           {onroll}
         />
         <RollValue
           cell={row.damage}
           variant="damage"
-          title="Roll damage"
+          title={t("weapons.rollDamage")}
           class="w-[62px] px-[4px] font-hud-mono text-[10.5px]/[1.35] font-medium"
           {onroll}
         />
@@ -120,7 +121,7 @@
 
   {#if view.melee.length === 0 && view.ranged.length === 0}
     <div class="px-[7px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
-      No attacks on this actor.
+      {t("weapons.empty")}
     </div>
   {/if}
 </div>

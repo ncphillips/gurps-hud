@@ -1,3 +1,5 @@
+import { t } from "@/i18n";
+
 /**
  * The maneuvers the HUD offers, as the design lays them out: one two-column grid filled row-wise,
  * broken into groups. The Game Aid knows more than these -- the On Target additions -- but the HUD
@@ -9,6 +11,9 @@
  * headed groups sit at the foot of the grid so the ten plain maneuvers -- the common case -- stay
  * unbroken at the top. The unqualified parents are deliberately absent: GURPS makes you say which
  * kind you are performing.
+ *
+ * Only the ids are held here; names, hints and headings are looked up per call, because the module
+ * is imported before Foundry has settled on a language.
  */
 
 export interface HudManeuver {
@@ -25,43 +30,44 @@ export interface HudManeuverGroup {
   maneuvers: readonly HudManeuver[];
 }
 
-export const HUD_MANEUVER_GROUPS: readonly HudManeuverGroup[] = [
+const GROUPS = [
   {
     heading: null,
-    maneuvers: [
-      { id: "attack", name: "Attack", hint: "1 action · Move ≤ 1 hex" },
-      { id: "move_and_attack", name: "Move and Attack", hint: "−4 to hit, skill 9 max" },
-      { id: "move", name: "Move", hint: "full Move, no attack" },
-      { id: "change_posture", name: "Change Posture", hint: "stand, kneel, prone, sit" },
-      { id: "aim", name: "Aim", hint: "+Acc on next ranged attack" },
-      { id: "evaluate", name: "Evaluate", hint: "+1 per turn, max +3" },
-      { id: "feint", name: "Feint", hint: "Quick Contest of skill" },
-      { id: "ready", name: "Ready", hint: "draw or ready a weapon" },
-      { id: "concentrate", name: "Concentrate", hint: "one mental task" },
-      { id: "wait", name: "Wait", hint: "act on a trigger" },
+    ids: [
+      "attack",
+      "move_and_attack",
+      "move",
+      "change_posture",
+      "aim",
+      "evaluate",
+      "feint",
+      "ready",
+      "concentrate",
+      "wait",
     ],
   },
   {
-    heading: "All-Out Attack",
-    maneuvers: [
-      { id: "aoa_determined", name: "Determined", hint: "+4 to hit · no defence" },
-      { id: "aoa_double", name: "Double", hint: "two attacks · no defence" },
-      { id: "aoa_strong", name: "Strong", hint: "+2 damage, or +1 per die" },
-      { id: "aoa_feint", name: "Feint", hint: "feint, then attack" },
-      { id: "aoa_ranged", name: "Ranged Determined", hint: "+1 to hit · no Move" },
-      { id: "aoa_suppress", name: "Suppressing Fire", hint: "RoF 5+ · spray an area" },
-    ],
+    heading: "allOutAttack",
+    ids: ["aoa_determined", "aoa_double", "aoa_strong", "aoa_feint", "aoa_ranged", "aoa_suppress"],
   },
   {
-    heading: "All-Out Defence",
-    maneuvers: [
-      { id: "aod_dodge", name: "Dodge", hint: "+2 to Dodge" },
-      { id: "aod_parry", name: "Parry", hint: "+2 to Parry" },
-      { id: "aod_block", name: "Block", hint: "+2 to Block" },
-      { id: "aod_double", name: "Double", hint: "two defences against one attack" },
-    ],
+    heading: "allOutDefence",
+    ids: ["aod_dodge", "aod_parry", "aod_block", "aod_double"],
   },
-];
+] as const;
+
+type ManeuverId = (typeof GROUPS)[number]["ids"][number];
+
+function maneuver(id: ManeuverId): HudManeuver {
+  return { id, name: t(`maneuvers.${id}.name`), hint: t(`maneuvers.${id}.hint`) };
+}
+
+export function maneuverGroups(): readonly HudManeuverGroup[] {
+  return GROUPS.map((group) => ({
+    heading: group.heading ? t(`maneuvers.groups.${group.heading}`) : null,
+    maneuvers: group.ids.map(maneuver),
+  }));
+}
 
 /**
  * Returns nothing for a maneuver this menu doesn't list. An actor can legitimately be performing one
@@ -76,11 +82,14 @@ export const HUD_MANEUVER_GROUPS: readonly HudManeuverGroup[] = [
 export function maneuverById(id: string | null | undefined): HudManeuver | undefined {
   if (!id) return undefined;
 
-  for (const group of HUD_MANEUVER_GROUPS) {
-    const maneuver = group.maneuvers.find((m) => m.id === id);
-    if (!maneuver) continue;
+  for (const group of GROUPS) {
+    if (!(group.ids as readonly string[]).includes(id)) continue;
 
-    return group.heading ? { ...maneuver, name: `${group.heading} (${maneuver.name})` } : maneuver;
+    const found = maneuver(id as ManeuverId);
+    if (!group.heading) return found;
+
+    const heading = t(`maneuvers.groups.${group.heading}`);
+    return { ...found, name: t("maneuvers.qualified", { heading, name: found.name }) };
   }
   return undefined;
 }

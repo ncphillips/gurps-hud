@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MacroPage } from "@/gurps/game-aid";
+  import { t } from "@/i18n";
   import Popover from "@/ui/Popover.svelte";
   import MacroLibrary from "./MacroLibrary.svelte";
   import MacroSlotButton from "./MacroSlotButton.svelte";
@@ -103,9 +104,9 @@
 >
   <span
     class="font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/32"
-    title="Slots 1-0 map to number-key hotkeys. Drag a macro to reorder it, right-click (or press Delete) to remove it."
+    title={t("macros.hint")}
   >
-    MACROS
+    {t("macros.label")}
   </span>
 
   <div bind:this={bar} data-hud-macro-bar class="flex gap-[3px]">
@@ -123,7 +124,12 @@
   </div>
 
   <div class="flex items-center gap-[2px]">
-    <button type="button" class={CONTROL} title="Previous page" onclick={() => cycle(-1)}>
+    <button
+      type="button"
+      class={CONTROL}
+      title={t("macros.previousPage")}
+      onclick={() => cycle(-1)}
+    >
       <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
         <path d="M8 1.5 3.5 6 8 10.5V1.5Z" />
       </svg>
@@ -132,12 +138,12 @@
     <span
       data-hud-macro-page
       class="w-[13px] text-center font-hud-mono text-[11px] font-bold text-hud-ink/60"
-      title="Hotbar page {page} of {pages.length}"
+      title={t("macros.page", { page, total: pages.length })}
     >
       {page}
     </span>
 
-    <button type="button" class={CONTROL} title="Next page" onclick={() => cycle(1)}>
+    <button type="button" class={CONTROL} title={t("macros.nextPage")} onclick={() => cycle(1)}>
       <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
         <path d="M4 1.5 8.5 6 4 10.5V1.5Z" />
       </svg>
@@ -147,7 +153,7 @@
   <button
     type="button"
     class={[CONTROL, expanded ? "border-white/[.18] bg-white/[.08] text-hud-accent" : ""]}
-    title={expanded ? "Hide all macros" : "Show all macros"}
+    title={expanded ? t("macros.hide") : t("macros.show")}
     aria-expanded={expanded}
     onclick={() => (expanded = !expanded)}
   >

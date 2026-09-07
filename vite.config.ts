@@ -55,6 +55,14 @@ export default defineConfig(({ mode }) => ({
           path.resolve(dist, "module.json"),
         );
 
+        // Foundry loads the catalogues itself, from the paths `module.json` declares.
+        const langSrc = path.resolve(import.meta.dirname, "src/lang");
+        const langOut = path.resolve(dist, "lang");
+        mkdirSync(langOut, { recursive: true });
+        for (const file of readdirSync(langSrc).filter((name) => name.endsWith(".json"))) {
+          copyFileSync(path.resolve(langSrc, file), path.resolve(langOut, file));
+        }
+
         // The stylesheet references the fonts by their served module path rather than relatively,
         // because Vite's library build base64-inlines any asset a stylesheet resolves.
         const fontsSrc = path.resolve(import.meta.dirname, "src/styles/fonts");

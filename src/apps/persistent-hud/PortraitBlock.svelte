@@ -3,6 +3,7 @@
   import type { ActorChoice } from "@/gurps/actor-choices";
   import type { Pool } from "@/gurps/game-aid";
   import type { GurpsActorLike } from "@/gurps/system-types";
+  import { t } from "@/i18n";
   import Popover from "@/ui/Popover.svelte";
   import Readout from "@/ui/Readout.svelte";
   import PoolField from "./PoolField.svelte";
@@ -61,9 +62,7 @@
       class="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center rounded-hud-xs border border-transparent transition-colors duration-75 hover:border-white/[.18] hover:bg-white/[.08] {locked
         ? 'text-hud-accent'
         : 'text-hud-ink/35 hover:text-hud-ink/70'}"
-      title={locked
-        ? "Locked to this character -- click to follow token selection again"
-        : "Click to lock the HUD to this character"}
+      title={locked ? t("portrait.lock.locked") : t("portrait.lock.unlocked")}
       aria-pressed={locked}
       onclick={ontogglelock}
     >
@@ -88,7 +87,7 @@
         class="flex items-center justify-center gap-[4px] rounded-hud-xs border border-transparent px-[3px] font-hud text-[12.5px]/[1.25] font-semibold text-hud-ink transition-colors duration-75 {switchable
           ? 'hover:border-white/[.18] hover:bg-white/[.06]'
           : ''}"
-        title={switchable ? `${view.name} -- hover to switch character` : view.name}
+        title={switchable ? t("portrait.switchCharacter", { name: view.name }) : view.name}
       >
         <span class="truncate">{view.name}</span>
         {#if switchable}
@@ -131,7 +130,7 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="relative flex min-h-[96px] flex-1 items-end justify-center"
-    title="Double-click to open the character sheet"
+    title={t("portrait.openSheet")}
     ondblclick={onopensheet}
   >
     {#if view.img}
@@ -153,7 +152,7 @@
         class="flex items-center gap-[5px] rounded-hud-xs border border-transparent bg-hud-deep/80 px-[5px] py-px font-hud-mono text-[9px] font-semibold uppercase transition-colors duration-75 hover:border-white/[.18] {TONE_TEXT[
           view.posture.tone
         ]}"
-        title="Posture -- hover to change"
+        title={t("portrait.posture")}
       >
         {view.posture.label}
         <span class="text-[8px] text-hud-ink/45">▴</span>
@@ -182,9 +181,11 @@
     </div>
     <span
       class="absolute top-[4px] right-[5px] flex items-baseline gap-[4px] rounded-hud-xs bg-hud-deep/80 px-[5px] py-px"
-      title="Current Move"
+      title={t("portrait.move.title")}
     >
-      <span class="font-hud-mono text-[9px] font-semibold uppercase text-hud-ink/55">Move</span>
+      <span class="font-hud-mono text-[9px] font-semibold uppercase text-hud-ink/55">
+        {t("portrait.move.label")}
+      </span>
       <span class="font-hud-mono text-[11px] font-bold text-hud-ink">{view.move}</span>
     </span>
   </div>
@@ -194,7 +195,7 @@
       <VitalIcon kind="hp" class="text-hud-hp" />
       <PoolField
         pool={view.hp}
-        title="Hit Points -- click to edit"
+        title={t("portrait.hp")}
         onchange={(value) => onpool("HP", value)}
       />
     </div>
@@ -203,12 +204,12 @@
       <VitalIcon kind="fp" class="text-hud-fp" />
       <PoolField
         pool={view.fp}
-        title="Fatigue Points -- click to edit"
+        title={t("portrait.fp")}
         onchange={(value) => onpool("FP", value)}
       />
     </div>
 
-    <div class="flex items-center gap-[4px]" title="Shock penalty to DX and IQ">
+    <div class="flex items-center gap-[4px]" title={t("portrait.shock")}>
       <VitalIcon kind="shock" class="text-hud-accent" />
       <Readout class={view.shock < 0 ? "text-hud-accent" : "text-hud-ink/72"}>
         {view.shock}

@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { HudView, TargetView } from "@/gurps/hud-view";
-  import { HUD_MANEUVER_GROUPS } from "@/gurps/maneuvers";
+  import { maneuverGroups } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
+  import { t } from "@/i18n";
   import Popover from "@/ui/Popover.svelte";
   import AttrsPanel from "./AttrsPanel.svelte";
   import SkillsPanel from "./SkillsPanel.svelte";
@@ -45,9 +46,11 @@
     targetView?.hitLocations.find((location) => location.where === target),
   );
   const targetTitle = $derived.by(() => {
-    if (!targetView) return "Target a token to select a hit location";
-    const aimed = `Attacks aimed at ${targetView.name}'s ${target}`;
-    return targetRow && targetRow.penalty !== 0 ? `${aimed}: ${targetRow.penalty} to hit` : aimed;
+    if (!targetView) return t("topBar.target.untargeted");
+    const aimed = { name: targetView.name, location: target };
+    return targetRow && targetRow.penalty !== 0
+      ? t("topBar.target.aimedWithPenalty", { ...aimed, penalty: targetRow.penalty })
+      : t("topBar.target.aimed", aimed);
   });
 
   function penaltyText(penalty: number): string {
@@ -56,9 +59,12 @@
 
   const maneuverTitle = $derived(
     maneuverEnabled
-      ? (maneuver?.hint ?? "Maneuver")
-      : "Maneuvers can only be set for a token in the active combat",
+      ? (maneuver?.hint ?? t("topBar.maneuver.title"))
+      : t("topBar.maneuver.disabled"),
   );
+
+  /** Read once at mount: Foundry has settled its language long before the strip renders. */
+  const groups = maneuverGroups();
 
   /*
    * Every control in the bar shares one chrome: a mono label, an optional value, and for hover
@@ -101,7 +107,7 @@
     onmouseenter={() => onopen("attrs")}
     onmouseleave={onclose}
   >
-    {@render trigger("ATTRS", "Attributes")}
+    {@render trigger(t("topBar.attrs.label"), t("topBar.attrs.title"))}
     {#if openPanel === "attrs"}
       <Popover offset={OFFSET}>
         <AttrsPanel basic={view.attrs.basic} secondary={view.attrs.secondary} {onroll} />
@@ -116,7 +122,7 @@
     onmouseenter={() => onopen("skills")}
     onmouseleave={onclose}
   >
-    {@render trigger("SKILLS", "Skills")}
+    {@render trigger(t("topBar.skills.label"), t("topBar.skills.title"))}
     {#if openPanel === "skills"}
       <Popover offset={OFFSET} class={SKILLS_PANEL}>
         <SkillsPanel skills={view.skills} {onroll} />
@@ -128,11 +134,11 @@
 
   <button
     type="button"
-    title="Roll Dodge"
+    title={t("topBar.dodge.title")}
     class="{TRIGGER} cursor-pointer hover:border-hud-defence hover:bg-hud-defence"
     onclick={(event) => onroll("Dodge", event)}
   >
-    <span class="{LABEL} {LABEL_HOVER}">DODGE</span>
+    <span class="{LABEL} {LABEL_HOVER}">{t("topBar.dodge.label")}</span>
     <span
       class="font-hud-mono text-[13px]/none font-bold text-hud-defence group-hover:text-hud-on-accent"
     >
@@ -151,7 +157,9 @@
       class="{TRIGGER} min-w-[140px] {maneuverEnabled ? TRIGGER_HOVER : ''}"
       title={maneuverTitle}
     >
-      <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'text-hud-ink/32'}">MANEUVER</span>
+      <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'text-hud-ink/32'}">
+        {t("topBar.maneuver.label")}
+      </span>
       <span
         class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap {maneuverEnabled
           ? 'text-hud-ink group-hover:text-hud-on-accent'
@@ -166,7 +174,7 @@
 
     {#if openPanel === "maneuver" && maneuverEnabled}
       <Popover offset={OFFSET} name="maneuver" class="grid w-[464px] grid-cols-2 gap-[2px] p-[5px]">
-        {#each HUD_MANEUVER_GROUPS as group, index (group.heading ?? index)}
+        {#each groups as group, index (group.heading ?? index)}
           {#if group.heading}
             <div
               data-hud-maneuver-heading={group.heading}
@@ -214,7 +222,9 @@
     onmouseleave={onclose}
   >
     <div class="{TRIGGER} {targetView ? TRIGGER_HOVER : ''}" title={targetTitle}>
-      <span class="{LABEL} {targetView ? LABEL_HOVER : 'text-hud-ink/32'}">TARGET</span>
+      <span class="{LABEL} {targetView ? LABEL_HOVER : 'text-hud-ink/32'}">
+        {t("topBar.target.label")}
+      </span>
       <span
         class="font-hud text-[11.5px]/none font-semibold tracking-[.01em] whitespace-nowrap {targetView
           ? 'text-hud-ink group-hover:text-hud-on-accent'
@@ -239,10 +249,10 @@
         <div
           class="flex gap-[6px] px-[7px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/30"
         >
-          <span class="w-[36px]">ROLL</span>
-          <span class="flex-1">LOCATION</span>
-          <span class="w-[28px] text-right">HIT</span>
-          <span class="w-[22px] text-right">DR</span>
+          <span class="w-[36px]">{t("topBar.target.roll")}</span>
+          <span class="flex-1">{t("topBar.target.location")}</span>
+          <span class="w-[28px] text-right">{t("topBar.target.hit")}</span>
+          <span class="w-[22px] text-right">{t("topBar.target.dr")}</span>
         </div>
         {#each targetView.hitLocations as location (location.key)}
           {@const isSelected = location.where === target}
@@ -278,7 +288,7 @@
           </button>
         {:else}
           <div class="px-[7px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
-            {targetView.name} has no hit location table.
+            {t("topBar.target.empty", { name: targetView.name })}
           </div>
         {/each}
       </Popover>

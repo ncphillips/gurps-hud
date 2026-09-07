@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { AttrColumn } from "@/gurps/hud-view";
+  import { t } from "@/i18n";
 
   /**
    * Laid out like the character sheet's attribute boxes: two side-by-side columns, value first in a
@@ -38,7 +39,7 @@
           {#if row.otf}
             <button
               type="button"
-              title="Roll against {row.label}"
+              title={t("attributes.roll", { label: row.label })}
               class="{ROW} cursor-pointer transition-colors duration-75 hover:bg-hud-accent/22"
               onclick={(event) => onroll(row.otf!, event)}
             >

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MacroSlot } from "@/gurps/game-aid";
+  import { t } from "@/i18n";
   import type { MacroDrag } from "./macro-drag";
 
   /**
@@ -142,7 +143,7 @@
       "h-[22px] w-[22px] rounded-hud-sm border border-dashed bg-white/[.04]",
       drag.over === slot.slot ? "border-hud-accent" : "border-white/[.12]",
     ]}
-    title="Slot {slot.hotkey} is empty -- drop a macro here"
+    title={t("macros.emptySlot", { hotkey: slot.hotkey })}
     data-hud-macro-slot={slot.slot}
     ondragover={(event) => event.preventDefault()}
     ondragenter={dragEnter}

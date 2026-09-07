@@ -60,6 +60,11 @@ src/
   a11y-scan.ts             # axe-core -> a list of violation lines, shared by both a11y groups
   a11y-setup.ts            # Vitest browser-mode setup: the real stylesheet and the HUD's ground
   gurps-hud.d.ts           # fvtt-types module augmentation (custom hooks, flags)
+  i18n/
+    index.ts               # `t`, and the key type derived from lang/en.json
+    stub.ts                # a `game.i18n` for the harness and both test runners
+  lang/                    # the catalogues Foundry loads -- see lang/README.md
+    en.json
   gurps/                   # everything that knows about the GURPS system
     system-types.ts        # structural types for the slice of actor.system we read
     game-aid.ts            # the only file that touches the `GURPS` global
@@ -88,6 +93,20 @@ e2e/                       # Playwright specs — drive the dev harness, never a
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
   into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
   Tailwind utility on the same element.
+- No user-facing string is written inline. The HUD's own text lives in `src/lang/en.json` and is read
+  with `t("some.key")` from `@/i18n`, which is Foundry's `game.i18n` with the module id prefixed on.
+  `t` takes only keys the catalogue has, so a typo or a renamed key is a type error rather than a raw
+  key id rendered into the strip. Catalogue keys are flat and prefixed -- `"gurps-hud.weapons.empty"`
+  -- so the definition is greppable from the call site, and because Foundry resolves a dotted key by
+  walking its table, nesting the id and then dotting beneath it would resolve to nothing in a world
+  while still passing every test here. `src/lang/README.md` is the translator-facing version of all
+  this, including which strings are laid out to a fixed width.
+- Anything the *system* names -- posture labels, hit locations, maneuvers outside the HUD's menu --
+  is not ours to translate: look it up through `localize` in `src/gurps/game-aid.ts` so it follows
+  the Game Aid's own languages.
+- Foundry owns the locale, and it is not there outside a world, so `src/i18n/stub.ts` stands in for
+  `game.i18n` in the harness and both Vitest projects. It reads the same `lang/en.json` that ships,
+  which is what makes a key missing from the catalogue fail a test rather than a live world.
 - Keep GURPS knowledge in `src/gurps/`. Components stay presentational: `hud-view.ts` turns the
   actor into a flat view model, and that is what gets unit tested.
 - Accessibility is its own group, named `*.a11y.test.ts` in both runners: a component's scans sit

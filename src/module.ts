@@ -1,5 +1,6 @@
 import "./styles/gurps-hud.css";
 import { log } from "./log";
+import { t } from "./i18n";
 import { PersistentHudApp } from "./apps/persistent-hud/PersistentHudApp";
 
 const { MODIFIER_KEYS } = foundry.helpers.interaction.KeyboardManager;
@@ -12,7 +13,7 @@ Hooks.once("init", () => {
   persistentHud = new PersistentHudApp({});
 
   game.keybindings!.register("gurps-hud", "togglePersistentHud", {
-    name: "GURPS HUD: Toggle the persistent HUD",
+    name: t("keybindings.togglePersistentHud"),
     editable: [{ key: "KeyH", modifiers: [MODIFIER_KEYS.CONTROL, MODIFIER_KEYS.SHIFT] }],
     onDown: () => {
       persistentHud?.toggle();

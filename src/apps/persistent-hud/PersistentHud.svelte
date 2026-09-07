@@ -21,6 +21,7 @@
     targetedActor,
     updatePool,
   } from "@/gurps/game-aid";
+  import { t } from "@/i18n";
   import { actorChoices } from "@/gurps/actor-choices";
   import type { ActorChoice } from "@/gurps/actor-choices";
   import { buildHudView, buildTargetView } from "@/gurps/hud-view";
@@ -152,7 +153,10 @@
 
   function roll(otf: string, event: MouseEvent): void {
     if (isAttackOtf(otf) && targetLocation && targetLocation.penalty !== 0) {
-      addBucketModifier(targetLocation.penalty, `to hit ${targetLocation.where}`);
+      addBucketModifier(
+        targetLocation.penalty,
+        t("rolls.toHit", { location: targetLocation.where }),
+      );
     }
     executeOtf(otf, actor, event);
   }

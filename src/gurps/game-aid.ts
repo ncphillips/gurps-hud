@@ -30,6 +30,12 @@ export function gameAid(): GameAidGlobal | undefined {
   return globalThis.GURPS;
 }
 
+/**
+ * Foundry's own localization, for keys that belong to the *system* -- posture labels, the label of a
+ * maneuver outside the HUD's menu. Those strings ship with the Game Aid and follow whichever
+ * languages it has, so they are looked up rather than duplicated. The HUD's own text goes through
+ * `t` from `@/i18n` instead.
+ */
 export function localize(key: string): string {
   return game.i18n?.localize(key) ?? key;
 }

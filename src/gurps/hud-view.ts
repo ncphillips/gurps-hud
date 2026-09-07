@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 import { attackOtf, skillOtf } from "./otf";
 import type {
   GurpsActorLike,
@@ -134,10 +135,10 @@ export interface PostureOption {
 }
 
 /**
-  * In the Game Aid's own order; the ids double as its status-effect ids.
-  *
-  * @todo Pull directly from the Game Aid instead of duplicating here.
-  */
+ * In the Game Aid's own order; the ids double as its status-effect ids.
+ *
+ * @todo Pull directly from the Game Aid instead of duplicating here.
+ */
 const POSTURES: Array<{ id: string; key: string; tone: Tone }> = [
   { id: "standing", key: "GURPS.status.Standing", tone: "ok" },
   { id: "crouch", key: "GURPS.status.Crouch", tone: "warn" },
@@ -173,8 +174,6 @@ export function shockPenalty(statuses: Iterable<string> | undefined): number {
  * The design's fourth vitals cell. GURPS has no per-roll "wound penalty", so this shows the two
  * states the Game Aid does track: reeling (HP at or below a third) and exhausted (FP likewise),
  * both of which halve Move and Dodge.
- *
- * @todo Translate titles
  */
 export function conditionVital(conditions: {
   reeling?: boolean;
@@ -185,23 +184,23 @@ export function conditionVital(conditions: {
 
   if (reeling && exhausted)
     return {
-      label: "RLNG+TIRED",
+      label: t("condition.reelingAndExhausted.label"),
       tone: "danger",
-      title: "Reeling and Exhausted: Move and Dodge are halved",
+      title: t("condition.reelingAndExhausted.title"),
     };
   if (reeling)
     return {
-      label: "REELING",
+      label: t("condition.reeling.label"),
       tone: "danger",
-      title: "Reeling: HP at or below 1/3, Move and Dodge halved",
+      title: t("condition.reeling.title"),
     };
   if (exhausted)
     return {
-      label: "TIRED",
+      label: t("condition.exhausted.label"),
       tone: "warn",
-      title: "Exhausted: FP at or below 1/3, Move and Dodge halved",
+      title: t("condition.exhausted.title"),
     };
-  return { label: EM_DASH, tone: "ok", title: "Not reeling or exhausted" };
+  return { label: EM_DASH, tone: "ok", title: t("condition.none.title") };
 }
 
 /** Flattens one of the Game Aid's keyed lists, following `contains` children depth-first. */
@@ -335,35 +334,39 @@ export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary
 
   return {
     basic: {
-      header: "BASIC ATTRIBUTES",
+      header: t("attributes.basicHeader"),
       groups: [
         [
-          { label: "Strength (ST)", value: str(attributes.ST?.value), otf: "ST" },
-          { label: "Dexterity (DX)", value: str(attributes.DX?.value), otf: "DX" },
-          { label: "Intelligence (IQ)", value: str(attributes.IQ?.value), otf: "IQ" },
-          { label: "Health (HT)", value: str(attributes.HT?.value), otf: "HT" },
+          { label: t("attributes.st"), value: str(attributes.ST?.value), otf: "ST" },
+          { label: t("attributes.dx"), value: str(attributes.DX?.value), otf: "DX" },
+          { label: t("attributes.iq"), value: str(attributes.IQ?.value), otf: "IQ" },
+          { label: t("attributes.ht"), value: str(attributes.HT?.value), otf: "HT" },
         ],
         [
-          { label: "Basic Thrust", value: str(system.thrust), otf: null },
-          { label: "Basic Swing", value: str(system.swing), otf: null },
-          { label: "Basic Speed", value: str(system.basicspeed?.value), otf: null },
-          { label: "Basic Move", value: str(system.basicmove?.value), otf: null },
+          { label: t("attributes.thrust"), value: str(system.thrust), otf: null },
+          { label: t("attributes.swing"), value: str(system.swing), otf: null },
+          { label: t("attributes.basicSpeed"), value: str(system.basicspeed?.value), otf: null },
+          { label: t("attributes.basicMove"), value: str(system.basicmove?.value), otf: null },
         ],
       ],
     },
     secondary: {
-      header: "SECONDARY",
+      header: t("attributes.secondaryHeader"),
       groups: [
         [
-          { label: "Will", value: str(attributes.WILL?.value), otf: "Will" },
-          { label: "Fright Check", value: str(system.frightcheck), otf: "Fright Check" },
+          { label: t("attributes.will"), value: str(attributes.WILL?.value), otf: "Will" },
+          {
+            label: t("attributes.frightCheck"),
+            value: str(system.frightcheck),
+            otf: "Fright Check",
+          },
         ],
         [
-          { label: "Perception (Per)", value: str(attributes.PER?.value), otf: "Per" },
-          { label: "Vision", value: str(system.vision), otf: "Vision" },
-          { label: "Hearing", value: str(system.hearing), otf: "Hearing" },
-          { label: "Taste/Smell", value: str(system.tastesmell), otf: "Taste Smell" },
-          { label: "Touch", value: str(system.touch), otf: "Touch" },
+          { label: t("attributes.perception"), value: str(attributes.PER?.value), otf: "Per" },
+          { label: t("attributes.vision"), value: str(system.vision), otf: "Vision" },
+          { label: t("attributes.hearing"), value: str(system.hearing), otf: "Hearing" },
+          { label: t("attributes.tasteSmell"), value: str(system.tastesmell), otf: "Taste Smell" },
+          { label: t("attributes.touch"), value: str(system.touch), otf: "Touch" },
         ],
       ],
     },

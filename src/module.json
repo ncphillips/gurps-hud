@@ -15,7 +15,13 @@
   ],
   "esmodules": ["module.js"],
   "styles": ["styles/gurps-hud.css"],
-  "languages": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
   "socket": false,
   "relationships": {
     "systems": [
