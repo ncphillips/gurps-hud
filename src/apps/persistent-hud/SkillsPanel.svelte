@@ -8,11 +8,9 @@
    */
   let {
     skills,
-    class: className = "",
     onroll,
   }: {
     skills: SkillRow[];
-    class?: string;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
 
@@ -21,9 +19,12 @@
   const LEVEL = "flex-none font-hud-mono text-[11.5px]/[1.5] font-bold";
 </script>
 
-<div
-  class="grid max-h-[280px] w-[400px] grid-cols-2 content-start gap-x-[6px] gap-y-0 overflow-y-auto p-[5px] [scrollbar-color:rgb(255_255_255/.18)_transparent] [scrollbar-width:thin] {className}"
->
+<!--
+  Sizing, the height cap and scrolling belong to the panel surface this renders into (see
+  SKILLS_PANEL in TopBar): the mock's 400px is a border-box width, so it has to land on the
+  bordered element, and a scrollbar on an inner box renders square inside the rounded corners.
+-->
+<div class="grid grid-cols-2 content-start gap-x-[6px] gap-y-0 p-[5px]">
   {#each skills as skill (skill.key)}
     {#if skill.level.otf}
       <button

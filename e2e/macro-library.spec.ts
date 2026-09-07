@@ -54,15 +54,24 @@ test.describe("macro library", () => {
   /*
    * The strip is pixel-matched to the mock, and its width is set by whichever row is widest. The
    * footer gained page controls and an expand toggle, so it has to still be narrower than the rows
-   * above it -- an overflowing footer would silently widen the whole HUD.
+   * above it.
+   *
+   * Measured by hiding the footer and looking at what the strip does, because the obvious
+   * `scrollWidth - clientWidth` cannot fail here: the strip is `w-fit`, so a footer too wide for
+   * it widens the whole HUD rather than overflowing anything.
    */
   test("does not widen the strip", async ({ page }) => {
     await openHarness(page);
-    const overflow = await page.locator(FOOTER).evaluate((bar) => {
+    const [withFooter, withoutFooter] = await page.locator(FOOTER).evaluate((bar) => {
       const footer = bar.parentElement!;
-      return footer.scrollWidth - footer.clientWidth;
+      const strip = document.querySelector("#gurps-hud-persistent > div")!;
+      const before = strip.getBoundingClientRect().width;
+      footer.style.display = "none";
+      const after = strip.getBoundingClientRect().width;
+      footer.style.removeProperty("display");
+      return [before, after];
     });
 
-    expect(overflow).toBe(0);
+    expect(withFooter).toBe(withoutFooter);
   });
 });

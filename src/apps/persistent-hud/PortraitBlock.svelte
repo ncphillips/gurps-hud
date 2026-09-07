@@ -3,6 +3,8 @@
   import type { ActorChoice } from "@/gurps/actor-choices";
   import type { Pool } from "@/gurps/game-aid";
   import type { GurpsActorLike } from "@/gurps/system-types";
+  import Popover from "@/ui/Popover.svelte";
+  import Readout from "@/ui/Readout.svelte";
   import PoolField from "./PoolField.svelte";
   import VitalIcon from "./VitalIcon.svelte";
   import type { Panel } from "./panels";
@@ -48,9 +50,6 @@
   };
 
   const idle = $derived(view.condition.label === "—");
-
-  const VITAL_BOX =
-    "flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono text-[12px]/[1.35] font-bold";
 </script>
 
 <div
@@ -99,8 +98,9 @@
 
       {#if openPanel === "actor" && switchable}
         <!-- The name row sits 1px inside the strip, so 7px lifts the menu 6px clear of its top edge. -->
-        <div
-          class="absolute bottom-[calc(100%+7px)] left-0 z-20 flex max-h-[320px] w-[180px] flex-col gap-px overflow-y-auto rounded-hud-lg border border-white/[.15] bg-hud-popover p-[4px] shadow-hud-popover"
+        <Popover
+          offset={7}
+          class="flex max-h-[320px] w-[180px] flex-col gap-px overflow-y-auto p-[4px]"
         >
           {#each choices as choice (choice.key)}
             {@const selected = isCurrent(choice)}
@@ -123,7 +123,7 @@
               <span class="truncate">{choice.name}</span>
             </button>
           {/each}
-        </div>
+        </Popover>
       {/if}
     </div>
   </div>
@@ -164,9 +164,7 @@
           The badge sits 24px inside the strip (name row, border, offset), so 30px lifts the menu
           6px clear of the strip's top edge like the top bar's panels.
         -->
-        <div
-          class="absolute bottom-[calc(100%+30px)] left-0 z-20 flex w-[124px] flex-col gap-px rounded-hud-lg border border-white/[.15] bg-hud-popover p-[4px] shadow-hud-popover"
-        >
+        <Popover offset={30} class="flex w-[124px] flex-col gap-px p-[4px]">
           {#each view.postures as option (option.id)}
             {@const isSelected = option.id === view.posture.id}
             <button
@@ -179,7 +177,7 @@
               {option.label}
             </button>
           {/each}
-        </div>
+        </Popover>
       {/if}
     </div>
     <span
@@ -212,9 +210,9 @@
 
     <div class="flex items-center gap-[4px]" title="Shock penalty to DX and IQ">
       <VitalIcon kind="shock" class="text-hud-accent" />
-      <span class="{VITAL_BOX} {view.shock < 0 ? 'text-hud-accent' : 'text-hud-ink/72'}">
+      <Readout class={view.shock < 0 ? "text-hud-accent" : "text-hud-ink/72"}>
         {view.shock}
-      </span>
+      </Readout>
     </div>
 
     <div class="flex items-center gap-[4px]" title={view.condition.title}>
@@ -222,13 +220,12 @@
         kind="condition"
         class={idle ? "text-hud-ink/40" : TONE_TEXT[view.condition.tone]}
       />
-      <span
-        class="flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono font-bold {idle
-          ? 'text-[12px] text-hud-ink/28'
-          : `text-[9px] ${TONE_TEXT[view.condition.tone]}`}"
+      <Readout
+        size={idle ? "md" : "sm"}
+        class={idle ? "text-hud-ink/28" : TONE_TEXT[view.condition.tone]}
       >
         {view.condition.label}
-      </span>
+      </Readout>
     </div>
   </div>
 </div>

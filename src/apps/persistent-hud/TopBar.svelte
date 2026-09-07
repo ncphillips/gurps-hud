@@ -2,6 +2,7 @@
   import type { HudView, TargetView } from "@/gurps/hud-view";
   import { HUD_MANEUVER_GROUPS } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
+  import Popover from "@/ui/Popover.svelte";
   import AttrsPanel from "./AttrsPanel.svelte";
   import SkillsPanel from "./SkillsPanel.svelte";
   import type { Panel } from "./panels";
@@ -72,11 +73,17 @@
   const CARET_HOVER = "group-hover:text-hud-on-accent/55";
 
   /*
-   * Popovers sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
-   * 3px padding), so this puts each panel 6px clear of the strip's top edge.
+   * Panels sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
+   * 3px padding), so this puts each one 6px clear of the strip's top edge.
    */
-  const POPOVER =
-    "absolute bottom-[calc(100%+10px)] z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover";
+  const OFFSET = 10;
+
+  /*
+   * The skills list is the one panel that can outgrow its cap, so it -- not a box inside it --
+   * carries the width, the cap and the scrolling. 400px is the mock's width under border-box.
+   */
+  const SKILLS_PANEL =
+    "max-h-[280px] w-[400px] overflow-y-auto [scrollbar-color:rgb(255_255_255/.18)_transparent] [scrollbar-width:thin]";
 </script>
 
 {#snippet trigger(label: string, title: string)}
@@ -96,12 +103,9 @@
   >
     {@render trigger("ATTRS", "Attributes")}
     {#if openPanel === "attrs"}
-      <AttrsPanel
-        basic={view.attrs.basic}
-        secondary={view.attrs.secondary}
-        class="{POPOVER} left-0"
-        {onroll}
-      />
+      <Popover offset={OFFSET}>
+        <AttrsPanel basic={view.attrs.basic} secondary={view.attrs.secondary} {onroll} />
+      </Popover>
     {/if}
   </div>
 
@@ -114,7 +118,9 @@
   >
     {@render trigger("SKILLS", "Skills")}
     {#if openPanel === "skills"}
-      <SkillsPanel skills={view.skills} class="{POPOVER} left-0" {onroll} />
+      <Popover offset={OFFSET} class={SKILLS_PANEL}>
+        <SkillsPanel skills={view.skills} {onroll} />
+      </Popover>
     {/if}
   </div>
 
@@ -159,10 +165,7 @@
     </div>
 
     {#if openPanel === "maneuver" && maneuverEnabled}
-      <div
-        class="{POPOVER} left-0 grid w-[464px] grid-cols-2 gap-[2px] p-[5px]"
-        data-hud-panel="maneuver"
-      >
+      <Popover offset={OFFSET} name="maneuver" class="grid w-[464px] grid-cols-2 gap-[2px] p-[5px]">
         {#each HUD_MANEUVER_GROUPS as group, index (group.heading ?? index)}
           {#if group.heading}
             <div
@@ -199,7 +202,7 @@
             </button>
           {/each}
         {/each}
-      </div>
+      </Popover>
     {/if}
   </div>
 
@@ -232,7 +235,7 @@
     </div>
 
     {#if openPanel === "target" && targetView}
-      <div class="{POPOVER} right-0 flex w-[236px] flex-col p-[5px]">
+      <Popover offset={OFFSET} align="right" class="flex w-[236px] flex-col p-[5px]">
         <div
           class="flex gap-[6px] px-[7px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/30"
         >
@@ -278,7 +281,7 @@
             {targetView.name} has no hit location table.
           </div>
         {/each}
-      </div>
+      </Popover>
     {/if}
   </div>
 </div>

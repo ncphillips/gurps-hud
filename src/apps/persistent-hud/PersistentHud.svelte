@@ -72,11 +72,13 @@
   const macroPages = $derived(atRevision(revision, hotbarPages));
 
   /**
-   * Which hotbar page the macro footer shows. Foundry owns the number-key hotkeys, so it is told
-   * about every change, but the page is tracked here too: with the stock bar hidden, changing it is
-   * something only the HUD ever does, and `changePage` announces itself through no hook we watch.
+   * Which hotbar page the macro footer shows. Read back from Foundry rather than kept alongside it:
+   * a private copy only stays right for as long as the HUD is the only thing that ever changes the
+   * page, and when a macro or another module changes it the footer and the number keys would
+   * silently disagree about which ten slots are live. `changePage` announces itself through no hook
+   * we watch, so the footer bumps `revision` itself after asking for the change.
    */
-  let macroPage = $state(hotbarPage());
+  const macroPage = $derived(atRevision(revision, hotbarPage));
   const choices = $derived(atRevision(revision, () => actorChoices(canvasTokens())));
 
   /**
@@ -227,8 +229,8 @@
         pages={macroPages}
         page={macroPage}
         onpage={(page) => {
-          macroPage = page;
           changeHotbarPage(page);
+          revision++;
         }}
         onexecute={executeMacroSlot}
         onassign={(slot, event) => void assignMacroSlot(slot, event)}

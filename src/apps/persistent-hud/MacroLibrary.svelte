@@ -2,6 +2,7 @@
   import type { MacroPage } from "@/gurps/game-aid";
   import type { MacroDrag } from "./macro-drag";
   import MacroSlotButton from "./MacroSlotButton.svelte";
+  import { tick } from "svelte";
 
   /**
    * Every hotbar page at once, one row per page: the bar alone can only show ten of fifty macros,
@@ -13,7 +14,6 @@
     pages,
     page,
     drag = $bindable(),
-    class: className = "",
     onexecute,
     onassign,
     onmove,
@@ -25,8 +25,6 @@
     page: number;
     /** Shared with the bar so a macro can be dragged from one into the other. */
     drag: MacroDrag;
-    /** Positioning and chrome come from the caller, which knows where the trigger sits. */
-    class?: string;
     onexecute: (slot: number) => void;
     onassign: (slot: number, event: DragEvent) => void;
     onmove: (from: number, to: number) => void;
@@ -40,17 +38,25 @@
    * off any edge does nothing rather than wrapping, so a held key cannot walk a macro off a page
    * the user is not looking at.
    */
-  function nudge(slot: number, dx: number, dy: number): void {
+  async function nudge(slot: number, dx: number, dy: number): Promise<void> {
     const row = pages.findIndex((entry) => entry.slots.some((each) => each.slot === slot));
     if (row === -1) return;
 
     const column = pages[row]!.slots.findIndex((each) => each.slot === slot);
     const target = pages[row + dy]?.slots[column + dx];
-    if (target) onmove(slot, target.slot);
+    if (!target) return;
+
+    onmove(slot, target.slot);
+    // Focus follows the macro, or a second Alt+Arrow walks whatever swapped into the old slot.
+    await tick();
+    grid?.querySelector<HTMLElement>(`[data-hud-macro-slot="${target.slot}"]`)?.focus();
   }
+
+  /** Scoped to the grid: the bar renders the current page's slots a second time. */
+  let grid = $state<HTMLElement | null>(null);
 </script>
 
-<div data-hud-macro-library class="w-fit p-[6px] {className}">
+<div bind:this={grid} data-hud-macro-library class="w-fit p-[6px]">
   <div
     class="mb-[5px] flex items-baseline justify-between gap-[10px] px-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/40"
   >

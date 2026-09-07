@@ -8,13 +8,10 @@
   let {
     basic,
     secondary,
-    class: className = "",
     onroll,
   }: {
     basic: AttrColumn;
     secondary: AttrColumn;
-    /** Positioning and chrome come from the caller, which knows where the trigger sits. */
-    class?: string;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
 
@@ -25,7 +22,7 @@
   const LABEL = "truncate font-hud text-[11.5px]/[1.5] font-medium text-hud-ink/60";
 </script>
 
-<div class="flex gap-[6px] p-[5px] {className}">
+<div class="flex gap-[6px] p-[5px]">
   {#each columns as column (column.header)}
     <div class="w-[142px] rounded-hud-sm bg-white/[.04] px-[2px] pb-[3px]">
       <div

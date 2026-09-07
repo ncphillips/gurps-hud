@@ -350,3 +350,76 @@ describe("MacroBar library", () => {
     expect(onmove).toHaveBeenCalledWith(1, 11);
   });
 });
+
+/*
+ * The slot buttons are keyed by slot number, so a move swaps which macro a given button holds
+ * while leaving the button itself -- and the focus on it -- exactly where it was. Without moving
+ * focus along, a second Alt+Arrow picks up whatever just swapped into the slot under the cursor's
+ * keyboard focus rather than the macro the user is walking across the bar.
+ */
+describe("MacroBar keyboard reordering", () => {
+  test("Alt+ArrowRight on a focused macro", async () => {
+    render(MacroBar, props());
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
+
+    expect(document.activeElement).toBe(slotAt(2));
+  });
+
+  test("Alt+ArrowRight twice, walking one macro across the bar", async () => {
+    const onmove = vi.fn();
+    render(MacroBar, props({ onmove }));
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
+    await fireEvent.keyDown(document.activeElement!, { key: "ArrowRight", altKey: true });
+
+    expect(onmove.mock.calls).toEqual([
+      [1, 2],
+      [2, 3],
+    ]);
+  });
+
+  test("Alt+ArrowLeft on the first slot, where nothing moves", async () => {
+    render(MacroBar, props());
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+    await fireEvent.keyDown(attack, { key: "ArrowLeft", altKey: true });
+
+    expect(document.activeElement).toBe(attack);
+  });
+});
+
+describe("MacroBar dismissing the library", () => {
+  test("pressing Escape with the library open", async () => {
+    render(MacroBar, props());
+    await expand();
+    await fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(queryHook("macro-library")).toBeNull();
+  });
+
+  test("pressing Escape with the library closed", async () => {
+    render(MacroBar, props());
+    await fireEvent.keyDown(document, { key: "Escape" });
+
+    expect(queryHook("macro-library")).toBeNull();
+  });
+
+  test("pointing at something outside the footer", async () => {
+    render(MacroBar, props());
+    await expand();
+    await fireEvent.pointerDown(document.body);
+
+    expect(queryHook("macro-library")).toBeNull();
+  });
+
+  test("pointing at a slot inside the library", async () => {
+    render(MacroBar, props());
+    await expand();
+    await fireEvent.pointerDown(screen.getByTitle("Parry"));
+
+    expect(queryHook("macro-library")).not.toBeNull();
+  });
+});

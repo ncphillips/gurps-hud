@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PoolVital, Tone } from "@/gurps/hud-view";
   import { parsePoolEdit } from "@/gurps/pool-edit";
+  import { READOUT, READOUT_TEXT } from "@/ui/readout";
   import { tick } from "svelte";
 
   /**
@@ -68,8 +69,7 @@
   }
 
   /* The box keeps one geometry in both states so toggling never moves its neighbours. */
-  const BOX =
-    "flex-1 rounded-hud-xs bg-white/[.07] px-[4px] py-px text-right font-hud-mono text-[12px]/[1.35] font-bold";
+  const BOX = `${READOUT} ${READOUT_TEXT.md}`;
 </script>
 
 {#if editing}

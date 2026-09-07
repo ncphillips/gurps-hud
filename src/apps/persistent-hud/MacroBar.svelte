@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { MacroPage } from "@/gurps/game-aid";
+  import Popover from "@/ui/Popover.svelte";
   import MacroLibrary from "./MacroLibrary.svelte";
   import MacroSlotButton from "./MacroSlotButton.svelte";
   import { macroDrag } from "./macro-drag";
+  import { tick } from "svelte";
 
   let {
     pages,
@@ -30,6 +32,38 @@
 
   let expanded = $state(false);
 
+  /** The footer, so a pointer landing outside it can tell that it missed the library. */
+  let footer = $state<HTMLElement | null>(null);
+
+  /*
+   * The library is the one panel opened by a click rather than a hover, so it cannot lean on the
+   * strip's shared hover state to take it away again -- it needs the two dismissals a click-opened
+   * panel is expected to have. Escape is taken in the capture phase and stopped: Foundry's own
+   * keybindings listen on the document, and Escape there closes windows and opens the game menu.
+   */
+  $effect(() => {
+    if (!expanded) return;
+
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      expanded = false;
+    };
+
+    const outside = (event: PointerEvent) => {
+      if (!footer?.contains(event.target as Node)) expanded = false;
+    };
+
+    document.addEventListener("keydown", escape, true);
+    document.addEventListener("pointerdown", outside, true);
+
+    return () => {
+      document.removeEventListener("keydown", escape, true);
+      document.removeEventListener("pointerdown", outside, true);
+    };
+  });
+
   /** Mirrors the stock hotbar's arrows, which cycle rather than stopping at the first and last page. */
   function cycle(direction: number): void {
     const last = pages.length;
@@ -37,13 +71,26 @@
     else onpage(page > 1 ? page - 1 : last);
   }
 
-  /** In the bar there is only one row, so a vertical nudge has nowhere to land. */
-  function nudge(slot: number, dx: number, dy: number): void {
+  /**
+   * In the bar there is only one row, so a vertical nudge has nowhere to land.
+   *
+   * Focus follows the macro to its destination. The slot buttons are keyed by slot number, so the
+   * move swaps which macro a button holds and leaves the button -- and the focus on it -- where it
+   * was; without this, a second Alt+Arrow would walk whatever swapped in the other way.
+   */
+  async function nudge(slot: number, dx: number, dy: number): Promise<void> {
     if (dy !== 0) return;
 
     const neighbour = slots[slots.findIndex((each) => each.slot === slot) + dx];
-    if (neighbour) onmove(slot, neighbour.slot);
+    if (!neighbour) return;
+
+    onmove(slot, neighbour.slot);
+    await tick();
+    bar?.querySelector<HTMLElement>(`[data-hud-macro-slot="${neighbour.slot}"]`)?.focus();
   }
+
+  /** Scoped to the bar: the same slot is also rendered by the library, on its own page's row. */
+  let bar = $state<HTMLElement | null>(null);
 
   /** Sized to the slots they sit beside, so the footer reads as one row of 22px controls. */
   const CONTROL =
@@ -51,6 +98,7 @@
 </script>
 
 <div
+  bind:this={footer}
   class="relative flex items-center gap-[6px] rounded-br-hud border-t border-white/[.08] bg-hud-deep px-[11px] py-[6px]"
 >
   <span
@@ -60,7 +108,7 @@
     MACROS
   </span>
 
-  <div data-hud-macro-bar class="flex gap-[3px]">
+  <div bind:this={bar} data-hud-macro-bar class="flex gap-[3px]">
     {#each slots as slot (slot.slot)}
       <MacroSlotButton
         {slot}
@@ -113,16 +161,8 @@
   </button>
 
   {#if expanded}
-    <MacroLibrary
-      {pages}
-      {page}
-      bind:drag
-      class="absolute right-0 bottom-[calc(100%+6px)] z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover"
-      {onexecute}
-      {onassign}
-      {onmove}
-      {onremove}
-      {onpage}
-    />
+    <Popover align="right">
+      <MacroLibrary {pages} {page} bind:drag {onexecute} {onassign} {onmove} {onremove} {onpage} />
+    </Popover>
   {/if}
 </div>

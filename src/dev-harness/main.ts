@@ -243,9 +243,12 @@ Object.assign(globalThis, {
     },
   },
   ui: {
+    // Mirrors Foundry: `changePage` is what actually moves the page, and the HUD reads it back.
     hotbar: {
       page: Number(harnessParams.get("macroPage") ?? 1),
-      changePage: (page: number) => console.log("harness: hotbar page", page),
+      changePage(page: number) {
+        this.page = page;
+      },
     },
   },
   game: {
