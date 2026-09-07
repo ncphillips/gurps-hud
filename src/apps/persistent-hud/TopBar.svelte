@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { HudView, TargetView } from "@/gurps/hud-view";
-  import { HUD_MANEUVERS } from "@/gurps/maneuvers";
+  import { HUD_MANEUVER_GROUPS } from "@/gurps/maneuvers";
   import type { HudManeuver } from "@/gurps/maneuvers";
   import AttrsPanel from "./AttrsPanel.svelte";
   import SkillsPanel from "./SkillsPanel.svelte";
@@ -159,31 +159,45 @@
     </div>
 
     {#if openPanel === "maneuver" && maneuverEnabled}
-      <div class="{POPOVER} left-0 grid w-[464px] grid-cols-2 gap-[2px] p-[5px]">
-        {#each HUD_MANEUVERS as option (option.id)}
-          {@const isSelected = option.id === maneuver?.id}
-          <button
-            type="button"
-            class="flex cursor-pointer flex-col rounded-hud-sm px-[8px] py-[4px] text-left transition-colors duration-75 {isSelected
-              ? 'bg-hud-accent'
-              : 'bg-white/[.045] hover:bg-white/[.09]'}"
-            onclick={() => onselect(option.id)}
-          >
-            <span
-              class="font-hud text-[12.5px]/[1.15] font-semibold {isSelected
-                ? 'text-hud-on-accent'
-                : 'text-hud-ink/78'}"
+      <div
+        class="{POPOVER} left-0 grid w-[464px] grid-cols-2 gap-[2px] p-[5px]"
+        data-hud-panel="maneuver"
+      >
+        {#each HUD_MANEUVER_GROUPS as group, index (group.heading ?? index)}
+          {#if group.heading}
+            <div
+              data-hud-maneuver-heading={group.heading}
+              class="col-span-2 px-[8px] pt-[6px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/30"
             >
-              {option.name}
-            </span>
-            <span
-              class="font-hud text-[10px]/[1.2] font-medium {isSelected
-                ? 'text-hud-on-accent/72'
-                : 'text-hud-ink/38'}"
+              {group.heading.toUpperCase()}
+            </div>
+          {/if}
+          {#each group.maneuvers as option (option.id)}
+            {@const isSelected = option.id === maneuver?.id}
+            <button
+              type="button"
+              data-hud-maneuver={option.id}
+              class="flex cursor-pointer items-baseline gap-[6px] overflow-hidden rounded-hud-sm px-[7px] py-[2px] text-left whitespace-nowrap transition-colors duration-75 {isSelected
+                ? 'bg-hud-accent'
+                : 'bg-white/[.045] hover:bg-white/[.09]'}"
+              onclick={() => onselect(option.id)}
             >
-              {option.hint}
-            </span>
-          </button>
+              <span
+                class="font-hud text-[12.5px]/[1.45] font-semibold {isSelected
+                  ? 'text-hud-on-accent'
+                  : 'text-hud-ink/78'}"
+              >
+                {option.name}
+              </span>
+              <span
+                class="truncate font-hud text-[10px]/[1.45] font-medium {isSelected
+                  ? 'text-hud-on-accent/72'
+                  : 'text-hud-ink/38'}"
+              >
+                {option.hint}
+              </span>
+            </button>
+          {/each}
         {/each}
       </div>
     {/if}

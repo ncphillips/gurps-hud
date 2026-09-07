@@ -22,7 +22,7 @@ const LABELS: Record<string, string> = {
   "GURPS.status.Sit": "Sitting",
   "GURPS.status.Crawling": "Crawling",
   "GURPS.status.Prone": "Prone",
-  "GURPS.maneuverAllOutAttackDetermined": "All-out Attack (Determined)",
+  "GURPS.maneuverCommittedAttack": "Committed Attack",
 };
 
 const harnessParams = new URLSearchParams(location.search);
@@ -49,6 +49,10 @@ const actor = {
   sheet: { render: () => console.log("harness: open character sheet") },
   async replacePosture(id: string) {
     actor.system.conditions.posture = id;
+    for (const hook of hooks.get("updateActor") ?? []) hook();
+  },
+  async replaceManeuver(id: string) {
+    actor.system.conditions.maneuver = id;
     for (const hook of hooks.get("updateActor") ?? []) hook();
   },
   statuses: [] as string[],
@@ -213,7 +217,7 @@ Object.assign(globalThis, {
     },
     Maneuvers: {
       getManeuver: (id?: string) =>
-        id === "aoa_determined" ? { label: "GURPS.maneuverAllOutAttackDetermined" } : undefined,
+        id === "committed_attack" ? { label: "GURPS.maneuverCommittedAttack" } : undefined,
     },
   },
   Hooks: {

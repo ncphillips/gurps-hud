@@ -143,9 +143,9 @@ export async function setManeuver(actor: GurpsActorLike | null, maneuverId: stri
 }
 
 /**
- * Labels a maneuver the HUD's own menu doesn't offer. The Game Aid has far more than twelve -- every
- * All-Out Attack variant, the On Target additions -- and any of them can be set from the token HUD,
- * so ask the system for its own localized name rather than misreporting it as something else.
+ * Labels a maneuver the HUD's own menu doesn't offer. The Game Aid knows more than the menu lists --
+ * the On Target additions -- and any of them can be set from the token HUD, so ask the system for
+ * its own localized name rather than misreporting it as something else.
  */
 export function maneuverLabel(id: string): string {
   const maneuver = gameAid()?.Maneuvers?.getManeuver(id);

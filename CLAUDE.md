@@ -33,7 +33,8 @@ npm run harness        # HUD only, no Foundry, on :30099 — see src/dev-harness
 npm run check          # tsc --noEmit + svelte-check
 npm run lint           # ESLint
 npm run format         # Prettier
-npm run test           # Vitest
+npm run test           # Vitest -- pure logic in src/gurps
+npm run test:e2e       # Playwright against the dev harness (UI + axe a11y); --ui to watch it
 ```
 
 `npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with
@@ -70,6 +71,7 @@ src/
     gurps-hud.css          # Tailwind entry, design tokens, @font-face, Foundry overrides
     fonts/                 # self-hosted Barlow Semi Condensed + JetBrains Mono (SIL OFL 1.1)
 dist/                      # build output (gitignored) — symlinked into Foundry
+e2e/                       # Playwright specs — drive the dev harness, never a live Foundry
 ```
 
 ## Conventions
@@ -85,6 +87,10 @@ dist/                      # build output (gitignored) — symlinked into Foundr
   Tailwind utility on the same element.
 - Keep GURPS knowledge in `src/gurps/`. Components stay presentational: `hud-view.ts` turns the
   actor into a flat view model, and that is what gets unit tested.
+- Anything only a browser can answer — does this wrap, is this box where the mock puts it, does axe
+  pass — belongs in `e2e/`, driving the harness via its query parameters rather than a live world.
+  Give elements a `data-hud-*` hook to select on. `Locator.evaluateAll` does **not** auto-wait, so
+  wait for the panel first (`openHarness` does) or the measurement silently runs against nothing.
 - The design mock in `design-handoff/` was authored under `content-box`; the HUD renders under
   `border-box`. Its fixed pixel widths therefore need padding and borders added in — the strip is
   pixel-matched to the mock, so check `npm run harness -- ?measure` before changing a fixed width.

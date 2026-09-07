@@ -71,7 +71,7 @@
   /**
    * The maneuver comes from the actor, never from local state: whatever set it -- this menu, the
    * token HUD, the character sheet -- the pill reports what the actor is actually performing. Ids
-   * outside our twelve are labelled by the system so a variant maneuver still reads correctly.
+   * outside our menu are labelled by the system so an On Target maneuver still reads correctly.
    */
   const maneuver = $derived.by(() => {
     const id = view?.maneuverId;
