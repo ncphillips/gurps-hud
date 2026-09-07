@@ -201,6 +201,11 @@ const tokens = [
   },
 ];
 
+/** Mutable so the harness can demonstrate assigning, reordering and removing macros. */
+const hotbar: (string | null)[] = Array.from({ length: 10 }, (_, index) =>
+  index < 3 ? `Macro ${index + 1}` : null,
+);
+
 Object.assign(globalThis, {
   GURPS: {
     LastActor: actor,
@@ -240,11 +245,22 @@ Object.assign(globalThis, {
       // Foundry's `UserTargets` is a Set of tokens; the HUD only ever asks it for the first one.
       targets: { first: () => (harnessParams.has("target") ? { actor: goblin } : undefined) },
       getHotbarMacros: () =>
-        Array.from({ length: 10 }, (_, index) => ({
+        hotbar.map((name, index) => ({
           slot: index + 1,
-          macro:
-            index < 3 ? { name: `Macro ${index + 1}`, img: null, execute: () => undefined } : null,
+          macro: name ? { name, img: null, uuid: `Macro.${name}`, execute: () => undefined } : null,
         })),
+      // Mirrors Foundry: a `fromSlot` move swaps whatever occupied the destination back into the
+      // origin, and the user update is what tells the strip to re-read the bar.
+      assignHotbarMacro: (
+        macro: { name: string } | null,
+        slot: number,
+        options?: { fromSlot?: number },
+      ) => {
+        const displaced = hotbar[slot - 1];
+        hotbar[slot - 1] = macro?.name ?? null;
+        if (options?.fromSlot) hotbar[options.fromSlot - 1] = displaced;
+        for (const hook of hooks.get("updateUser") ?? []) hook();
+      },
     },
   },
 });

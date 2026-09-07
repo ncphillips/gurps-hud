@@ -159,6 +159,8 @@ export interface MacroSlot {
   hotkey: string;
   name: string | null;
   img: string | null;
+  /** Identifies the macro to Foundry when one is dragged out of the bar. */
+  uuid: string | null;
 }
 
 /** The current hotbar page, as ten slots -- the HUD's macro footer replaces the stock macro bar. */
@@ -171,6 +173,7 @@ export function hotbarSlots(): MacroSlot[] {
     hotkey: String(slot % 10),
     name: macro?.name ?? null,
     img: macro?.img ?? null,
+    uuid: macro?.uuid ?? null,
   }));
 }
 
@@ -178,6 +181,24 @@ export function executeMacroSlot(slot: number): void {
   const page = ui.hotbar?.page ?? 1;
   const macro = game.user?.getHotbarMacros(page)?.find((entry) => entry.slot === slot)?.macro;
   void macro?.execute();
+}
+
+/**
+ * Moves a macro between slots. Foundry's own `fromSlot` handling clears the origin and swaps in
+ * whatever occupied the destination, which is what the stock hotbar does on an internal drag.
+ */
+export async function moveMacroSlot(from: number, to: number): Promise<void> {
+  if (from === to) return;
+
+  const page = ui.hotbar?.page ?? 1;
+  const macro = game.user?.getHotbarMacros(page)?.find((entry) => entry.slot === from)?.macro;
+  if (!macro) return;
+
+  await game.user?.assignHotbarMacro(macro as Macro.Stored, to, { fromSlot: from });
+}
+
+export async function removeMacroSlot(slot: number): Promise<void> {
+  await game.user?.assignHotbarMacro(null, slot);
 }
 
 interface DroppableDocumentClass {

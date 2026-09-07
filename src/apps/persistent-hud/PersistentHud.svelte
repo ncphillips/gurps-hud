@@ -10,7 +10,9 @@
     hotbarSlots,
     localize,
     maneuverLabel,
+    moveMacroSlot,
     openSheet,
+    removeMacroSlot,
     setCurrentActor,
     setManeuver,
     setPosture,
@@ -216,6 +218,8 @@
         slots={macroSlots}
         onexecute={executeMacroSlot}
         onassign={(slot, event) => void assignMacroSlot(slot, event)}
+        onmove={(from, to) => void moveMacroSlot(from, to)}
+        onremove={(slot) => void removeMacroSlot(slot)}
       />
     </div>
   </div>
