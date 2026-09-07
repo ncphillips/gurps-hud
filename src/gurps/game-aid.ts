@@ -163,14 +163,53 @@ export interface MacroSlot {
   uuid: string | null;
 }
 
-/** The current hotbar page, as ten slots -- the HUD's macro footer replaces the stock macro bar. */
-export function hotbarSlots(): MacroSlot[] {
-  const page = ui.hotbar?.page ?? 1;
+/** One page of the hotbar: ten slots, numbered within the 1-50 range shared by every page. */
+export interface MacroPage {
+  page: number;
+  slots: MacroSlot[];
+}
+
+/** Foundry's hotbar is five pages of ten, and slot numbers run 1-50 across all of them. */
+export const HOTBAR_PAGES = 5;
+const SLOTS_PER_PAGE = 10;
+
+/** Which page a slot number belongs to, so a slot can be looked up without knowing the page. */
+function pageOfSlot(slot: number): number {
+  return Math.ceil(slot / SLOTS_PER_PAGE);
+}
+
+function macroAtSlot(slot: number): Macro.Stored | null {
+  const macros = game.user?.getHotbarMacros(pageOfSlot(slot)) ?? [];
+  return macros.find((entry) => entry.slot === slot)?.macro ?? null;
+}
+
+/** The page the number-key hotkeys currently address. */
+export function hotbarPage(): number {
+  return ui.hotbar?.page ?? 1;
+}
+
+/**
+ * Points the number-key hotkeys at another page. The HUD tracks the page itself -- the stock bar is
+ * hidden, so nothing else would show it -- but Foundry owns the key handlers, so it has to agree.
+ */
+export function changeHotbarPage(page: number): void {
+  void ui.hotbar?.changePage(page);
+}
+
+/** Every page of the hotbar -- the HUD's macro footer replaces the stock macro bar entirely. */
+export function hotbarPages(): MacroPage[] {
+  return Array.from({ length: HOTBAR_PAGES }, (_, index) => ({
+    page: index + 1,
+    slots: hotbarSlots(index + 1),
+  }));
+}
+
+export function hotbarSlots(page: number): MacroSlot[] {
   const macros = game.user?.getHotbarMacros(page) ?? [];
 
   return macros.map(({ slot, macro }) => ({
     slot,
-    hotkey: String(slot % 10),
+    hotkey: String(slot % SLOTS_PER_PAGE),
     name: macro?.name ?? null,
     img: macro?.img ?? null,
     uuid: macro?.uuid ?? null,
@@ -178,9 +217,7 @@ export function hotbarSlots(): MacroSlot[] {
 }
 
 export function executeMacroSlot(slot: number): void {
-  const page = ui.hotbar?.page ?? 1;
-  const macro = game.user?.getHotbarMacros(page)?.find((entry) => entry.slot === slot)?.macro;
-  void macro?.execute();
+  void macroAtSlot(slot)?.execute();
 }
 
 /**
@@ -190,11 +227,10 @@ export function executeMacroSlot(slot: number): void {
 export async function moveMacroSlot(from: number, to: number): Promise<void> {
   if (from === to) return;
 
-  const page = ui.hotbar?.page ?? 1;
-  const macro = game.user?.getHotbarMacros(page)?.find((entry) => entry.slot === from)?.macro;
+  const macro = macroAtSlot(from);
   if (!macro) return;
 
-  await game.user?.assignHotbarMacro(macro as Macro.Stored, to, { fromSlot: from });
+  await game.user?.assignHotbarMacro(macro, to, { fromSlot: from });
 }
 
 export async function removeMacroSlot(slot: number): Promise<void> {

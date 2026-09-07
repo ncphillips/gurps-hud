@@ -4,10 +4,12 @@
     assignMacroSlot,
     canSetManeuver,
     canvasTokens,
+    changeHotbarPage,
     currentActor,
     executeMacroSlot,
     executeOtf,
-    hotbarSlots,
+    hotbarPage,
+    hotbarPages,
     localize,
     maneuverLabel,
     moveMacroSlot,
@@ -67,7 +69,14 @@
 
   const view = $derived(atRevision(revision, () => (actor ? buildHudView(actor, localize) : null)));
   const targetView = $derived(atRevision(revision, () => buildTargetView(targetActor)));
-  const macroSlots = $derived(atRevision(revision, hotbarSlots));
+  const macroPages = $derived(atRevision(revision, hotbarPages));
+
+  /**
+   * Which hotbar page the macro footer shows. Foundry owns the number-key hotkeys, so it is told
+   * about every change, but the page is tracked here too: with the stock bar hidden, changing it is
+   * something only the HUD ever does, and `changePage` announces itself through no hook we watch.
+   */
+  let macroPage = $state(hotbarPage());
   const choices = $derived(atRevision(revision, () => actorChoices(canvasTokens())));
 
   /**
@@ -215,7 +224,12 @@
       <WeaponTables {view} onroll={roll} />
 
       <MacroBar
-        slots={macroSlots}
+        pages={macroPages}
+        page={macroPage}
+        onpage={(page) => {
+          macroPage = page;
+          changeHotbarPage(page);
+        }}
         onexecute={executeMacroSlot}
         onassign={(slot, event) => void assignMacroSlot(slot, event)}
         onmove={(from, to) => void moveMacroSlot(from, to)}

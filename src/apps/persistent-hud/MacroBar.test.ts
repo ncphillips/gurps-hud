@@ -1,7 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/svelte";
+import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
 import { describe, expect, test, vi } from "vitest";
-import type { MacroSlot } from "@/gurps/game-aid";
+import type { MacroPage, MacroSlot } from "@/gurps/game-aid";
 import MacroBar from "./MacroBar.svelte";
 
 type MacroBarProps = ComponentProps<typeof MacroBar>;
@@ -26,9 +26,46 @@ function slotAt(slot: number): Element {
   return element;
 }
 
+/** Panels and zones carry a `data-hud-*` hook rather than an accessible name of their own. */
+function hook(name: string): HTMLElement {
+  const element = queryHook(name);
+  if (!element) throw new Error(`no [data-hud-${name}] rendered`);
+  return element;
+}
+
+function queryHook(name: string): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[data-hud-${name}]`);
+}
+
+function library(): HTMLElement {
+  return hook("macro-library");
+}
+
+function bar(): HTMLElement {
+  return hook("macro-bar");
+}
+
+async function expand(): Promise<HTMLElement> {
+  await fireEvent.click(screen.getByTitle("Show all macros"));
+  return library();
+}
+
+/** Five pages, because that is how many Foundry's hotbar has. */
+function pages(): MacroPage[] {
+  return [
+    { page: 1, slots: [filled(1, "Attack"), filled(2, "Dodge"), empty(3)] },
+    { page: 2, slots: [filled(11, "Parry")] },
+    { page: 3, slots: [empty(21)] },
+    { page: 4, slots: [empty(31)] },
+    { page: 5, slots: [empty(41)] },
+  ];
+}
+
 function props(overrides: Partial<MacroBarProps> = {}): MacroBarProps {
   return {
-    slots: [filled(1, "Attack"), filled(2, "Dodge"), empty(3)],
+    pages: pages(),
+    page: 1,
+    onpage: vi.fn(),
     onexecute: vi.fn(),
     onassign: vi.fn(),
     onmove: vi.fn(),
@@ -176,7 +213,10 @@ describe("MacroBar reordering", () => {
 
   test("pressing Alt+ArrowRight on the last slot", async () => {
     const onmove = vi.fn();
-    render(MacroBar, props({ slots: [empty(1), filled(2, "Dodge")], onmove }));
+    render(
+      MacroBar,
+      props({ pages: [{ page: 1, slots: [empty(1), filled(2, "Dodge")] }], onmove }),
+    );
 
     await fireEvent.keyDown(screen.getByTitle("Dodge"), { key: "ArrowRight", altKey: true });
 
@@ -201,5 +241,112 @@ describe("MacroBar executing", () => {
     await fireEvent.click(screen.getByTitle("Attack"));
 
     expect(onexecute).toHaveBeenCalledWith(1);
+  });
+});
+
+describe("MacroBar paging", () => {
+  test("rendering page 2", async () => {
+    render(MacroBar, props({ page: 2 }));
+
+    expect(screen.getByTitle("Parry")).toBeDefined();
+  });
+
+  test("rendering page 2 does not show page 1's macros", async () => {
+    render(MacroBar, props({ page: 2 }));
+
+    expect(screen.queryByTitle("Attack")).toBeNull();
+  });
+
+  test("the page indicator on page 3", async () => {
+    render(MacroBar, props({ page: 3 }));
+
+    expect(hook("macro-page").textContent?.trim()).toBe("3");
+  });
+
+  test("clicking the next-page control", async () => {
+    const onpage = vi.fn();
+    render(MacroBar, props({ onpage }));
+
+    await fireEvent.click(screen.getByTitle("Next page"));
+
+    expect(onpage).toHaveBeenCalledWith(2);
+  });
+
+  test("clicking the previous-page control", async () => {
+    const onpage = vi.fn();
+    render(MacroBar, props({ page: 3, onpage }));
+
+    await fireEvent.click(screen.getByTitle("Previous page"));
+
+    expect(onpage).toHaveBeenCalledWith(2);
+  });
+
+  test("clicking the next-page control on the last page", async () => {
+    const onpage = vi.fn();
+    render(MacroBar, props({ page: 5, onpage }));
+
+    await fireEvent.click(screen.getByTitle("Next page"));
+
+    expect(onpage).toHaveBeenCalledWith(1);
+  });
+
+  test("clicking the previous-page control on the first page", async () => {
+    const onpage = vi.fn();
+    render(MacroBar, props({ page: 1, onpage }));
+
+    await fireEvent.click(screen.getByTitle("Previous page"));
+
+    expect(onpage).toHaveBeenCalledWith(5);
+  });
+});
+
+describe("MacroBar library", () => {
+  test("before the library is expanded", async () => {
+    render(MacroBar, props());
+
+    expect(queryHook("macro-library")).toBeNull();
+  });
+
+  test("clicking the expand control", async () => {
+    render(MacroBar, props());
+
+    await fireEvent.click(screen.getByTitle("Show all macros"));
+
+    expect(queryHook("macro-library")).not.toBeNull();
+  });
+
+  test("clicking the expand control twice", async () => {
+    render(MacroBar, props());
+
+    await fireEvent.click(screen.getByTitle("Show all macros"));
+    await fireEvent.click(screen.getByTitle("Hide all macros"));
+
+    expect(queryHook("macro-library")).toBeNull();
+  });
+
+  test("the library lists every page's macros", async () => {
+    render(MacroBar, props());
+
+    expect(within(await expand()).getByTitle("Parry")).toBeDefined();
+  });
+
+  test("selecting a page from the library", async () => {
+    const onpage = vi.fn();
+    render(MacroBar, props({ onpage }));
+
+    await fireEvent.click(within(await expand()).getByTitle("Switch to page 4"));
+
+    expect(onpage).toHaveBeenCalledWith(4);
+  });
+
+  test("dragging a macro from the bar into the library", async () => {
+    const onmove = vi.fn();
+    render(MacroBar, props({ onmove }));
+
+    const expanded = await expand();
+    await fireEvent.dragStart(within(bar()).getByTitle("Attack"));
+    await fireEvent.drop(within(expanded).getByTitle("Parry"));
+
+    expect(onmove).toHaveBeenCalledWith(1, 11);
   });
 });

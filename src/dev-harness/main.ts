@@ -9,6 +9,7 @@
  *   ?target                 targets a goblin, so the TARGET pill lists its hit locations
  *   ?maneuver=<id>          puts the actor in combat performing that maneuver
  *   ?edit=hp|fp             opens that pool's box for editing on load
+ *   ?macros                 expands the macro footer's full library of all five hotbar pages
  *   ?measure                appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
@@ -201,10 +202,15 @@ const tokens = [
   },
 ];
 
-/** Mutable so the harness can demonstrate assigning, reordering and removing macros. */
-const hotbar: (string | null)[] = Array.from({ length: 10 }, (_, index) =>
-  index < 3 ? `Macro ${index + 1}` : null,
-);
+/**
+ * All five pages of Foundry's hotbar, as slots 1-50, mutable so the harness can demonstrate
+ * assigning, reordering and removing macros -- including across pages, in the macro library.
+ */
+const hotbar: (string | null)[] = Array.from({ length: 50 }, (_, index) => {
+  const slot = index + 1;
+  const column = index % 10;
+  return column < 3 || column === 9 ? `Macro ${slot}` : null;
+});
 
 Object.assign(globalThis, {
   GURPS: {
@@ -236,7 +242,12 @@ Object.assign(globalThis, {
       get: (id: string) => tokens.find((token) => token.id === id),
     },
   },
-  ui: { hotbar: { page: 1 } },
+  ui: {
+    hotbar: {
+      page: Number(harnessParams.get("macroPage") ?? 1),
+      changePage: (page: number) => console.log("harness: hotbar page", page),
+    },
+  },
   game: {
     // A maneuver on the actor implies it is in the active combat, which is what enables the pill.
     combats: { active: maneuver ? { combatants: [{ actor }] } : null },
@@ -244,9 +255,10 @@ Object.assign(globalThis, {
     user: {
       // Foundry's `UserTargets` is a Set of tokens; the HUD only ever asks it for the first one.
       targets: { first: () => (harnessParams.has("target") ? { actor: goblin } : undefined) },
-      getHotbarMacros: () =>
-        hotbar.map((name, index) => ({
-          slot: index + 1,
+      // Mirrors Foundry: ten entries at a time, numbered with their slot in the full 1-50 range.
+      getHotbarMacros: (page = 1) =>
+        hotbar.slice((page - 1) * 10, page * 10).map((name, index) => ({
+          slot: (page - 1) * 10 + index + 1,
           macro: name ? { name, img: null, uuid: `Macro.${name}`, execute: () => undefined } : null,
         })),
       // Mirrors Foundry: a `fromSlot` move swaps whatever occupied the destination back into the
@@ -297,6 +309,12 @@ setTimeout(() => {
   [...host.querySelectorAll<HTMLButtonElement>("button[title]")]
     .find((el) => el.title.startsWith(needle))
     ?.click();
+}, 300);
+
+setTimeout(() => {
+  if (!params.has("macros")) return;
+
+  host.querySelector<HTMLButtonElement>('[title="Show all macros"]')?.click();
 }, 300);
 
 setTimeout(() => {
