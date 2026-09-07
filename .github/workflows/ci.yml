@@ -24,10 +24,14 @@ jobs:
 
       - run: npm test
 
-      # The browser suite drives the dev harness, so it needs a browser but not a Foundry world.
+      # Both browser suites need a Chromium but not a Foundry world: the e2e specs drive the dev
+      # harness, and the a11y scans mount components in Vitest's browser mode through Playwright.
       - run: npx playwright install --with-deps chromium
 
       - run: npm run test:e2e
+
+      # Its own step so a red axe scan reads as an accessibility regression, not a broken feature.
+      - run: npm run test:a11y
 
       - if: failure()
         uses: actions/upload-artifact@v4

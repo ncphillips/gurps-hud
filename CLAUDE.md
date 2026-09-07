@@ -33,8 +33,9 @@ npm run harness        # HUD only, no Foundry, on :30099 — see src/dev-harness
 npm run check          # tsc --noEmit + svelte-check
 npm run lint           # ESLint
 npm run format         # Prettier
-npm run test           # Vitest -- pure logic in src/gurps
-npm run test:e2e       # Playwright against the dev harness (UI + axe a11y); --ui to watch it
+npm run test           # Vitest (jsdom) — pure logic in src/gurps and component behaviour
+npm run test:e2e       # Playwright against the dev harness; --ui to watch it
+npm run test:a11y      # axe-core — components in Vitest browser mode, then the whole strip
 ```
 
 `npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with
@@ -56,6 +57,8 @@ src/
   module.ts                # entry point — registers hooks/keybindings, built to dist/module.js
   module.json              # manifest source of truth — Vite copies to dist/module.json
   log.ts                   # console helpers namespaced to "gurps-hud |"
+  a11y-scan.ts             # axe-core -> a list of violation lines, shared by both a11y groups
+  a11y-setup.ts            # Vitest browser-mode setup: the real stylesheet and the HUD's ground
   gurps-hud.d.ts           # fvtt-types module augmentation (custom hooks, flags)
   gurps/                   # everything that knows about the GURPS system
     system-types.ts        # structural types for the slice of actor.system we read
@@ -87,8 +90,16 @@ e2e/                       # Playwright specs — drive the dev harness, never a
   Tailwind utility on the same element.
 - Keep GURPS knowledge in `src/gurps/`. Components stay presentational: `hud-view.ts` turns the
   actor into a flat view model, and that is what gets unit tested.
-- Anything only a browser can answer — does this wrap, is this box where the mock puts it, does axe
-  pass — belongs in `e2e/`, driving the harness via its query parameters rather than a live world.
+- Accessibility is its own group, named `*.a11y.test.ts` in both runners: a component's scans sit
+  beside it and mount it in Vitest's browser mode (headless Chromium, driven by Playwright), and
+  `e2e/persistent-hud.a11y.test.ts` scans the assembled strip in each state the harness can open.
+  Both call `axeViolations` from `src/a11y-scan.ts` and assert the exact list against that file's
+  `EXCEPTIONS` array — the accessibility to-do list for what it scans. A new violation fails the
+  scan and so does fixing a listed one, so no exception outlives the problem it records. Contrast is
+  excluded from every scan and tracked by one `test.fixme`: it is a design call on the palette, not
+  a markup fix.
+- Anything else only a browser can answer — does this wrap, is this box where the mock puts it —
+  belongs in `e2e/`, driving the harness via its query parameters rather than a live world.
   Give elements a `data-hud-*` hook to select on. `Locator.evaluateAll` does **not** auto-wait, so
   wait for the panel first (`openHarness` does) or the measurement silently runs against nothing.
 - The design mock in `design-handoff/` was authored under `content-box`; the HUD renders under

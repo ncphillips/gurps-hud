@@ -18,7 +18,24 @@ export default defineConfig({
     baseURL: HARNESS,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: devices["Desktop Chrome"] }],
+  /*
+   * Two groups, split by filename like the Vitest suites: `*.spec.ts` drives the HUD and asserts on
+   * what it does, `*.a11y.test.ts` scans it with axe-core. Separate projects so a red axe scan
+   * reads as an accessibility regression rather than a broken feature, and so `npm run test:a11y`
+   * can run the accessibility group across both runners.
+   */
+  projects: [
+    {
+      name: "chromium",
+      testIgnore: "**/*.a11y.test.ts",
+      use: devices["Desktop Chrome"],
+    },
+    {
+      name: "chromium-a11y",
+      testMatch: "**/*.a11y.test.ts",
+      use: devices["Desktop Chrome"],
+    },
+  ],
   webServer: {
     command: "npm run harness",
     url: HARNESS,
