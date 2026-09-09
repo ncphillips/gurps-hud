@@ -105,6 +105,14 @@
     event.preventDefault();
     event.stopPropagation();
   }
+
+  /**
+   * Foundry's own controls -- the scene tools, the sidebar tabs -- are 32px, and its hotbar macros
+   * are 50px. A slot takes the smaller of the two: the art has to be recognisable, but the footer
+   * is one row of the strip and not a bar in its own right. Shared by the filled and empty branches
+   * so they cannot drift apart, and by the library, which lays the other forty slots out in a grid.
+   */
+  const SIZE = "h-[32px] w-[32px]";
 </script>
 
 {#if slot.name}
@@ -125,7 +133,8 @@
       onremove(slot.slot);
     }}
     class={[
-      "h-[22px] w-[22px] cursor-pointer overflow-hidden rounded-hud-sm text-center font-hud-mono text-[10px]/[22px] font-semibold text-hud-ink/50 transition-colors duration-75 hover:bg-hud-accent hover:text-hud-on-accent",
+      SIZE,
+      "cursor-pointer overflow-hidden rounded-hud-sm text-center font-hud-mono text-[12px]/[32px] font-semibold text-hud-ink/50 transition-colors duration-75 hover:bg-hud-accent hover:text-hud-on-accent",
       drag.over === slot.slot ? "bg-hud-accent" : "bg-white/[.07]",
     ]}
     onclick={() => onexecute(slot.slot)}
@@ -140,7 +149,8 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class={[
-      "h-[22px] w-[22px] rounded-hud-sm border border-dashed bg-white/[.04]",
+      SIZE,
+      "rounded-hud-sm border border-dashed bg-white/[.04]",
       drag.over === slot.slot ? "border-hud-accent" : "border-white/[.12]",
     ]}
     title={t("macros.emptySlot", { hotkey: slot.hotkey })}

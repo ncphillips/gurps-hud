@@ -93,7 +93,11 @@
   /** Scoped to the bar: the same slot is also rendered by the library, on its own page's row. */
   let bar = $state<HTMLElement | null>(null);
 
-  /** Sized to the slots they sit beside, so the footer reads as one row of 22px controls. */
+  /**
+   * Deliberately smaller than the 32px slots they sit beside. The slots hold macro art a GM has to
+   * recognise at a glance; paging and the library toggle are chrome, and the stock hotbar sets the
+   * same hierarchy -- 50px macros, arrows a fraction of that. `items-center` on the row centres them.
+   */
   const CONTROL =
     "flex h-[22px] w-[22px] flex-none cursor-pointer items-center justify-center rounded-hud-sm border border-transparent bg-white/[.05] text-hud-ink/45 transition-colors duration-75 hover:border-white/[.18] hover:bg-white/[.1] hover:text-hud-ink";
 </script>

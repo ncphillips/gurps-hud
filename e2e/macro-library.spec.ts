@@ -52,26 +52,26 @@ test.describe("macro library", () => {
   });
 
   /*
-   * The strip is pixel-matched to the mock, and its width is set by whichever row is widest. The
-   * footer gained page controls and an expand toggle, so it has to still be narrower than the rows
-   * above it.
+   * The strip is pixel-matched to the mock, and its width is set by whichever row is widest. Slots
+   * sized to Foundry's own 32px controls make that row the footer for any actor whose weapons and
+   * maneuver name are short, which is a deliberate trade: the footer sets the strip a minimum width
+   * and the strip stops resizing as the GM clicks between tokens.
    *
-   * Measured by hiding the footer and looking at what the strip does, because the obvious
-   * `scrollWidth - clientWidth` cannot fail here: the strip is `w-fit`, so a footer too wide for
-   * it widens the whole HUD rather than overflowing anything.
+   * What the footer may not do is creep. The ten slots are the row; the label, the page controls,
+   * the library toggle and the gaps between them share a fixed budget, and a new control that
+   * quietly widens the whole HUD is the regression this catches. `scrollWidth - clientWidth` cannot
+   * find it: the strip is `w-fit`, so a footer too wide for its row widens the HUD rather than
+   * overflowing anything.
    */
-  test("does not widen the strip", async ({ page }) => {
+  const CHROME_BUDGET = 170;
+
+  test("keeps its chrome inside a fixed budget", async ({ page }) => {
     await openHarness(page);
-    const [withFooter, withoutFooter] = await page.locator(FOOTER).evaluate((bar) => {
+    const chrome = await page.locator(FOOTER).evaluate((bar) => {
       const footer = bar.parentElement!;
-      const strip = document.querySelector("#gurps-hud-persistent > div")!;
-      const before = strip.getBoundingClientRect().width;
-      footer.style.display = "none";
-      const after = strip.getBoundingClientRect().width;
-      footer.style.removeProperty("display");
-      return [before, after];
+      return footer.getBoundingClientRect().width - bar.getBoundingClientRect().width;
     });
 
-    expect(withFooter).toBe(withoutFooter);
+    expect(chrome).toBeLessThanOrEqual(CHROME_BUDGET);
   });
 });
