@@ -12,6 +12,7 @@
 
   let {
     view,
+    enabled,
     actor,
     onpool,
     onopensheet,
@@ -25,8 +26,10 @@
     onclose,
   }: {
     view: HudView;
-    /** The actor behind `view`, so the switcher can mark the current choice. */
-    actor: GurpsActorLike;
+    /** False with nothing selected: the block still renders, but nothing in it acts on an actor. */
+    enabled: boolean;
+    /** The actor behind `view`, so the switcher can mark the current choice; null when there is none. */
+    actor: GurpsActorLike | null;
     onpool: (pool: Pool, value: number) => void;
     onopensheet: () => void;
     /** Whether the strip is pinned to this actor, ignoring token selection. */
@@ -41,7 +44,12 @@
     onclose: () => void;
   } = $props();
 
-  const switchable = $derived(choices.length > 1);
+  /*
+   * Switching is the one thing the block still offers with no actor -- the name reads "Select Actor"
+   * and the menu is how that gets done -- so what counts as worth opening is one more choice than
+   * the one already shown, which with nothing selected is any choice at all.
+   */
+  const switchable = $derived(choices.length > (enabled ? 1 : 0));
   const isCurrent = (choice: ActorChoice) => choice.actor === actor;
 
   const TONE_TEXT: Record<Tone, string> = {
@@ -51,6 +59,13 @@
   };
 
   const idle = $derived(view.condition.label === "—");
+
+  /** With no actor the vitals icons stay in place, dimmed, so the cells read as blank not zeroed. */
+  const ICON = $derived({
+    hp: enabled ? "text-hud-hp" : "text-hud-hp/40",
+    fp: enabled ? "text-hud-fp" : "text-hud-fp/40",
+    shock: enabled ? "text-hud-accent" : "text-hud-accent/40",
+  });
 </script>
 
 <div
@@ -59,11 +74,16 @@
   <div class="flex items-center gap-[2px] pr-[7px] pl-[3px] py-[2px]">
     <button
       type="button"
-      class="flex h-[14px] w-[14px] flex-none cursor-pointer items-center justify-center rounded-hud-xs border border-transparent transition-colors duration-75 hover:border-white/[.18] hover:bg-white/[.08] {locked
+      class="flex h-[14px] w-[14px] flex-none items-center justify-center rounded-hud-xs border border-transparent transition-colors duration-75 {enabled
+        ? 'cursor-pointer hover:border-white/[.18] hover:bg-white/[.08]'
+        : 'text-hud-ink/20'} {locked
         ? 'text-hud-accent'
-        : 'text-hud-ink/35 hover:text-hud-ink/70'}"
+        : enabled
+          ? 'text-hud-ink/35 hover:text-hud-ink/70'
+          : ''}"
       title={locked ? t("portrait.lock.locked") : t("portrait.lock.unlocked")}
       aria-pressed={locked}
+      disabled={!enabled}
       onclick={ontogglelock}
     >
       <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
@@ -87,7 +107,11 @@
         class="flex items-center justify-center gap-[4px] rounded-hud-xs border border-transparent px-[3px] font-hud text-[12.5px]/[1.25] font-semibold text-hud-ink transition-colors duration-75 {switchable
           ? 'hover:border-white/[.18] hover:bg-white/[.06]'
           : ''}"
-        title={switchable ? t("portrait.switchCharacter", { name: view.name }) : view.name}
+        title={!enabled
+          ? t("portrait.selectCharacter")
+          : switchable
+            ? t("portrait.switchCharacter", { name: view.name })
+            : view.name}
       >
         <span class="truncate">{view.name}</span>
         {#if switchable}
@@ -130,8 +154,9 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="relative flex min-h-[96px] flex-1 items-end justify-center"
-    title={t("portrait.openSheet")}
-    ondblclick={onopensheet}
+    data-hud-portrait
+    title={enabled ? t("portrait.openSheet") : undefined}
+    ondblclick={enabled ? onopensheet : undefined}
   >
     {#if view.img}
       <img src={view.img} alt="" class="absolute inset-0 h-full w-full object-cover" />
@@ -144,21 +169,23 @@
     <div
       class="absolute top-[4px] left-[5px]"
       data-hud-trigger="posture"
-      onmouseenter={() => onopen("posture")}
-      onmouseleave={onclose}
+      onmouseenter={enabled ? () => onopen("posture") : undefined}
+      onmouseleave={enabled ? onclose : undefined}
       ondblclick={(event) => event.stopPropagation()}
     >
       <span
-        class="flex items-center gap-[5px] rounded-hud-xs border border-transparent bg-hud-deep/80 px-[5px] py-px font-hud-mono text-[9px] font-semibold uppercase transition-colors duration-75 hover:border-white/[.18] {TONE_TEXT[
-          view.posture.tone
-        ]}"
-        title={t("portrait.posture")}
+        class="flex items-center gap-[5px] rounded-hud-xs border border-transparent bg-hud-deep/80 px-[5px] py-px font-hud-mono text-[9px] font-semibold uppercase transition-colors duration-75 {enabled
+          ? `hover:border-white/[.18] ${TONE_TEXT[view.posture.tone]}`
+          : 'text-hud-ink/28'}"
+        title={enabled ? t("portrait.posture") : undefined}
       >
         {view.posture.label}
-        <span class="text-[8px] text-hud-ink/45">▴</span>
+        {#if enabled}
+          <span class="text-[8px] text-hud-ink/45">▴</span>
+        {/if}
       </span>
 
-      {#if openPanel === "posture"}
+      {#if openPanel === "posture" && enabled}
         <!--
           The badge sits 24px inside the strip (name row, border, offset), so 30px lifts the menu
           6px clear of the strip's top edge like the top bar's panels.
@@ -192,34 +219,46 @@
 
   <div class="grid grid-cols-2 gap-[3px] px-[5px] pt-[4px] pb-[5px]">
     <div class="flex items-center gap-[4px]">
-      <VitalIcon kind="hp" class="text-hud-hp" />
+      <VitalIcon kind="hp" class={ICON.hp} />
       <PoolField
         pool={view.hp}
+        {enabled}
         title={t("portrait.hp")}
         onchange={(value) => onpool("HP", value)}
       />
     </div>
 
     <div class="flex items-center gap-[4px]">
-      <VitalIcon kind="fp" class="text-hud-fp" />
+      <VitalIcon kind="fp" class={ICON.fp} />
       <PoolField
         pool={view.fp}
+        {enabled}
         title={t("portrait.fp")}
         onchange={(value) => onpool("FP", value)}
       />
     </div>
 
-    <div class="flex items-center gap-[4px]" title={t("portrait.shock")}>
-      <VitalIcon kind="shock" class="text-hud-accent" />
-      <Readout class={view.shock < 0 ? "text-hud-accent" : "text-hud-ink/72"}>
-        {view.shock}
+    <div class="flex items-center gap-[4px]" title={enabled ? t("portrait.shock") : undefined}>
+      <VitalIcon kind="shock" class={ICON.shock} />
+      <Readout
+        class={view.shock === null
+          ? "text-hud-ink/28"
+          : view.shock < 0
+            ? "text-hud-accent"
+            : "text-hud-ink/72"}
+      >
+        {view.shock ?? "—"}
       </Readout>
     </div>
 
-    <div class="flex items-center gap-[4px]" title={view.condition.title}>
+    <div class="flex items-center gap-[4px]" title={view.condition.title || undefined}>
       <VitalIcon
         kind="condition"
-        class={idle ? "text-hud-ink/40" : TONE_TEXT[view.condition.tone]}
+        class={idle
+          ? enabled
+            ? "text-hud-ink/40"
+            : "text-hud-ink/20"
+          : TONE_TEXT[view.condition.tone]}
       />
       <Readout
         size={idle ? "md" : "sm"}

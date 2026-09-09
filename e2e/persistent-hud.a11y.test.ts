@@ -29,6 +29,7 @@ const EXCEPTIONS = {
   // in PoolField.a11y.test.ts, which is where the fix goes.
   editing: ["label: input"],
   macros: [] as string[],
+  noActor: [] as string[],
 };
 
 /** One line per violation -- `rule: selector` -- the same shape the component scans assert on. */
@@ -98,6 +99,12 @@ test.describe("persistent HUD accessibility", () => {
     await openHarness(page, { macros: "" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.macros);
+  });
+
+  test("nothing selected", async ({ page }) => {
+    await openHarness(page, { noActor: "" });
+
+    expect(await stripViolations(page)).toEqual(EXCEPTIONS.noActor);
   });
 
   /*

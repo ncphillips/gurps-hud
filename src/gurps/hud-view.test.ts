@@ -4,6 +4,7 @@ import {
   buildHudView,
   buildTargetView,
   conditionVital,
+  emptyHudView,
   flattenList,
   hitLocationRows,
   isEquipped,
@@ -448,5 +449,66 @@ describe("buildTargetView", () => {
         (location) => location.where,
       ),
     ).toEqual(["Wing"]);
+  });
+});
+
+describe("emptyHudView", () => {
+  it("asks for an actor in place of a character name", () => {
+    expect(emptyHudView().name).toBe("Select Actor");
+  });
+
+  it("has no portrait", () => {
+    expect(emptyHudView().img).toBeNull();
+  });
+
+  it("blanks the posture badge rather than claiming the actor is standing", () => {
+    expect(emptyHudView().posture.label).toBe("—");
+  });
+
+  it("offers no posture to change to", () => {
+    expect(emptyHudView().postures).toEqual([]);
+  });
+
+  it("blanks hit points", () => {
+    expect(emptyHudView().hp).toEqual({ value: "—", max: "—", tone: "ok" });
+  });
+
+  it("blanks fatigue points", () => {
+    expect(emptyHudView().fp).toEqual({ value: "—", max: "—", tone: "ok" });
+  });
+
+  it("has no shock penalty to report", () => {
+    expect(emptyHudView().shock).toBeNull();
+  });
+
+  it("blanks the condition cell", () => {
+    expect(emptyHudView().condition.label).toBe("—");
+  });
+
+  it("blanks Dodge", () => {
+    expect(emptyHudView().dodge).toBe("—");
+  });
+
+  it("blanks Move", () => {
+    expect(emptyHudView().move).toBe("—");
+  });
+
+  it("blanks every attribute value", () => {
+    const values = emptyHudView()
+      .attrs.basic.groups.flat()
+      .map((attr) => attr.value);
+    expect(values).toEqual(["", "", "", "", "", "", "", ""]);
+  });
+
+  it("lists no attacks", () => {
+    expect(emptyHudView().melee).toEqual([]);
+  });
+
+  it("lists no skills", () => {
+    expect(emptyHudView().skills).toEqual([]);
+  });
+
+  it("has no maneuver", () => {
+    expect(emptyHudView().maneuverId).toBeNull();
   });
 });

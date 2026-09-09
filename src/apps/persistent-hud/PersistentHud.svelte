@@ -24,7 +24,7 @@
   import { t } from "@/i18n";
   import { actorChoices } from "@/gurps/actor-choices";
   import type { ActorChoice } from "@/gurps/actor-choices";
-  import { buildHudView, buildTargetView } from "@/gurps/hud-view";
+  import { buildHudView, buildTargetView, emptyHudView } from "@/gurps/hud-view";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
   import type { GurpsActorLike } from "@/gurps/system-types";
@@ -68,7 +68,15 @@
     return read();
   }
 
-  const view = $derived(atRevision(revision, () => (actor ? buildHudView(actor, localize) : null)));
+  /*
+   * The strip is always on screen, so with nothing selected it renders the empty view rather than
+   * disappearing: the macro bar stays reachable, and the name row invites picking somebody. Every
+   * control that would act on an actor is switched off through `enabled`.
+   */
+  const view = $derived(
+    atRevision(revision, () => (actor ? buildHudView(actor, localize) : emptyHudView())),
+  );
+  const enabled = $derived(actor !== null);
   const targetView = $derived(atRevision(revision, () => buildTargetView(targetActor)));
   const macroPages = $derived(atRevision(revision, hotbarPages));
 
@@ -88,7 +96,7 @@
    * outside our menu are labelled by the system so an On Target maneuver still reads correctly.
    */
   const maneuver = $derived.by(() => {
-    const id = view?.maneuverId;
+    const id = view.maneuverId;
     if (!id) return null;
     return maneuverById(id) ?? { id, name: maneuverLabel(id), hint: "" };
   });
@@ -194,53 +202,53 @@
   }
 </script>
 
-{#if view}
-  <div
-    class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
-  >
-    <PortraitBlock
+<div
+  class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
+>
+  <PortraitBlock
+    {view}
+    {enabled}
+    {actor}
+    onpool={(pool, value) => void updatePool(actor, pool, value)}
+    onopensheet={() => openSheet(actor)}
+    {locked}
+    ontogglelock={toggleLock}
+    {choices}
+    onselectactor={selectActor}
+    {openPanel}
+    onposture={selectPosture}
+    onopen={open}
+    onclose={close}
+  />
+
+  <div class="flex min-h-0 min-w-0 flex-col">
+    <TopBar
       {view}
-      actor={actor!}
-      onpool={(pool, value) => void updatePool(actor, pool, value)}
-      onopensheet={() => openSheet(actor)}
-      {locked}
-      ontogglelock={toggleLock}
-      {choices}
-      onselectactor={selectActor}
+      {enabled}
+      {maneuver}
+      {maneuverEnabled}
       {openPanel}
-      onposture={selectPosture}
       onopen={open}
       onclose={close}
+      onselect={selectManeuver}
+      {targetView}
+      {target}
+      onselecttarget={selectTarget}
+      onroll={roll}
     />
+    <WeaponTables {view} {enabled} onroll={roll} />
 
-    <div class="flex min-h-0 min-w-0 flex-col">
-      <TopBar
-        {view}
-        {maneuver}
-        {maneuverEnabled}
-        {openPanel}
-        onopen={open}
-        onclose={close}
-        onselect={selectManeuver}
-        {targetView}
-        {target}
-        onselecttarget={selectTarget}
-        onroll={roll}
-      />
-      <WeaponTables {view} onroll={roll} />
-
-      <MacroBar
-        pages={macroPages}
-        page={macroPage}
-        onpage={(page) => {
-          changeHotbarPage(page);
-          revision++;
-        }}
-        onexecute={executeMacroSlot}
-        onassign={(slot, event) => void assignMacroSlot(slot, event)}
-        onmove={(from, to) => void moveMacroSlot(from, to)}
-        onremove={(slot) => void removeMacroSlot(slot)}
-      />
-    </div>
+    <MacroBar
+      pages={macroPages}
+      page={macroPage}
+      onpage={(page) => {
+        changeHotbarPage(page);
+        revision++;
+      }}
+      onexecute={executeMacroSlot}
+      onassign={(slot, event) => void assignMacroSlot(slot, event)}
+      onmove={(from, to) => void moveMacroSlot(from, to)}
+      onremove={(slot) => void removeMacroSlot(slot)}
+    />
   </div>
-{/if}
+</div>

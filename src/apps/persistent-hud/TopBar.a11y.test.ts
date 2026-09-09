@@ -2,6 +2,7 @@ import { render } from "@testing-library/svelte";
 import { describe, expect, it, test, vi } from "vitest";
 import { axeViolations } from "@/a11y-scan";
 import { maneuverById } from "@/gurps/maneuvers";
+import { emptyHudView } from "@/gurps/hud-view";
 import { fixtureTargetView, fixtureView } from "./hud-fixture";
 import TopBar from "./TopBar.svelte";
 import type { Panel } from "./panels";
@@ -14,11 +15,13 @@ const EXCEPTIONS = {
   maneuver: [] as string[],
   target: [] as string[],
   untargeted: [] as string[],
+  noActor: [] as string[],
 };
 
 function props(openPanel: Panel | null = null) {
   return {
     view: fixtureView(),
+    enabled: true,
     maneuver: maneuverById("attack") ?? null,
     maneuverEnabled: true,
     openPanel,
@@ -67,5 +70,13 @@ describe("TopBar accessibility", () => {
     const { container } = render(TopBar, { props: { ...props(), targetView: null } });
 
     expect(await axeViolations(container)).toEqual(EXCEPTIONS.untargeted);
+  });
+
+  test("nothing selected", async () => {
+    const { container } = render(TopBar, {
+      props: { ...props(), view: emptyHudView(), enabled: false, maneuverEnabled: false },
+    });
+
+    expect(await axeViolations(container)).toEqual(EXCEPTIONS.noActor);
   });
 });

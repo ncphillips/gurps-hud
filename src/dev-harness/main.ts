@@ -6,6 +6,7 @@
  *
  * Query parameters:
  *   ?panel=attrs|maneuver|actor   opens that hover panel on load, so it can be screenshotted
+ *   ?noActor                nothing is selected, so the strip renders its empty state
  *   ?target                 targets a goblin, so the TARGET pill lists its hit locations
  *   ?maneuver=<id>          puts the actor in combat performing that maneuver
  *   ?edit=hp|fp             opens that pool's box for editing on load
@@ -33,6 +34,8 @@ const harnessParams = new URLSearchParams(location.search);
 /** Hooks registered by the HUD, so the harness's fake actor can trigger a rerender. */
 const hooks = new Map<string, Array<() => void>>();
 const maneuver = harnessParams.get("maneuver");
+/** Nothing selected: what a GM sees before clicking a token. */
+const noActor = harnessParams.has("noActor");
 
 /** Brent Mitton, the character the design mock is drawn from. */
 const actor = {
@@ -216,7 +219,7 @@ const hotbar: (string | null)[] = Array.from({ length: 50 }, (_, index) => {
 
 Object.assign(globalThis, {
   GURPS: {
-    LastActor: actor,
+    LastActor: noActor ? null : actor,
     SetLastActor: (next: unknown) => {
       (globalThis as { GURPS: { LastActor: unknown } }).GURPS.LastActor = next;
       for (const hook of hooks.get("updateLastActorGURPS") ?? []) hook();

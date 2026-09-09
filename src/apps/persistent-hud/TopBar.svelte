@@ -14,6 +14,7 @@
    */
   let {
     view,
+    enabled,
     maneuver,
     maneuverEnabled,
     openPanel,
@@ -26,6 +27,8 @@
     onroll,
   }: {
     view: HudView;
+    /** False with nothing selected: the bar still renders, but nothing in it acts on an actor. */
+    enabled: boolean;
     /** What the actor is actually performing, or `null` when it has no maneuver. */
     maneuver: HudManeuver | null;
     /** False when the Game Aid would refuse the change -- the actor is not in the active combat. */
@@ -92,10 +95,12 @@
     "max-h-[280px] w-[400px] overflow-y-auto [scrollbar-color:rgb(255_255_255/.18)_transparent] [scrollbar-width:thin]";
 </script>
 
-{#snippet trigger(label: string, title: string)}
-  <div class="{TRIGGER} {TRIGGER_HOVER}" {title}>
-    <span class="{LABEL} {LABEL_HOVER}">{label}</span>
-    <span class="{CARET} {CARET_HOVER}">▴</span>
+{#snippet trigger(label: string, title: string, active: boolean)}
+  <div class="{TRIGGER} {active ? TRIGGER_HOVER : ''}" title={active ? title : undefined}>
+    <span class="{LABEL} {active ? LABEL_HOVER : 'text-hud-ink/32'}">{label}</span>
+    {#if active}
+      <span class="{CARET} {CARET_HOVER}">▴</span>
+    {/if}
   </div>
 {/snippet}
 
@@ -104,11 +109,11 @@
   <div
     class="relative"
     data-hud-trigger="attrs"
-    onmouseenter={() => onopen("attrs")}
-    onmouseleave={onclose}
+    onmouseenter={enabled ? () => onopen("attrs") : undefined}
+    onmouseleave={enabled ? onclose : undefined}
   >
-    {@render trigger(t("topBar.attrs.label"), t("topBar.attrs.title"))}
-    {#if openPanel === "attrs"}
+    {@render trigger(t("topBar.attrs.label"), t("topBar.attrs.title"), enabled)}
+    {#if openPanel === "attrs" && enabled}
       <Popover offset={OFFSET}>
         <AttrsPanel basic={view.attrs.basic} secondary={view.attrs.secondary} {onroll} />
       </Popover>
@@ -119,11 +124,11 @@
   <div
     class="relative"
     data-hud-trigger="skills"
-    onmouseenter={() => onopen("skills")}
-    onmouseleave={onclose}
+    onmouseenter={enabled ? () => onopen("skills") : undefined}
+    onmouseleave={enabled ? onclose : undefined}
   >
-    {@render trigger(t("topBar.skills.label"), t("topBar.skills.title"))}
-    {#if openPanel === "skills"}
+    {@render trigger(t("topBar.skills.label"), t("topBar.skills.title"), enabled)}
+    {#if openPanel === "skills" && enabled}
       <Popover offset={OFFSET} class={SKILLS_PANEL}>
         <SkillsPanel skills={view.skills} {onroll} />
       </Popover>
@@ -135,12 +140,19 @@
   <button
     type="button"
     title={t("topBar.dodge.title")}
-    class="{TRIGGER} cursor-pointer hover:border-hud-defence hover:bg-hud-defence"
+    class="{TRIGGER} {enabled
+      ? 'cursor-pointer hover:border-hud-defence hover:bg-hud-defence'
+      : ''}"
+    disabled={!enabled}
     onclick={(event) => onroll("Dodge", event)}
   >
-    <span class="{LABEL} {LABEL_HOVER}">{t("topBar.dodge.label")}</span>
+    <span class="{LABEL} {enabled ? LABEL_HOVER : 'text-hud-ink/32'}"
+      >{t("topBar.dodge.label")}</span
+    >
     <span
-      class="font-hud-mono text-[13px]/none font-bold text-hud-defence group-hover:text-hud-on-accent"
+      class="font-hud-mono text-[13px]/none font-bold {enabled
+        ? 'text-hud-defence group-hover:text-hud-on-accent'
+        : 'text-hud-ink/35'}"
     >
       {view.dodge}
     </span>

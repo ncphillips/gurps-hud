@@ -11,10 +11,13 @@
    */
   let {
     pool,
+    enabled,
     title,
     onchange,
   }: {
     pool: PoolVital;
+    /** False with no actor selected: the box reads as blank and cannot be opened for editing. */
+    enabled: boolean;
     title: string;
     onchange: (value: number) => void;
   } = $props();
@@ -72,7 +75,11 @@
   const BOX = `${READOUT} ${READOUT_TEXT.md}`;
 </script>
 
-{#if editing}
+{#if !enabled}
+  <span class="{BOX} text-hud-ink/28"
+    >{pool.value}<span class="text-[9.5px]">/{pool.max}</span></span
+  >
+{:else if editing}
   <input
     bind:this={input}
     bind:value={draft}

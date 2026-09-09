@@ -5,9 +5,12 @@
 
   let {
     view,
+    enabled,
     onroll,
   }: {
     view: HudView;
+    /** False with nothing selected, which is a different emptiness from an actor who carries nothing. */
+    enabled: boolean;
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
 
@@ -121,7 +124,7 @@
 
   {#if view.melee.length === 0 && view.ranged.length === 0}
     <div class="px-[7px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
-      {t("weapons.empty")}
+      {enabled ? t("weapons.empty") : t("weapons.noActor")}
     </div>
   {/if}
 </div>

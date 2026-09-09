@@ -1,6 +1,7 @@
 import { render } from "@testing-library/svelte";
 import { describe, expect, it, test, vi } from "vitest";
 import { axeViolations } from "@/a11y-scan";
+import { emptyHudView } from "@/gurps/hud-view";
 import { fixtureActor, fixtureView } from "./hud-fixture";
 import PortraitBlock from "./PortraitBlock.svelte";
 import type { Panel } from "./panels";
@@ -11,6 +12,7 @@ const EXCEPTIONS = {
   switcher: [] as string[],
   posture: [] as string[],
   locked: [] as string[],
+  noActor: [] as string[],
 };
 
 function props(openPanel: Panel | null = null) {
@@ -19,6 +21,7 @@ function props(openPanel: Panel | null = null) {
 
   return {
     view: fixtureView(),
+    enabled: true,
     actor,
     onpool: vi.fn(),
     onopensheet: vi.fn(),
@@ -59,5 +62,16 @@ describe("PortraitBlock accessibility", () => {
     const { container } = render(PortraitBlock, { ...props(), locked: true });
 
     expect(await axeViolations(container)).toEqual(EXCEPTIONS.locked);
+  });
+
+  test("nothing selected", async () => {
+    const { container } = render(PortraitBlock, {
+      ...props(),
+      view: emptyHudView(),
+      enabled: false,
+      actor: null,
+    });
+
+    expect(await axeViolations(container)).toEqual(EXCEPTIONS.noActor);
   });
 });

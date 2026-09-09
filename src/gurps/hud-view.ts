@@ -97,7 +97,8 @@ export interface HudView {
   postures: PostureOption[];
   hp: PoolVital;
   fp: PoolVital;
-  shock: number;
+  /** `null` when there is no actor to have taken a wound. */
+  shock: number | null;
   condition: ConditionVital;
   dodge: string;
   move: string;
@@ -377,6 +378,34 @@ function poolVital(pool: { value: Numeric; max: Numeric } | undefined): PoolVita
   const value = num(pool?.value);
   const max = num(pool?.max);
   return { value: String(value), max: String(max), tone: poolTone(value, max) };
+}
+
+/**
+ * What the strip shows with nothing selected. The chrome stays put -- the GM can still reach the
+ * macro bar, and the name reads as an invitation to pick somebody -- while every readout the actor
+ * would have filled in is blank, so an empty strip can never be mistaken for a character with no
+ * hit points. Nothing here is looked up from the Game Aid: there is no actor to ask about.
+ */
+export function emptyHudView(): HudView {
+  const blankPool: PoolVital = { value: EM_DASH, max: EM_DASH, tone: "ok" };
+
+  return {
+    name: t("portrait.noActor"),
+    img: null,
+    posture: { id: "standing", label: EM_DASH, tone: "ok" },
+    postures: [],
+    hp: blankPool,
+    fp: { ...blankPool },
+    shock: null,
+    condition: { label: EM_DASH, tone: "ok", title: "" },
+    dodge: EM_DASH,
+    move: EM_DASH,
+    attrs: attrColumns({} as GurpsSystem),
+    melee: [],
+    ranged: [],
+    skills: [],
+    maneuverId: null,
+  };
 }
 
 export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView {
