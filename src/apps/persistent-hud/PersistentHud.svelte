@@ -2,6 +2,7 @@
   import {
     addBucketModifier,
     assignMacroSlot,
+    attackPicks,
     canSetManeuver,
     canvasTokens,
     changeHotbarPage,
@@ -13,8 +14,10 @@
     localize,
     maneuverLabel,
     moveMacroSlot,
+    notifyWarning,
     openSheet,
     removeMacroSlot,
+    saveAttackPicks,
     setCurrentActor,
     setManeuver,
     setPosture,
@@ -24,7 +27,16 @@
   import { t } from "@/i18n";
   import { actorChoices } from "@/gurps/actor-choices";
   import type { ActorChoice } from "@/gurps/actor-choices";
-  import { buildHudView, buildTargetView, emptyHudView } from "@/gurps/hud-view";
+  import { allAttackPicks, buildHudView, buildTargetView, emptyHudView } from "@/gurps/hud-view";
+  import {
+    droppedAttack,
+    isFromActor,
+    nudgePick,
+    placePick,
+    removePick,
+  } from "@/gurps/attack-picks";
+  import type { AttackPicks } from "@/gurps/attack-picks";
+  import { attackDrag } from "./attack-drag";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
   import type { GurpsActorLike } from "@/gurps/system-types";
@@ -54,6 +66,14 @@
   let openPanel = $state<Panel | null>(null);
 
   /**
+   * The attack being dragged around the tables. Owned here rather than by them because dropping an
+   * attack anywhere on the strip has to count as landing: the gesture that removes one is dragging
+   * it clear of the strip, so a drop on the top bar or the macro footer must read as a near miss
+   * rather than as a deletion.
+   */
+  let drag = $state(attackDrag());
+
+  /**
    * Where attacks are aimed on the targeted token's body. The Game Aid has no such state of its
    * own -- its sheet pushes a location's penalty into the bucket per click -- so this lives here and
    * does the same push on every attack roll. It resets to the torso whenever the target changes.
@@ -68,13 +88,19 @@
     return read();
   }
 
+  /**
+   * Which attacks the strip shows, read off the actor rather than held here: the flag is the record,
+   * and every write to it comes back through `updateActor` like any other change to the character.
+   */
+  const picks = $derived(atRevision(revision, () => attackPicks(actor)));
+
   /*
    * The strip is always on screen, so with nothing selected it renders the empty view rather than
    * disappearing: the macro bar stays reachable, and the name row invites picking somebody. Every
    * control that would act on an actor is switched off through `enabled`.
    */
   const view = $derived(
-    atRevision(revision, () => (actor ? buildHudView(actor, localize) : emptyHudView())),
+    atRevision(revision, () => (actor ? buildHudView(actor, localize, picks) : emptyHudView())),
   );
   const enabled = $derived(actor !== null);
   const targetView = $derived(atRevision(revision, () => buildTargetView(targetActor)));
@@ -195,6 +221,28 @@
     setCurrentActor(choice.actor, choice.key);
   }
 
+  function savePicks(next: AttackPicks): void {
+    void saveAttackPicks(actor, next);
+  }
+
+  /**
+   * A drop on the attack tables, from a character sheet or from the tables themselves. The actor
+   * check is the point of taking the raw event this far up: the sheet stamps its own actor id onto
+   * every row it hands out, so an attack dragged off Bob's sheet is refused by Greg's strip instead
+   * of quietly becoming an attack Greg cannot make.
+   */
+  function placeAttack(event: DragEvent, before: string | null): void {
+    const dropped = droppedAttack(event.dataTransfer?.getData("text/plain"));
+    if (!dropped || !actor) return;
+
+    if (!isFromActor(dropped, actor.id)) {
+      notifyWarning(t("weapons.wrongActor", { name: actor.name }));
+      return;
+    }
+
+    savePicks(placePick(picks, dropped.key, before));
+  }
+
   function toggleLock(): void {
     locked = !locked;
     // Unlocking hands control back to whichever token is selected right now.
@@ -202,8 +250,13 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-white/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
+  ondragover={(event) => {
+    if (drag.from !== null) event.preventDefault();
+  }}
+  ondrop={() => (drag.landed = true)}
 >
   <PortraitBlock
     {view}
@@ -236,7 +289,17 @@
       onselecttarget={selectTarget}
       onroll={roll}
     />
-    <WeaponTables {view} {enabled} onroll={roll} />
+    <WeaponTables
+      {view}
+      {enabled}
+      actorId={actor?.id ?? null}
+      bind:drag
+      onroll={roll}
+      onplace={placeAttack}
+      onremove={(key) => savePicks(removePick(picks, key))}
+      onnudge={(key, step) => savePicks(nudgePick(picks, key, step))}
+      onpickall={() => actor && savePicks(allAttackPicks(actor.system))}
+    />
 
     <MacroBar
       pages={macroPages}

@@ -1,4 +1,6 @@
 import { t } from "@/i18n";
+import { noPicks, orderByPicks } from "./attack-picks";
+import type { AttackPicks } from "./attack-picks";
 import { attackOtf, skillOtf } from "./otf";
 import type {
   GurpsActorLike,
@@ -103,8 +105,15 @@ export interface HudView {
   dodge: string;
   move: string;
   attrs: { basic: AttrColumn; secondary: AttrColumn };
+  /** Only the attacks that were picked, in the order they were picked -- see `attack-picks.ts`. */
   melee: MeleeRow[];
   ranged: RangedRow[];
+  /**
+   * Whether the actor has any attack at all, picked or not. It is what tells an actor who fights
+   * with nothing apart from one whose attacks simply have not been chosen yet, which are two
+   * different empty tables: only the second is worth offering to fill.
+   */
+  hasAttacks: boolean;
   skills: SkillRow[];
   /** The Game Aid's maneuver id, or `null` when the actor has none -- i.e. is not in combat. */
   maneuverId: string | null;
@@ -204,15 +213,31 @@ export function conditionVital(conditions: {
   return { label: EM_DASH, tone: "ok", title: t("condition.none.title") };
 }
 
-/** Flattens one of the Game Aid's keyed lists, following `contains` children depth-first. */
-export function flattenList<T extends object>(list: GurpsList<T> | undefined): T[] {
-  const flat: T[] = [];
-  for (const entry of Object.values(list ?? {})) {
+/**
+ * Flattens one of the Game Aid's keyed lists, following `contains` children depth-first, pairing
+ * each entry with its full key path -- `system.melee.00000.contains.00001`.
+ *
+ * The path is built the way `GurpsActorSheet`'s own `flatlist` helper builds it, because it is the
+ * string the sheet then hands out in a row's drag payload. Keeping the two spellings identical is
+ * what lets an attack dragged off the sheet name a row the HUD already knows how to render.
+ */
+export function flattenKeyed<T extends object>(
+  list: GurpsList<T> | undefined,
+  prefix: string,
+): Array<[string, T]> {
+  const flat: Array<[string, T]> = [];
+  for (const [key, entry] of Object.entries(list ?? {})) {
     if (!entry) continue;
-    flat.push(entry);
-    flat.push(...flattenList(entry.contains as GurpsList<T> | undefined));
+    const path = `${prefix}${key}`;
+    flat.push([path, entry]);
+    flat.push(...flattenKeyed(entry.contains as GurpsList<T> | undefined, `${path}.contains.`));
   }
   return flat;
+}
+
+/** Flattens one of the Game Aid's keyed lists, following `contains` children depth-first. */
+export function flattenList<T extends object>(list: GurpsList<T> | undefined): T[] {
+  return flattenKeyed(list, "").map(([, entry]) => entry);
 }
 
 /**
@@ -261,8 +286,8 @@ function defenceCell(
 
 export function meleeRows(system: GurpsSystem): MeleeRow[] {
   const carried = system?.equipment?.carried;
-  return flattenList(system?.melee).map((melee, index) => ({
-    key: `melee-${index}`,
+  return flattenKeyed<GurpsMelee>(system?.melee, "system.melee.").map(([key, melee]) => ({
+    key,
     name: attackName(melee),
     reach: str(melee.reach) || EM_DASH,
     level: levelCell(melee, "M"),
@@ -275,8 +300,8 @@ export function meleeRows(system: GurpsSystem): MeleeRow[] {
 
 export function rangedRows(system: GurpsSystem): RangedRow[] {
   const carried = system?.equipment?.carried;
-  return flattenList(system?.ranged).map((ranged, index) => ({
-    key: `ranged-${index}`,
+  return flattenKeyed<GurpsRanged>(system?.ranged, "system.ranged.").map(([key, ranged]) => ({
+    key,
     name: attackName(ranged),
     acc: str(ranged.acc) || EM_DASH,
     range: str(ranged.range) || EM_DASH,
@@ -285,6 +310,14 @@ export function rangedRows(system: GurpsSystem): RangedRow[] {
     damage: damageCell(ranged),
     equipped: isEquipped(ranged.name, carried),
   }));
+}
+
+/** Every attack on the sheet, in the sheet's own order -- what "add them all" picks. */
+export function allAttackPicks(system: GurpsSystem): AttackPicks {
+  return {
+    melee: meleeRows(system).map((row) => row.key),
+    ranged: rangedRows(system).map((row) => row.key),
+  };
 }
 
 /** Container entries -- a GCS folder of skills has a name but no level -- stay as unrollable rows. */
@@ -403,14 +436,21 @@ export function emptyHudView(): HudView {
     attrs: attrColumns({} as GurpsSystem),
     melee: [],
     ranged: [],
+    hasAttacks: false,
     skills: [],
     maneuverId: null,
   };
 }
 
-export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView {
+export function buildHudView(
+  actor: GurpsActorLike,
+  localize: Localize,
+  picks: AttackPicks = noPicks(),
+): HudView {
   const system = actor.system ?? ({} as GurpsSystem);
   const conditions = system.conditions ?? {};
+  const melee = meleeRows(system);
+  const ranged = rangedRows(system);
 
   return {
     name: actor.name,
@@ -424,8 +464,9 @@ export function buildHudView(actor: GurpsActorLike, localize: Localize): HudView
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,
     attrs: attrColumns(system),
-    melee: meleeRows(system),
-    ranged: rangedRows(system),
+    melee: orderByPicks(melee, picks.melee),
+    ranged: orderByPicks(ranged, picks.ranged),
+    hasAttacks: melee.length > 0 || ranged.length > 0,
     skills: skillRows(system),
     // Outside combat the Game Aid leaves this as the literal string "undefined".
     maneuverId:

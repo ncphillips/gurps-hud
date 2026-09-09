@@ -23,6 +23,10 @@ export interface HarnessParams {
   edit_pool?: "hp" | "fp";
   /** Expands the macro footer's library of all five hotbar pages. */
   expand_macros?: boolean;
+  /** `"none"` leaves every attack unpicked, which is the state a fresh actor starts in. */
+  pick_attacks?: "none";
+  /** Opens a stand-in character sheet for that cast member, whose attack rows can be dragged. */
+  open_sheet?: CastMember;
   /** Which hotbar page the number keys address. */
   set_macro_page?: number;
   /** Appends a `<pre id="measurements">` of key bounding boxes. */

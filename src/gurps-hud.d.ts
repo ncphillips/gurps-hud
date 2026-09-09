@@ -1,3 +1,4 @@
+import type { AttackPicks } from "./gurps/attack-picks";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -15,8 +16,15 @@ declare module "fvtt-types/configuration" {
     }
   }
 
-  // Module flags go here as features land, e.g.:
-  // interface FlagConfig {
-  //   Actor: { "gurps-hud"?: { pinned?: boolean } };
-  // }
+  interface FlagConfig {
+    Actor: {
+      /**
+       * Which of the actor's attacks the strip shows, and in what order. It lives on the actor
+       * rather than on the user because the choice is about the character -- a GM who curated a
+       * dragon's four useful attacks out of its forty wants that curation back the next time
+       * anybody selects the dragon, not once per person at the table.
+       */
+      "gurps-hud"?: { attacks?: AttackPicks };
+    };
+  }
 }

@@ -31,6 +31,21 @@ on their name to switch.
 
 ### Combat
 
+#### Choose Which Attacks Appear
+
+A GURPS sheet lists every attack a character could conceivably make, which is far more than fits in
+a strip you read at a glance. So the HUD starts empty and you say what belongs there: drag melee and
+ranged rows off the character sheet onto the strip, or press **Add every attack** to take the lot and
+prune from there.
+
+Each row is gripped by the dotted handle on its left, the same one the character sheet uses. Drag it
+to reorder the attack within its group, or off the HUD entirely to take it away — `Alt`+`↑`/`↓` and
+`Delete` do the same from the keyboard. Attacks only ever move within their own group, and only the
+strip's own character's attacks can be dropped on it.
+
+The choice is stored on the actor, so it comes back for everyone at the table the next time that
+character is selected.
+
 #### Select your Maneuver
 ![GURPS HUD: Maneuver Selection](./assets/5-maneuvers.png)
 

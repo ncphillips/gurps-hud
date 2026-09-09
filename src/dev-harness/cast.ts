@@ -79,13 +79,25 @@ export interface HarnessActor extends GurpsActorLike {
 }
 
 function actor(id: string, name: string, system: GurpsSystem): HarnessActor {
+  /** Module flags, as a plain bag: the HUD keeps its picked attacks in here. */
+  const flags: Record<string, unknown> = {};
+
   const self: HarnessActor = {
     id,
     name,
     img: null,
     statuses: [],
     system,
+    isOwner: true,
     sheet: { render: () => console.log(`harness: open ${name}'s character sheet`) },
+
+    getFlag: (scope: string, key: string) => flags[`${scope}.${key}`],
+
+    // Mirrors Foundry: writing a flag is a document update, and that is what rerenders the strip.
+    async setFlag(scope: string, key: string, value: unknown) {
+      flags[`${scope}.${key}`] = value;
+      fire("updateActor");
+    },
 
     /** Mimics Document#update closely enough for the HP/FP boxes: walk the key path, then rerender. */
     async update(changes: Record<string, unknown>) {

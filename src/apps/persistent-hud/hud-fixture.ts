@@ -1,5 +1,6 @@
-import { buildHudView, buildTargetView } from "@/gurps/hud-view";
+import { allAttackPicks, buildHudView, buildTargetView } from "@/gurps/hud-view";
 import type { HudView, TargetView } from "@/gurps/hud-view";
+import type { AttackPicks } from "@/gurps/attack-picks";
 import type { GurpsActorLike } from "@/gurps/system-types";
 
 /*
@@ -85,8 +86,14 @@ export function fixtureActor(): GurpsActorLike {
   };
 }
 
-export function fixtureView(): HudView {
-  return buildHudView(fixtureActor(), localize);
+/**
+ * @param picks Which attacks the strip has been told to show. Defaults to all of them, because the
+ *   design mock is drawn with Brent's weapon tables full; pass `noPicks()` for the state a
+ *   character starts in, before anybody has dragged anything onto the strip.
+ */
+export function fixtureView(picks?: AttackPicks): HudView {
+  const actor = fixtureActor();
+  return buildHudView(actor, localize, picks ?? allAttackPicks(actor.system));
 }
 
 /** Something for Brent to aim at, with a body plan of its own. */

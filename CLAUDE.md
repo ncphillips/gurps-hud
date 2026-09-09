@@ -52,6 +52,10 @@ Test world: **Dungeon Crawler World** (`gurps` system).
 - Keep GURPS knowledge in `src/gurps/`. `game-aid.ts` is the only file that touches the `GURPS`
   global, and `hud-view.ts` is where the data-model quirks live: it turns the actor into a flat view
   model, and that is what gets unit tested. Components stay presentational.
+- The weapon tables show only the attacks somebody picked. `src/gurps/attack-picks.ts` is the pure
+  algebra over that list; a pick is the Game Aid's own key path (`system.melee.00000`), which is at
+  once the drag payload the character sheet hands out, the row key `hud-view` builds, and what the
+  `gurps-hud.attacks` actor flag stores. Keep those three spellings identical.
 - `*.a11y.test.ts` scans assert an exact `EXCEPTIONS` list, so fixing a listed violation fails the
   scan too. See the `hud-a11y-tests` skill before touching them.
 - Assertions only a browser can answer belong in `e2e/`, driving the harness rather than a live

@@ -1,5 +1,7 @@
 import type { GurpsActorLike } from "./system-types";
 import type { TokenLike } from "./actor-choices";
+import { readPicks } from "./attack-picks";
+import type { AttackPicks } from "./attack-picks";
 import { warn } from "@/log";
 
 /**
@@ -102,6 +104,45 @@ export async function setPosture(actor: GurpsActorLike | null, id: string): Prom
 
 export function openSheet(actor: GurpsActorLike | null): void {
   actor?.sheet?.render(true);
+}
+
+const MODULE_ID = "gurps-hud";
+const PICKS_FLAG = "attacks";
+
+/**
+ * The attacks this actor has had picked for the strip. Stored as a module flag on the actor, so the
+ * choice belongs to the character and survives every way of arriving at them -- another token of
+ * the same actor, another user, another session.
+ */
+export function attackPicks(actor: GurpsActorLike | null): AttackPicks {
+  return readPicks(actor?.getFlag?.(MODULE_ID, PICKS_FLAG));
+}
+
+/**
+ * Writing the flag fires `updateActor`, which the strip is already listening to, so the tables
+ * re-read themselves the way they would after any other change to the character.
+ *
+ * A player watching a token they do not own cannot curate it -- Foundry would reject the write --
+ * so the attempt is dropped here rather than surfacing as a permission error over a drag.
+ */
+export async function saveAttackPicks(
+  actor: GurpsActorLike | null,
+  picks: AttackPicks,
+): Promise<void> {
+  if (!actor?.setFlag) return;
+  if (actor.isOwner === false) {
+    warn("no permission to pick attacks for", actor.name);
+    return;
+  }
+
+  await actor.setFlag(MODULE_ID, PICKS_FLAG, picks);
+}
+
+/** Says why a drop was refused, in Foundry's own notification area rather than only the console. */
+export function notifyWarning(message: string): void {
+  const notifications = ui.notifications as { warn?(message: string): unknown } | undefined;
+  if (notifications?.warn) notifications.warn(message);
+  else warn(message);
 }
 
 export type Pool = "HP" | "FP";

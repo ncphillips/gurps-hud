@@ -1,10 +1,12 @@
 import { describe, expect, it, test } from "vitest";
 import {
+  allAttackPicks,
   attrColumns,
   buildHudView,
   buildTargetView,
   conditionVital,
   emptyHudView,
+  flattenKeyed,
   flattenList,
   hitLocationRows,
   isEquipped,
@@ -510,5 +512,75 @@ describe("emptyHudView", () => {
 
   it("has no maneuver", () => {
     expect(emptyHudView().maneuverId).toBeNull();
+  });
+});
+
+describe("flattenKeyed", () => {
+  it("pairs each entry with the key path the character sheet drags", () => {
+    const list = { "00000": { name: "Spear" } };
+    expect(flattenKeyed(list, "system.melee.")).toEqual([
+      ["system.melee.00000", { name: "Spear" }],
+    ]);
+  });
+
+  test("an entry nested under another", () => {
+    const list = { "00000": { name: "Spear", contains: { "00001": { name: "Butt" } } } };
+    expect(flattenKeyed(list, "system.melee.")[1][0]).toBe("system.melee.00000.contains.00001");
+  });
+});
+
+describe("meleeRows, keys", () => {
+  it("keys a row by the path the character sheet drags", () => {
+    const melee = { "00007": { name: "Spear", mode: "Thrust" } };
+    expect(meleeRows(system({ melee } as Partial<GurpsSystem>))[0].key).toBe("system.melee.00007");
+  });
+});
+
+describe("rangedRows, keys", () => {
+  it("keys a row by the path the character sheet drags", () => {
+    const ranged = { "00007": { name: "Bow" } };
+    expect(rangedRows(system({ ranged } as Partial<GurpsSystem>))[0].key).toBe(
+      "system.ranged.00007",
+    );
+  });
+});
+
+describe("allAttackPicks", () => {
+  it("picks every attack on the sheet, in the sheet's own order", () => {
+    const melee = { "00000": { name: "Spear" }, "00001": { name: "Punch" } };
+    const ranged = { "00000": { name: "Bow" } };
+
+    expect(allAttackPicks(system({ melee, ranged } as Partial<GurpsSystem>))).toEqual({
+      melee: ["system.melee.00000", "system.melee.00001"],
+      ranged: ["system.ranged.00000"],
+    });
+  });
+});
+
+describe("buildHudView, picked attacks", () => {
+  const melee = { "00000": { name: "Spear" }, "00001": { name: "Punch" } };
+  const actor = () => ({ name: "Brent", system: system({ melee } as Partial<GurpsSystem>) });
+
+  it("shows only the attacks that were picked, in the order they were picked", () => {
+    const picks = { melee: ["system.melee.00001", "system.melee.00000"], ranged: [] };
+
+    expect(buildHudView(actor(), localize, picks).melee.map((row) => row.name)).toEqual([
+      "Punch",
+      "Spear",
+    ]);
+  });
+
+  test("an actor whose attacks have never been picked", () => {
+    expect(buildHudView(actor(), localize).melee).toEqual([]);
+  });
+
+  it("reports that the actor has attacks to pick from even when none are picked", () => {
+    expect(buildHudView(actor(), localize).hasAttacks).toBe(true);
+  });
+
+  test("an actor with no attacks at all", () => {
+    const bare = { name: "Mook", system: system({ melee: {}, ranged: {} }) };
+
+    expect(buildHudView(bare, localize).hasAttacks).toBe(false);
   });
 });

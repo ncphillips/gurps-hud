@@ -14,15 +14,20 @@
  *   ?hover_panel=attrs             opens that hover panel on load, so it can be screenshotted
  *   ?edit_pool=hp|fp               opens that pool's box for editing
  *   ?expand_macros=true            expands the macro footer's library of all five hotbar pages
+ *   ?pick_attacks=none             leaves every attack unpicked, which is where a fresh actor starts
+ *   ?open_sheet=brent|goblin       opens a stand-in character sheet whose attack rows can be
+ *                                  dragged onto the strip, as a real sheet's can
  *   ?set_macro_page=3              which hotbar page the number keys address
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
 import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
+import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
 import { CAST, TOKENS, castMember } from "./cast";
 import { fire, hooksStub } from "./hooks";
+import { openSheet } from "./sheet";
 
 /** Keys the GURPS system owns; the HUD's own come from `lang/en.json` through the stub. */
 const LABELS: Record<string, string> = {
@@ -50,6 +55,16 @@ const selectedActor = params.has("selected_actor")
   ? castMember(params.get("selected_actor"))
   : CAST.brent;
 const targetActor = castMember(params.get("target_actor"));
+
+/*
+ * An actor starts with no attacks picked, but the design mock is drawn with Brent's weapon tables
+ * full -- so the harness lands on the curated view and `?pick_attacks=none` opens the other one.
+ */
+if (params.get("pick_attacks") !== "none") {
+  for (const member of Object.values(CAST)) {
+    void member.setFlag?.("gurps-hud", "attacks", allAttackPicks(member.system));
+  }
+}
 
 /*
  * Setting a maneuver also puts its actor in the active combat: the Game Aid only stores one for a
@@ -148,6 +163,9 @@ document.body.append(host);
 
 mount(PersistentHud, { target: host });
 
+const sheetOwner = castMember(params.get("open_sheet"));
+if (sheetOwner) openSheet(sheetOwner);
+
 setTimeout(() => {
   const panel = params.get("hover_panel");
   if (!panel) return;
@@ -177,9 +195,7 @@ setTimeout(() => {
   if (!flag("measure")) return;
 
   const bar = host.firstElementChild;
-  const row = [...host.querySelectorAll("div")].find((el) =>
-    el.textContent?.startsWith("Spear · Thrust"),
-  );
+  const row = host.querySelector("[data-hud-attack]");
   const damage = [...host.querySelectorAll("button")].find(
     (el) => el.textContent?.trim() === "1d+1 imp",
   );

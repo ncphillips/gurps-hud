@@ -29,6 +29,7 @@ const EXCEPTIONS = {
   // in PoolField.a11y.test.ts, which is where the fix goes.
   editing: ["label: input"],
   macros: [] as string[],
+  nothingPicked: [] as string[],
   nothingSelected: [] as string[],
 };
 
@@ -99,6 +100,12 @@ test.describe("persistent HUD accessibility", () => {
     await openHarness(page, { expand_macros: true });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.macros);
+  });
+
+  test("an actor whose attacks have not been picked yet", async ({ page }) => {
+    await openHarness(page, { pick_attacks: "none" });
+
+    expect(await stripViolations(page)).toEqual(EXCEPTIONS.nothingPicked);
   });
 
   test("nothing selected", async ({ page }) => {

@@ -114,8 +114,13 @@ export interface GurpsActorLike {
   img?: string | null;
   system: GurpsSystem;
   statuses?: Iterable<string>;
+  /** Whether this user may write to the actor -- picking attacks stores a flag on it. */
+  isOwner?: boolean;
   /** Foundry's `Document#update`; optional so a bare fixture can stand in for an actor. */
   update?: (changes: Record<string, unknown>) => Promise<unknown>;
+  /** Foundry's module-flag accessors, which is where the HUD keeps its per-actor choices. */
+  getFlag?: (scope: string, key: string) => unknown;
+  setFlag?: (scope: string, key: string, value: unknown) => Promise<unknown>;
   /** The Game Aid's posture setter, taking one of its posture status ids. */
   replacePosture?: (id: string) => Promise<unknown>;
   /** Foundry's `Document#sheet`; optional for the same reason. */
