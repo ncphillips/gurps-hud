@@ -6,7 +6,7 @@ import { fixtureView } from "./hud-fixture";
 import WeaponTables from "./WeaponTables.svelte";
 
 /** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS = { rows: [] as string[], noActor: [] as string[] };
+const EXCEPTIONS = { rows: [] as string[], nothingSelected: [] as string[] };
 
 describe("WeaponTables accessibility", () => {
   it("has no violations", async () => {
@@ -26,6 +26,6 @@ describe("WeaponTables accessibility", () => {
       onroll: vi.fn(),
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.noActor);
+    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
   });
 });

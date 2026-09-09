@@ -4,19 +4,25 @@
  *
  *   npm run harness   ->  http://localhost:30099/modules/gurps-hud/dev-harness/index.html
  *
- * Query parameters:
- *   ?panel=attrs|maneuver|actor   opens that hover panel on load, so it can be screenshotted
- *   ?noActor                nothing is selected, so the strip renders its empty state
- *   ?target                 targets a goblin, so the TARGET pill lists its hit locations
- *   ?maneuver=<id>          puts the actor in combat performing that maneuver
- *   ?edit=hp|fp             opens that pool's box for editing on load
- *   ?macros                 expands the macro footer's full library of all five hotbar pages
- *   ?measure                appends a <pre id="measurements"> of key bounding boxes
+ * The whole cast is always on the canvas (see cast.ts); every parameter names the *action* it takes
+ * on that scene rather than just the thing it concerns, so a URL reads as the state it sets up:
+ *
+ *   ?selected_actor=brent|goblin   who the strip is showing; `selected_actor=` selects nobody,
+ *                                  which is the empty strip a GM sees before clicking a token
+ *   ?target_actor=goblin           who is targeted, so the TARGET pill lists their hit locations
+ *   ?set_maneuver=attack           puts the selected actor in the active combat performing it
+ *   ?hover_panel=attrs             opens that hover panel on load, so it can be screenshotted
+ *   ?edit_pool=hp|fp               opens that pool's box for editing
+ *   ?expand_macros=true            expands the macro footer's library of all five hotbar pages
+ *   ?set_macro_page=3              which hotbar page the number keys address
+ *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
 import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { foundryI18n } from "@/i18n/stub";
+import { CAST, TOKENS, castMember } from "./cast";
+import { fire, hooksStub } from "./hooks";
 
 /** Keys the GURPS system owns; the HUD's own come from `lang/en.json` through the stub. */
 const LABELS: Record<string, string> = {
@@ -29,183 +35,29 @@ const LABELS: Record<string, string> = {
   "GURPS.maneuverCommittedAttack": "Committed Attack",
 };
 
-const harnessParams = new URLSearchParams(location.search);
+const params = new URLSearchParams(location.search);
 
-/** Hooks registered by the HUD, so the harness's fake actor can trigger a rerender. */
-const hooks = new Map<string, Array<() => void>>();
-const maneuver = harnessParams.get("maneuver");
-/** Nothing selected: what a GM sees before clicking a token. */
-const noActor = harnessParams.has("noActor");
+/** Booleans are spelled out -- `expand_macros=true` -- so a parameter never reads as a bare noun. */
+function flag(name: string): boolean {
+  return params.get(name) === "true";
+}
 
-/** Brent Mitton, the character the design mock is drawn from. */
-const actor = {
-  /** Mimics Document#update closely enough for the HP/FP boxes: flatten the key path and rerender. */
-  async update(changes: Record<string, unknown>) {
-    for (const [path, value] of Object.entries(changes)) {
-      const keys = path.split(".");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let target: any = actor;
-      for (const key of keys.slice(0, -1)) target = target[key];
-      target[keys[keys.length - 1]] = value;
-    }
-    for (const hook of hooks.get("updateActor") ?? []) hook();
-  },
-  name: "Brent Mitton",
-  img: null,
-  sheet: { render: () => console.log("harness: open character sheet") },
-  async replacePosture(id: string) {
-    actor.system.conditions.posture = id;
-    for (const hook of hooks.get("updateActor") ?? []) hook();
-  },
-  async replaceManeuver(id: string) {
-    actor.system.conditions.maneuver = id;
-    for (const hook of hooks.get("updateActor") ?? []) hook();
-  },
-  statuses: [] as string[],
-  system: {
-    attributes: {
-      ST: { value: 9 },
-      DX: { value: 10 },
-      IQ: { value: 12 },
-      HT: { value: 11 },
-      WILL: { value: 12 },
-      PER: { value: 12 },
-      QN: { value: 10 },
-    },
-    HP: { value: 20, max: 22 },
-    FP: { value: 11, max: 11 },
-    thrust: "1d−2",
-    swing: "1d−1",
-    basicspeed: { value: "5.25" },
-    basicmove: { value: "5" },
-    frightcheck: 12,
-    vision: 12,
-    hearing: 12,
-    tastesmell: 12,
-    touch: 12,
-    currentmove: 5,
-    currentdodge: 8,
-    conditions: {
-      posture: "standing",
-      maneuver: maneuver ?? "undefined",
-      reeling: false,
-      exhausted: false,
-    },
-    encumbrance: { "00000": { key: "enc0", level: 0, current: true } },
-    equipment: { carried: { "00000": { name: "Spear", equipped: true } }, other: {} },
-    melee: {
-      "00000": {
-        name: "Spear",
-        mode: "Thrust",
-        level: 5,
-        damage: "1d+1 imp",
-        reach: "1–2",
-        parry: "5",
-        block: "",
-      },
-      "00001": { name: "Punch", level: 10, damage: "1d−3 cr", reach: "C", parry: "8", block: "" },
-      "00002": { name: "Kick", level: 8, damage: "1d−2 cr", reach: "C,1", parry: "", block: "" },
-    },
-    hitlocations: Object.fromEntries(
-      [
-        ["Eye", "-9", "0", "-"],
-        ["Skull", "-7", "2", "3-4"],
-        ["Face", "-5", "0", "5"],
-        ["Right Leg", "-2", "1", "6-7"],
-        ["Right Arm", "-2", "1", "8"],
-        ["Torso", "0", "1", "9-10"],
-        ["Groin", "-3", "1", "11"],
-        ["Left Arm", "-2", "1", "12"],
-        ["Left Leg", "-2", "1", "13-14"],
-        ["Hand", "-4", "0", "15"],
-        ["Foot", "-4", "0", "16"],
-        ["Neck", "-5", "0", "17-18"],
-        ["Vitals", "-3", "1", "-"],
-      ].map(([where, penalty, dr, roll], index) => [
-        String(index).padStart(5, "0"),
-        { where, penalty, dr, roll },
-      ]),
-    ),
-    skills: Object.fromEntries(
-      [
-        ["Spear", 5, "DX-5"],
-        ["Brawling", 10, "DX"],
-        ["Stealth", 9, "DX-1"],
-        ["First Aid", 12, "IQ"],
-        ["Survival (Woodlands)", 11, "Per-1"],
-        ["Climbing", 9, "DX-1"],
-        ["Knife", 10, "DX"],
-        ["Area Knowledge (Home)", 13, "IQ+1"],
-        ["Carousing", 11, "HT"],
-        ["Scrounging", 12, "Per"],
-        ["Swimming", 11, "HT"],
-        ["Throwing", 6, "DX-4"],
-      ].map(([name, level, relativelevel], index) => [
-        String(index).padStart(5, "0"),
-        { name, level, relativelevel },
-      ]),
-    ),
-    ranged: {
-      "00000": {
-        name: "Spear",
-        mode: "Thrown",
-        level: 6,
-        damage: "1d+1 imp",
-        acc: "2",
-        range: "9/13",
-        rof: "1",
-      },
-    },
-  },
-};
+/*
+ * Absent means Brent, the design's character, because that is the view worth landing on. Present
+ * but empty -- `?selected_actor=` -- means nobody, and so does a name no one in the cast answers to.
+ */
+const selectedActor = params.has("selected_actor")
+  ? castMember(params.get("selected_actor"))
+  : CAST.brent;
+const targetActor = castMember(params.get("target_actor"));
 
-/** Something for Brent to aim at, with a body plan of its own so the table visibly isn't his. */
-const goblin = {
-  name: "Goblin Grunt",
-  system: {
-    hitlocations: Object.fromEntries(
-      [
-        ["Eye", "-9", "0", "-"],
-        ["Skull", "-7", "2", "3-4"],
-        ["Face", "-5", "0", "5"],
-        ["Torso", "0", "0", "9-11"],
-        ["Groin", "-3", "0", "12"],
-        ["Arm", "-2", "0", "13-14"],
-        ["Leg", "-2", "0", "15-16"],
-        ["Neck", "-5", "0", "17"],
-        ["Vitals", "-3", "0", "18"],
-      ].map(([where, penalty, dr, roll], index) => [
-        String(index).padStart(5, "0"),
-        { where, penalty, dr, roll },
-      ]),
-    ),
-  },
-};
-
-/** The tokens on the harness's scene, so the name menu has something to switch between. */
-const tokens = [
-  {
-    id: "t-brent",
-    name: "Brent Mitton",
-    document: { texture: { src: null } },
-    actor,
-    isOwner: true,
-  },
-  {
-    id: "t-goblin",
-    name: "Goblin Grunt",
-    document: { texture: { src: null } },
-    actor: goblin,
-    isOwner: true,
-  },
-  {
-    id: "t-dragon",
-    name: "Dragon",
-    document: { texture: { src: null } },
-    actor: { name: "Dragon" },
-    isOwner: false,
-  },
-];
+/*
+ * Setting a maneuver also puts its actor in the active combat: the Game Aid only stores one for a
+ * token that is in it, and the HUD's pill mirrors that, so a maneuver without a combat is a state
+ * no world can be in.
+ */
+const maneuver = params.get("set_maneuver");
+if (maneuver && selectedActor) selectedActor.system.conditions.maneuver = maneuver;
 
 /**
  * All five pages of Foundry's hotbar, as slots 1-50, mutable so the harness can demonstrate
@@ -219,10 +71,10 @@ const hotbar: (string | null)[] = Array.from({ length: 50 }, (_, index) => {
 
 Object.assign(globalThis, {
   GURPS: {
-    LastActor: noActor ? null : actor,
+    LastActor: selectedActor,
     SetLastActor: (next: unknown) => {
       (globalThis as { GURPS: { LastActor: unknown } }).GURPS.LastActor = next;
-      for (const hook of hooks.get("updateLastActorGURPS") ?? []) hook();
+      fire("updateLastActorGURPS");
     },
     executeOTF: async (otf: string) => {
       console.log("harness: roll", otf);
@@ -236,33 +88,31 @@ Object.assign(globalThis, {
         id === "committed_attack" ? { label: "GURPS.maneuverCommittedAttack" } : undefined,
     },
   },
-  Hooks: {
-    on: (name: string, fn: () => void) => hooks.set(name, [...(hooks.get(name) ?? []), fn]),
-    off: () => undefined,
-  },
+  Hooks: hooksStub,
   canvas: {
     tokens: {
       controlled: [],
-      placeables: tokens,
-      get: (id: string) => tokens.find((token) => token.id === id),
+      placeables: TOKENS,
+      get: (id: string) => TOKENS.find((token) => token.id === id),
     },
   },
   ui: {
     // Mirrors Foundry: `changePage` is what actually moves the page, and the HUD reads it back.
     hotbar: {
-      page: Number(harnessParams.get("macroPage") ?? 1),
+      page: Number(params.get("set_macro_page") ?? 1),
       changePage(page: number) {
         this.page = page;
       },
     },
   },
   game: {
-    // A maneuver on the actor implies it is in the active combat, which is what enables the pill.
-    combats: { active: maneuver ? { combatants: [{ actor }] } : null },
+    combats: {
+      active: maneuver && selectedActor ? { combatants: [{ actor: selectedActor }] } : null,
+    },
     i18n: foundryI18n(LABELS),
     user: {
       // Foundry's `UserTargets` is a Set of tokens; the HUD only ever asks it for the first one.
-      targets: { first: () => (harnessParams.has("target") ? { actor: goblin } : undefined) },
+      targets: { first: () => (targetActor ? { actor: targetActor } : undefined) },
       // Mirrors Foundry: ten entries at a time, numbered with their slot in the full 1-50 range.
       getHotbarMacros: (page = 1) =>
         hotbar.slice((page - 1) * 10, page * 10).map((name, index) => ({
@@ -279,7 +129,7 @@ Object.assign(globalThis, {
         const displaced = hotbar[slot - 1];
         hotbar[slot - 1] = macro?.name ?? null;
         if (options?.fromSlot) hotbar[options.fromSlot - 1] = displaced;
-        for (const hook of hooks.get("updateUser") ?? []) hook();
+        fire("updateUser");
       },
     },
   },
@@ -298,10 +148,8 @@ document.body.append(host);
 
 mount(PersistentHud, { target: host });
 
-const params = harnessParams;
-
 setTimeout(() => {
-  const panel = params.get("panel");
+  const panel = params.get("hover_panel");
   if (!panel) return;
 
   host
@@ -310,7 +158,7 @@ setTimeout(() => {
 }, 300);
 
 setTimeout(() => {
-  const pool = params.get("edit");
+  const pool = params.get("edit_pool");
   if (!pool) return;
 
   const needle = pool === "fp" ? "Fatigue" : "Hit Points";
@@ -320,13 +168,13 @@ setTimeout(() => {
 }, 300);
 
 setTimeout(() => {
-  if (!params.has("macros")) return;
+  if (!flag("expand_macros")) return;
 
   host.querySelector<HTMLButtonElement>('[title="Show all macros"]')?.click();
 }, 300);
 
 setTimeout(() => {
-  if (!params.has("measure")) return;
+  if (!flag("measure")) return;
 
   const bar = host.firstElementChild;
   const row = [...host.querySelectorAll("div")].find((el) =>

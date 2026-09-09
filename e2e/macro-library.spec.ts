@@ -13,13 +13,13 @@ const SLOT = "[data-hud-macro-slot]";
  */
 test.describe("macro library", () => {
   test("lists every slot on the hotbar", async ({ page }) => {
-    await openHarness(page, { macros: "" });
+    await openHarness(page, { expand_macros: true });
 
     await expect(page.locator(`${LIBRARY} ${SLOT}`)).toHaveCount(50);
   });
 
   test("lays each page out as one row of ten", async ({ page }) => {
-    await openHarness(page, { macros: "" });
+    await openHarness(page, { expand_macros: true });
     const rows = await page
       .locator(`${LIBRARY} ${SLOT}`)
       .evaluateAll(
@@ -34,14 +34,14 @@ test.describe("macro library", () => {
    * only edge it can run off is the top of the viewport.
    */
   test("opens fully inside the viewport", async ({ page }) => {
-    await openHarness(page, { macros: "" });
+    await openHarness(page, { expand_macros: true });
     const top = await page.locator(LIBRARY).evaluate((el) => el.getBoundingClientRect().top);
 
     expect(top).toBeGreaterThan(0);
   });
 
   test("clears the footer it opens above", async ({ page }) => {
-    await openHarness(page, { macros: "" });
+    await openHarness(page, { expand_macros: true });
     const gap = await page.evaluate(() => {
       const library = document.querySelector("[data-hud-macro-library]")!.getBoundingClientRect();
       const footer = document.querySelector("[data-hud-macro-bar]")!.parentElement!;

@@ -12,7 +12,7 @@ const EXCEPTIONS = {
   switcher: [] as string[],
   posture: [] as string[],
   locked: [] as string[],
-  noActor: [] as string[],
+  nothingSelected: [] as string[],
 };
 
 function props(openPanel: Panel | null = null) {
@@ -72,6 +72,6 @@ describe("PortraitBlock accessibility", () => {
       actor: null,
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.noActor);
+    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
   });
 });

@@ -39,8 +39,11 @@ npm run test:a11y      # axe-core — components in Vitest browser mode, then th
 ```
 
 `npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with
-`design-handoff/` without a running world. `?panel=attrs|maneuver` opens a hover panel for
-screenshotting; `?measure` dumps bounding boxes to compare against the mock.
+`design-handoff/` without a running world. Its whole cast — Brent, a goblin, a dragon — is always on
+the canvas, and each query parameter names the action it takes on that scene:
+`?hover_panel=attrs` opens a panel for screenshotting, `?selected_actor=` selects nobody,
+`?measure=true` dumps bounding boxes to compare against the mock. `src/dev-harness/main.ts` lists
+them all, and `e2e/harness.ts` types them for the specs.
 
 `dist/` is already symlinked into Foundry:
 
@@ -75,6 +78,8 @@ src/
     SvelteApp.ts           # ApplicationV2 <-> Svelte 5 mount/unmount bridge
     persistent-hud/        # the always-mounted bottom-left strip
   dev-harness/             # renders the HUD outside Foundry (npm run harness)
+    main.ts                # stub Foundry globals, and the query parameters that pose the scene
+    cast.ts                # the actors on its canvas, sheeted in the real GurpsSystem shape
   styles/
     gurps-hud.css          # Tailwind entry, design tokens, @font-face, Foundry overrides
     fonts/                 # self-hosted Barlow Semi Condensed + JetBrains Mono (SIL OFL 1.1)
@@ -101,7 +106,7 @@ e2e/                       # Playwright specs — drive the dev harness, never a
   walking its table, nesting the id and then dotting beneath it would resolve to nothing in a world
   while still passing every test here. `src/lang/README.md` is the translator-facing version of all
   this, including which strings are laid out to a fixed width.
-- Anything the *system* names -- posture labels, hit locations, maneuvers outside the HUD's menu --
+- Anything the _system_ names -- posture labels, hit locations, maneuvers outside the HUD's menu --
   is not ours to translate: look it up through `localize` in `src/gurps/game-aid.ts` so it follows
   the Game Aid's own languages.
 - Foundry owns the locale, and it is not there outside a world, so `src/i18n/stub.ts` stands in for
@@ -123,6 +128,7 @@ e2e/                       # Playwright specs — drive the dev harness, never a
   wait for the panel first (`openHarness` does) or the measurement silently runs against nothing.
 - The design mock in `design-handoff/` was authored under `content-box`; the HUD renders under
   `border-box`. Its fixed pixel widths therefore need padding and borders added in — the strip is
-  pixel-matched to the mock, so check `npm run harness -- ?measure` before changing a fixed width.
+  pixel-matched to the mock, so check `npm run harness -- ?measure=true` before changing a fixed
+  width.
 - Hover states may only change `color`, `background-color` and `border-color`. Anything that gains a
   border on hover carries a 1px transparent border at rest, so hover can never move geometry.

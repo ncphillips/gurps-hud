@@ -29,7 +29,7 @@ const EXCEPTIONS = {
   // in PoolField.a11y.test.ts, which is where the fix goes.
   editing: ["label: input"],
   macros: [] as string[],
-  noActor: [] as string[],
+  nothingSelected: [] as string[],
 };
 
 /** One line per violation -- `rule: selector` -- the same shape the component scans assert on. */
@@ -53,58 +53,58 @@ test.describe("persistent HUD accessibility", () => {
   });
 
   test("the attributes panel open", async ({ page }) => {
-    await openHarness(page, { panel: "attrs" });
+    await openHarness(page, { hover_panel: "attrs" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.attrs);
   });
 
   test("the skills panel open", async ({ page }) => {
-    await openHarness(page, { panel: "skills" });
+    await openHarness(page, { hover_panel: "skills" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.skills);
   });
 
   test("the maneuver panel open", async ({ page }) => {
-    await openHarness(page, { maneuver: "attack", panel: "maneuver" });
+    await openHarness(page, { set_maneuver: "attack", hover_panel: "maneuver" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.maneuver);
   });
 
   test("the targeted token's hit locations open", async ({ page }) => {
-    await openHarness(page, { target: "", panel: "target" });
+    await openHarness(page, { target_actor: "goblin", hover_panel: "target" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.target);
   });
 
   test("the posture menu open", async ({ page }) => {
-    await openHarness(page, { panel: "posture" });
+    await openHarness(page, { hover_panel: "posture" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.posture);
   });
 
   test("the character switcher open", async ({ page }) => {
-    await openHarness(page, { panel: "actor" });
+    await openHarness(page, { hover_panel: "actor" });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.actor);
   });
 
   test("a pool open for editing", async ({ page }) => {
-    await openHarness(page, { edit: "hp" });
+    await openHarness(page, { edit_pool: "hp" });
     await expect(page.getByRole("textbox")).toBeVisible();
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.editing);
   });
 
   test("the macro library expanded", async ({ page }) => {
-    await openHarness(page, { macros: "" });
+    await openHarness(page, { expand_macros: true });
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.macros);
   });
 
   test("nothing selected", async ({ page }) => {
-    await openHarness(page, { noActor: "" });
+    await openHarness(page, { selected_actor: "" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.noActor);
+    expect(await stripViolations(page)).toEqual(EXCEPTIONS.nothingSelected);
   });
 
   /*
@@ -112,7 +112,7 @@ test.describe("persistent HUD accessibility", () => {
    * call, not a markup fix: the failing colours come from the mock the strip is matched to.
    */
   test.fixme("the strip meets AA contrast", async ({ page }) => {
-    await openHarness(page, { maneuver: "attack", panel: "maneuver" });
+    await openHarness(page, { set_maneuver: "attack", hover_panel: "maneuver" });
     const { violations } = await new AxeBuilder({ page })
       .include(STRIP)
       .withRules(["color-contrast"])

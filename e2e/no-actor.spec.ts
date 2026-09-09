@@ -8,19 +8,19 @@ import { openHarness } from "./harness";
  */
 test.describe("the strip with nothing selected", () => {
   test("the strip is on screen", async ({ page }) => {
-    await openHarness(page, { noActor: "" });
+    await openHarness(page, { selected_actor: "" });
 
     await expect(page.getByText("Select Actor")).toBeVisible();
   });
 
   test("the macro bar is still usable", async ({ page }) => {
-    await openHarness(page, { noActor: "" });
+    await openHarness(page, { selected_actor: "" });
 
     await expect(page.locator('[data-hud-macro-slot="1"]')).toBeVisible();
   });
 
   test("the attack table asks for a character instead", async ({ page }) => {
-    await openHarness(page, { noActor: "" });
+    await openHarness(page, { selected_actor: "" });
 
     await expect(
       page.getByText("Select a token or a character to see their attacks."),

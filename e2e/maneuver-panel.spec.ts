@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openHarness } from "./harness";
+import { openHarness, type HarnessParams } from "./harness";
 
 const PANEL = '[data-hud-panel="maneuver"]';
 const TILE = "[data-hud-maneuver]";
@@ -8,7 +8,7 @@ const TILE = "[data-hud-maneuver]";
  * The pill only opens the panel for a token in the active combat, which the harness models by
  * giving the actor a maneuver -- so every fixture here starts the actor on Attack.
  */
-const IN_COMBAT = { maneuver: "attack", panel: "maneuver" };
+const IN_COMBAT: HarnessParams = { set_maneuver: "attack", hover_panel: "maneuver" };
 
 test.describe("maneuver panel", () => {
   test("lists every maneuver the HUD offers", async ({ page }) => {
@@ -27,7 +27,7 @@ test.describe("maneuver panel", () => {
   });
 
   test("names the pill after the heading when a grouped maneuver is set", async ({ page }) => {
-    await openHarness(page, { maneuver: "aoa_strong", panel: "maneuver" });
+    await openHarness(page, { set_maneuver: "aoa_strong", hover_panel: "maneuver" });
 
     await expect(page.locator('[data-hud-trigger="maneuver"]')).toContainText(
       "All-Out Attack (Strong)",

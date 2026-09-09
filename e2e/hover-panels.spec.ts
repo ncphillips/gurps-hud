@@ -9,14 +9,14 @@ import { openHarness } from "./harness";
  */
 test.describe("hover panels", () => {
   test("the skills panel is the mock's 400px, borders included", async ({ page }) => {
-    await openHarness(page, { panel: "skills" });
+    await openHarness(page, { hover_panel: "skills" });
     const panel = page.locator('[data-hud-trigger="skills"] .bg-hud-popover');
 
     expect((await panel.boundingBox())!.width).toBe(400);
   });
 
   test("every panel's bridge closes the gap to its trigger", async ({ page }) => {
-    await openHarness(page, { panel: "posture" });
+    await openHarness(page, { hover_panel: "posture" });
     const trigger = page.locator('[data-hud-trigger="posture"]');
     const bridge = trigger.locator("[data-hud-popover-bridge]");
     const panel = trigger.locator(".bg-hud-popover");

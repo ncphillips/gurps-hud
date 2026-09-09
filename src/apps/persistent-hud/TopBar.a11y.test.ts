@@ -15,7 +15,7 @@ const EXCEPTIONS = {
   maneuver: [] as string[],
   target: [] as string[],
   untargeted: [] as string[],
-  noActor: [] as string[],
+  nothingSelected: [] as string[],
 };
 
 function props(openPanel: Panel | null = null) {
@@ -77,6 +77,6 @@ describe("TopBar accessibility", () => {
       props: { ...props(), view: emptyHudView(), enabled: false, maneuverEnabled: false },
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.noActor);
+    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
   });
 });
