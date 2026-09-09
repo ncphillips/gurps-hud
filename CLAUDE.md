@@ -18,74 +18,16 @@ heads-up display for GURPS 4e play.
 - **Audience:** GM-first. HUDs should work for any hovered/selected token, including NPCs;
   player-character conveniences layer on later.
 
-## Stack
-
-TypeScript 5 · Vite 6 · Svelte 5 (runes) · Tailwind 4 · fvtt-types (GitHub main) ·
-ESLint 9 flat config · Prettier · Vitest
-
 ## Dev Workflow
 
-```bash
-npm install            # first time
-npm run build          # produces dist/
-npm run dev            # Vite dev server on :30001 — load Foundry via http://localhost:30001
-npm run harness        # HUD only, no Foundry, on :30099 — see src/dev-harness
-npm run check          # tsc --noEmit + svelte-check
-npm run lint           # ESLint
-npm run format         # Prettier
-npm run test           # Vitest (jsdom) — pure logic in src/gurps and component behaviour
-npm run test:e2e       # Playwright against the dev harness; --ui to watch it
-npm run test:a11y      # axe-core — components in Vitest browser mode, then the whole strip
-```
-
-`npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with
-`design-handoff/` without a running world. Its whole cast — Brent, a goblin, a dragon — is always on
-the canvas, and each query parameter names the action it takes on that scene:
-`?hover_panel=attrs` opens a panel for screenshotting, `?selected_actor=` selects nobody,
-`?measure=true` dumps bounding boxes to compare against the mock. `src/dev-harness/main.ts` lists
-them all, and `e2e/harness.ts` types them for the specs.
-
-`dist/` is already symlinked into Foundry:
-
-```bash
-ln -s "$(pwd)/dist" "$HOME/Library/Application Support/FoundryVTT/Data/modules/gurps-hud"
-```
+`npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with the
+mock without a running world. Its whole cast — Brent, a goblin, a dragon — is always on the canvas,
+and each query parameter names the action it takes on that scene: `?hover_panel=attrs` opens a panel
+for screenshotting, `?selected_actor=` selects nobody, `?measure=true` dumps bounding boxes to
+compare against the mock. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types them
+for the specs.
 
 Test world: **Dungeon Crawler World** (`gurps` system).
-
-## Project Layout
-
-```
-src/
-  module.ts                # entry point — registers hooks/keybindings, built to dist/module.js
-  module.json              # manifest source of truth — Vite copies to dist/module.json
-  log.ts                   # console helpers namespaced to "gurps-hud |"
-  a11y-scan.ts             # axe-core -> a list of violation lines, shared by both a11y groups
-  a11y-setup.ts            # Vitest browser-mode setup: the real stylesheet and the HUD's ground
-  gurps-hud.d.ts           # fvtt-types module augmentation (custom hooks, flags)
-  i18n/
-    index.ts               # `t`, and the key type derived from lang/en.json
-    stub.ts                # a `game.i18n` for the harness and both test runners
-  lang/                    # the catalogues Foundry loads -- see lang/README.md
-    en.json
-  gurps/                   # everything that knows about the GURPS system
-    system-types.ts        # structural types for the slice of actor.system we read
-    game-aid.ts            # the only file that touches the `GURPS` global
-    hud-view.ts            # pure actor -> view model; where the data-model quirks live
-    otf.ts                 # On-The-Fly roll string builders
-    maneuvers.ts           # the twelve maneuvers the HUD offers
-  apps/
-    SvelteApp.ts           # ApplicationV2 <-> Svelte 5 mount/unmount bridge
-    persistent-hud/        # the always-mounted bottom-left strip
-  dev-harness/             # renders the HUD outside Foundry (npm run harness)
-    main.ts                # stub Foundry globals, and the query parameters that pose the scene
-    cast.ts                # the actors on its canvas, sheeted in the real GurpsSystem shape
-  styles/
-    gurps-hud.css          # Tailwind entry, design tokens, @font-face, Foundry overrides
-    fonts/                 # self-hosted Barlow Semi Condensed + JetBrains Mono (SIL OFL 1.1)
-dist/                      # build output (gitignored) — symlinked into Foundry
-e2e/                       # Playwright specs — drive the dev harness, never a live Foundry
-```
 
 ## Conventions
 
@@ -93,42 +35,24 @@ e2e/                       # Playwright specs — drive the dev harness, never a
   extending `SvelteApp`) and its `*.svelte` root component.
 - Svelte components use runes (`$state`, `$props`, `$effect`). Subscribe to Foundry hooks inside
   `$effect` and return a cleanup function that calls `Hooks.off`.
+- `src/module.json` is the manifest source of truth; Vite copies it to `dist/module.json`. Its
+  version is stamped by the release workflow, never hand-edited.
 - Tailwind for layout and most styling; `src/styles/gurps-hud.css` only for overriding Foundry's
   own selectors (e.g. `.window-content` padding) which Tailwind classes can't reach.
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
   into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
   Tailwind utility on the same element.
-- No user-facing string is written inline. The HUD's own text lives in `src/lang/en.json` and is read
-  with `t("some.key")` from `@/i18n`, which is Foundry's `game.i18n` with the module id prefixed on.
-  `t` takes only keys the catalogue has, so a typo or a renamed key is a type error rather than a raw
-  key id rendered into the strip. Catalogue keys are flat and prefixed -- `"gurps-hud.weapons.empty"`
-  -- so the definition is greppable from the call site, and because Foundry resolves a dotted key by
-  walking its table, nesting the id and then dotting beneath it would resolve to nothing in a world
-  while still passing every test here. `src/lang/README.md` is the translator-facing version of all
-  this, including which strings are laid out to a fixed width.
-- Anything the _system_ names -- posture labels, hit locations, maneuvers outside the HUD's menu --
-  is not ours to translate: look it up through `localize` in `src/gurps/game-aid.ts` so it follows
-  the Game Aid's own languages.
-- Foundry owns the locale, and it is not there outside a world, so `src/i18n/stub.ts` stands in for
-  `game.i18n` in the harness and both Vitest projects. It reads the same `lang/en.json` that ships,
-  which is what makes a key missing from the catalogue fail a test rather than a live world.
-- Keep GURPS knowledge in `src/gurps/`. Components stay presentational: `hud-view.ts` turns the
-  actor into a flat view model, and that is what gets unit tested.
-- Accessibility is its own group, named `*.a11y.test.ts` in both runners: a component's scans sit
-  beside it and mount it in Vitest's browser mode (headless Chromium, driven by Playwright), and
-  `e2e/persistent-hud.a11y.test.ts` scans the assembled strip in each state the harness can open.
-  Both call `axeViolations` from `src/a11y-scan.ts` and assert the exact list against that file's
-  `EXCEPTIONS` array — the accessibility to-do list for what it scans. A new violation fails the
-  scan and so does fixing a listed one, so no exception outlives the problem it records. Contrast is
-  excluded from every scan and tracked by one `test.fixme`: it is a design call on the palette, not
-  a markup fix.
-- Anything else only a browser can answer — does this wrap, is this box where the mock puts it —
-  belongs in `e2e/`, driving the harness via its query parameters rather than a live world.
-  Give elements a `data-hud-*` hook to select on. `Locator.evaluateAll` does **not** auto-wait, so
-  wait for the panel first (`openHarness` does) or the measurement silently runs against nothing.
-- The design mock in `design-handoff/` was authored under `content-box`; the HUD renders under
-  `border-box`. Its fixed pixel widths therefore need padding and borders added in — the strip is
-  pixel-matched to the mock, so check `npm run harness -- ?measure=true` before changing a fixed
-  width.
+- No user-facing string is written inline: use `t("some.key")` from `@/i18n`. The catalogue rules
+  live in `src/i18n/CLAUDE.md` and `src/lang/README.md`.
+- Keep GURPS knowledge in `src/gurps/`. `game-aid.ts` is the only file that touches the `GURPS`
+  global, and `hud-view.ts` is where the data-model quirks live: it turns the actor into a flat view
+  model, and that is what gets unit tested. Components stay presentational.
+- `*.a11y.test.ts` scans assert an exact `EXCEPTIONS` list, so fixing a listed violation fails the
+  scan too. See the `hud-a11y-tests` skill before touching them.
+- Assertions only a browser can answer belong in `e2e/`, driving the harness rather than a live
+  world — see `e2e/CLAUDE.md`.
+- The design mock was authored under `content-box`; the HUD renders under `border-box`. Its fixed
+  pixel widths therefore need padding and borders added in — the strip is pixel-matched to the mock,
+  so check `npm run harness -- ?measure=true` before changing a fixed width.
 - Hover states may only change `color`, `background-color` and `border-color`. Anything that gains a
   border on hover carries a 1px transparent border at rest, so hover can never move geometry.
