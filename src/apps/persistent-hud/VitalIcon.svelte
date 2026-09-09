@@ -9,7 +9,11 @@
   }: { kind: "hp" | "fp" | "shock" | "condition"; class?: string } = $props();
 </script>
 
-<svg viewBox="0 0 24 24" class="h-[11px] w-[11px] flex-none {className}" aria-hidden="true">
+<svg
+  viewBox="0 0 24 24"
+  class="hud:h-[11px] hud:w-[11px] hud:flex-none {className}"
+  aria-hidden="true"
+>
   {#if kind === "hp"}
     <!-- heart -->
     <path

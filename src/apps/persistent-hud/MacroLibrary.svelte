@@ -57,35 +57,37 @@
   let grid = $state<HTMLElement | null>(null);
 </script>
 
-<div bind:this={grid} data-hud-macro-library class="w-fit p-[6px]">
+<div bind:this={grid} data-hud-macro-library class="hud:w-fit hud:p-[6px]">
   <div
-    class="mb-[5px] flex items-baseline justify-between gap-[10px] px-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/40"
+    class="hud:mb-[5px] hud:flex hud:items-baseline hud:justify-between hud:gap-[10px] hud:px-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/40"
   >
     <span>{t("macros.library.label")}</span>
-    <span class="font-hud text-[9.5px] font-medium tracking-normal normal-case text-hud-ink/30">
+    <span
+      class="hud:font-hud hud:text-[9.5px] hud:font-medium hud:tracking-normal hud:normal-case hud:text-hud-ink/30"
+    >
       {t("macros.library.hint")}
     </span>
   </div>
 
-  <div class="flex flex-col gap-[3px]">
+  <div class="hud:flex hud:flex-col hud:gap-[3px]">
     {#each pages as entry (entry.page)}
-      <div class="flex items-center gap-[6px]">
+      <div class="hud:flex hud:items-center hud:gap-[6px]">
         <button
           type="button"
           title={t("macros.library.switchPage", { page: entry.page })}
           aria-current={entry.page === page ? "true" : undefined}
           class={[
-            "h-[22px] w-[22px] flex-none cursor-pointer rounded-hud-sm border text-center font-hud-mono text-[11px]/[20px] font-bold transition-colors duration-75 hover:border-hud-accent hover:text-hud-ink",
+            "hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:rounded-hud-sm hud:border hud:text-center hud:font-hud-mono hud:text-[11px]/[20px] hud:font-bold hud:transition-colors hud:duration-75 hud:hover:border-hud-accent hud:hover:text-hud-ink",
             entry.page === page
-              ? "border-hud-accent bg-hud-accent/22 text-hud-accent"
-              : "border-transparent bg-white/[.05] text-hud-ink/35",
+              ? "hud:border-hud-accent hud:bg-hud-accent/22 hud:text-hud-accent"
+              : "hud:border-transparent hud:bg-white/[.05] hud:text-hud-ink/35",
           ]}
           onclick={() => onpage(entry.page)}
         >
           {entry.page}
         </button>
 
-        <div class="flex gap-[3px]">
+        <div class="hud:flex hud:gap-[3px]">
           {#each entry.slots as slot (slot.slot)}
             <MacroSlotButton
               {slot}

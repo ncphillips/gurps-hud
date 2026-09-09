@@ -99,21 +99,21 @@
    * same hierarchy -- 50px macros, arrows a fraction of that. `items-center` on the row centres them.
    */
   const CONTROL =
-    "flex h-[22px] w-[22px] flex-none cursor-pointer items-center justify-center rounded-hud-sm border border-transparent bg-white/[.05] text-hud-ink/45 transition-colors duration-75 hover:border-white/[.18] hover:bg-white/[.1] hover:text-hud-ink";
+    "hud:flex hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:items-center hud:justify-center hud:rounded-hud-sm hud:border hud:border-transparent hud:bg-white/[.05] hud:text-hud-ink/45 hud:transition-colors hud:duration-75 hud:hover:border-white/[.18] hud:hover:bg-white/[.1] hud:hover:text-hud-ink";
 </script>
 
 <div
   bind:this={footer}
-  class="relative flex items-center gap-[6px] rounded-br-hud border-t border-white/[.08] bg-hud-deep px-[11px] py-[6px]"
+  class="hud:relative hud:flex hud:items-center hud:gap-[6px] hud:rounded-br-hud hud:border-t hud:border-white/[.08] hud:bg-hud-deep hud:px-[11px] hud:py-[6px]"
 >
   <span
-    class="font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/32"
+    class="hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/32"
     title={t("macros.hint")}
   >
     {t("macros.label")}
   </span>
 
-  <div bind:this={bar} data-hud-macro-bar class="flex gap-[3px]">
+  <div bind:this={bar} data-hud-macro-bar class="hud:flex hud:gap-[3px]">
     {#each slots as slot (slot.slot)}
       <MacroSlotButton
         {slot}
@@ -127,7 +127,7 @@
     {/each}
   </div>
 
-  <div class="flex items-center gap-[2px]">
+  <div class="hud:flex hud:items-center hud:gap-[2px]">
     <button
       type="button"
       class={CONTROL}
@@ -141,7 +141,7 @@
 
     <span
       data-hud-macro-page
-      class="w-[13px] text-center font-hud-mono text-[11px] font-bold text-hud-ink/60"
+      class="hud:w-[13px] hud:text-center hud:font-hud-mono hud:text-[11px] hud:font-bold hud:text-hud-ink/60"
       title={t("macros.page", { page, total: pages.length })}
     >
       {page}
@@ -156,7 +156,10 @@
 
   <button
     type="button"
-    class={[CONTROL, expanded ? "border-white/[.18] bg-white/[.08] text-hud-accent" : ""]}
+    class={[
+      CONTROL,
+      expanded ? "hud:border-white/[.18] hud:bg-white/[.08] hud:text-hud-accent" : "",
+    ]}
     title={expanded ? t("macros.hide") : t("macros.show")}
     aria-expanded={expanded}
     onclick={() => (expanded = !expanded)}

@@ -7,7 +7,8 @@ import Popover from "./Popover.svelte";
 const children = createRawSnippet(() => ({ render: () => `<span>panel body</span>` }));
 
 /** The panel itself, as opposed to the transparent bridge rendered alongside it. */
-const panelOf = (container: HTMLElement) => container.querySelector<HTMLElement>(".bg-hud-popover");
+const panelOf = (container: HTMLElement) =>
+  container.querySelector<HTMLElement>("[data-hud-popover]");
 
 describe("Popover", () => {
   it("renders its content", () => {
@@ -25,19 +26,19 @@ describe("Popover", () => {
   it("aligns to the left edge of the trigger by default", () => {
     const { container } = render(Popover, { children });
 
-    expect(panelOf(container)?.className).toContain("left-0");
+    expect(panelOf(container)?.className).toContain("hud:left-0");
   });
 
   test("aligned to the right", () => {
     const { container } = render(Popover, { align: "right", children });
 
-    expect(panelOf(container)?.className).toContain("right-0");
+    expect(panelOf(container)?.className).toContain("hud:right-0");
   });
 
   it("takes extra classes from the caller, which owns the body's own layout", () => {
-    const { container } = render(Popover, { class: "w-[124px] flex-col", children });
+    const { container } = render(Popover, { class: "hud:w-[124px] hud:flex-col", children });
 
-    expect(panelOf(container)?.className).toContain("w-[124px]");
+    expect(panelOf(container)?.className).toContain("hud:w-[124px]");
   });
 
   /*

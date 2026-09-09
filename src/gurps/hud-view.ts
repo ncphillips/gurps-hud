@@ -121,7 +121,7 @@ function num(value: Numeric | undefined | null): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-/** GURPS thresholds: a third of maximum is reeling/exhausted territory, zero is collapse. */
+/** GURPS thresholds: a third of maximum is reeling/exhausted territory, zero is collapsing. */
 export function poolTone(value: number, max: number): Tone {
   if (value <= 0) return "danger";
   if (max > 0 && value <= max / 3) return "warn";

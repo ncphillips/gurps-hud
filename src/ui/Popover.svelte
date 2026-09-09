@@ -46,14 +46,15 @@
 <div
   data-hud-popover-bridge
   aria-hidden="true"
-  class="absolute inset-x-0 bottom-full z-20"
+  class="hud:absolute hud:inset-x-0 hud:bottom-full hud:z-20"
   style="height: {offset}px"
 ></div>
 
 <div
-  class="absolute {align === 'right'
-    ? 'right-0'
-    : 'left-0'} z-20 rounded-hud-lg border border-white/[.15] bg-hud-popover shadow-hud-popover {className}"
+  data-hud-popover
+  class="hud:absolute {align === 'right'
+    ? 'hud:right-0'
+    : 'hud:left-0'} hud:z-20 hud:rounded-hud-lg hud:border hud:border-white/[.15] hud:bg-hud-popover hud:shadow-hud-popover {className}"
   style="bottom: calc(100% + {offset}px)"
   data-hud-panel={name}
 >

@@ -23,9 +23,9 @@
   } = $props();
 
   const TEXT: Record<Tone, string> = {
-    ok: "text-hud-ink",
-    warn: "text-hud-accent",
-    danger: "text-hud-hp",
+    ok: "hud:text-hud-ink",
+    warn: "hud:text-hud-accent",
+    danger: "hud:text-hud-hp",
   };
 
   let editing = $state(false);
@@ -76,8 +76,8 @@
 </script>
 
 {#if !enabled}
-  <span class="{BOX} text-hud-ink/28"
-    >{pool.value}<span class="text-[9.5px]">/{pool.max}</span></span
+  <span class="{BOX} hud:text-hud-ink/28"
+    >{pool.value}<span class="hud:text-[9.5px]">/{pool.max}</span></span
   >
 {:else if editing}
   <input
@@ -85,7 +85,7 @@
     bind:value={draft}
     type="text"
     inputmode="numeric"
-    class="{BOX} w-0 min-w-0 border-0 text-hud-ink outline-none"
+    class="{BOX} hud:w-0 hud:min-w-0 hud:border-0 hud:text-hud-ink hud:outline-none"
     onblur={commit}
     onkeydown={keydown}
   />
@@ -93,10 +93,12 @@
   <button
     type="button"
     {title}
-    class="{BOX} cursor-text transition-colors duration-75 hover:bg-white/[.14] {TEXT[pool.tone]}"
+    class="{BOX} hud:cursor-text hud:transition-colors hud:duration-75 hud:hover:bg-white/[.14] {TEXT[
+      pool.tone
+    ]}"
     onclick={begin}
     onkeydown={idleKeydown}
   >
-    {pool.value}<span class="text-[9.5px] text-hud-ink/45">/{pool.max}</span>
+    {pool.value}<span class="hud:text-[9.5px] hud:text-hud-ink/45">/{pool.max}</span>
   </button>
 {/if}

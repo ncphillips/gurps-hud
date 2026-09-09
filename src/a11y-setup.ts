@@ -14,7 +14,7 @@ afterEach(cleanup);
 // Components are scanned in isolation, so the page has to stand in for the strip they normally sit
 // in: the HUD's own dark ground, and the `.gurps-hud` class its overrides are scoped to.
 document.body.classList.add("gurps-hud");
-document.body.style.background = "var(--color-hud-panel)";
+document.body.style.background = "var(--hud-color-hud-panel)";
 
 // Components localize through Foundry, which is not here. The stub reads the catalogue that ships,
 // so a key missing from `lang/en.json` fails the test rather than the world.

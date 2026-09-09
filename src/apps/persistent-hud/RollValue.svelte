@@ -22,9 +22,9 @@
   } = $props();
 
   const VARIANTS = {
-    accent: "text-hud-accent hover:bg-hud-accent hover:text-hud-on-accent",
-    defence: "text-hud-defence hover:bg-hud-defence hover:text-hud-on-accent",
-    damage: "text-hud-ink/62 hover:bg-hud-ink hover:text-hud-on-accent",
+    accent: "hud:text-hud-accent hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",
+    defence: "hud:text-hud-defence hud:hover:bg-hud-defence hud:hover:text-hud-on-accent",
+    damage: "hud:text-hud-ink/62 hud:hover:bg-hud-ink hud:hover:text-hud-on-accent",
   } as const;
 </script>
 
@@ -32,7 +32,7 @@
   <button
     type="button"
     {title}
-    class="cursor-pointer rounded-hud-sm bg-transparent transition-colors duration-75 {VARIANTS[
+    class="hud:cursor-pointer hud:rounded-hud-sm hud:bg-transparent hud:transition-colors hud:duration-75 {VARIANTS[
       variant
     ]} {className}"
     onclick={(event) => onroll(cell.otf!, event)}
@@ -40,5 +40,5 @@
     {cell.text}
   </button>
 {:else}
-  <span class="rounded-hud-sm text-hud-ink/28 {className}">{cell.text}</span>
+  <span class="hud:rounded-hud-sm hud:text-hud-ink/28 {className}">{cell.text}</span>
 {/if}

@@ -15,9 +15,11 @@
     onroll: (otf: string, event: MouseEvent) => void;
   } = $props();
 
-  const ROW = "flex min-w-0 items-baseline gap-[8px] rounded-hud-xs px-[6px] py-0 text-left";
-  const NAME = "min-w-0 flex-1 truncate font-hud text-[11.5px]/[1.5] font-medium";
-  const LEVEL = "flex-none font-hud-mono text-[11.5px]/[1.5] font-bold";
+  const ROW =
+    "hud:flex hud:min-w-0 hud:items-baseline hud:gap-[8px] hud:rounded-hud-xs hud:px-[6px] hud:py-0 hud:text-left";
+  const NAME =
+    "hud:min-w-0 hud:flex-1 hud:truncate hud:font-hud hud:text-[11.5px]/[1.5] hud:font-medium";
+  const LEVEL = "hud:flex-none hud:font-hud-mono hud:text-[11.5px]/[1.5] hud:font-bold";
 </script>
 
 <!--
@@ -25,28 +27,32 @@
   SKILLS_PANEL in TopBar): the mock's 400px is a border-box width, so it has to land on the
   bordered element, and a scrollbar on an inner box renders square inside the rounded corners.
 -->
-<div class="grid grid-cols-2 content-start gap-x-[6px] gap-y-0 p-[5px]">
+<div class="hud:grid hud:grid-cols-2 hud:content-start hud:gap-x-[6px] hud:gap-y-0 hud:p-[5px]">
   {#each skills as skill (skill.key)}
     {#if skill.level.otf}
       <button
         type="button"
         title={t("skills.roll", { name: skill.name })}
-        class="{ROW} group cursor-pointer transition-colors duration-75 hover:bg-hud-accent"
+        class="{ROW} hud:group hud:cursor-pointer hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent"
         onclick={(event) => onroll(skill.level.otf!, event)}
       >
-        <span class="{NAME} text-hud-ink/75 group-hover:text-hud-on-accent">{skill.name}</span>
-        <span class="{LEVEL} text-hud-accent group-hover:text-hud-on-accent"
+        <span class="{NAME} hud:text-hud-ink/75 hud:group-hover:text-hud-on-accent"
+          >{skill.name}</span
+        >
+        <span class="{LEVEL} hud:text-hud-accent hud:group-hover:text-hud-on-accent"
           >{skill.level.text}</span
         >
       </button>
     {:else}
       <div class={ROW}>
-        <span class="{NAME} text-hud-ink/45">{skill.name}</span>
-        <span class="{LEVEL} text-hud-ink/28">{skill.level.text}</span>
+        <span class="{NAME} hud:text-hud-ink/45">{skill.name}</span>
+        <span class="{LEVEL} hud:text-hud-ink/28">{skill.level.text}</span>
       </div>
     {/if}
   {:else}
-    <div class="col-span-full px-[6px] py-[2px] font-hud text-[12px] font-medium text-hud-ink/30">
+    <div
+      class="hud:col-span-full hud:px-[6px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-ink/30"
+    >
       {t("skills.empty")}
     </div>
   {/each}

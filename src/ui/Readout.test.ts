@@ -21,9 +21,9 @@ describe("Readout", () => {
   });
 
   it("takes a tone class from the caller, which knows what the number means", () => {
-    const { container } = render(Readout, { class: "text-hud-accent", children });
+    const { container } = render(Readout, { class: "hud:text-hud-accent", children });
 
-    expect(container.querySelector("span")?.className).toContain("text-hud-accent");
+    expect(container.querySelector("span")?.className).toContain("hud:text-hud-accent");
   });
 
   it("reads at the grid's size by default", () => {
@@ -57,10 +57,10 @@ describe("Readout", () => {
  */
 describe("READOUT", () => {
   it("fixes the box's width so a wider number cannot widen it", () => {
-    expect(READOUT).toContain("flex-1");
+    expect(READOUT).toContain("hud:flex-1");
   });
 
   it("right-aligns, so digits line up down the vitals column", () => {
-    expect(READOUT).toContain("text-right");
+    expect(READOUT).toContain("hud:text-right");
   });
 });

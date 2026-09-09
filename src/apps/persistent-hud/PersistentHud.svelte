@@ -203,7 +203,7 @@
 </script>
 
 <div
-  class="flex max-h-hud-max w-fit rounded-hud border border-white/[.11] bg-hud-panel font-hud text-hud-ink"
+  class="hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-white/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
 >
   <PortraitBlock
     {view}
@@ -221,7 +221,7 @@
     onclose={close}
   />
 
-  <div class="flex min-h-0 min-w-0 flex-col">
+  <div class="hud:flex hud:min-h-0 hud:min-w-0 hud:flex-col">
     <TopBar
       {view}
       {enabled}

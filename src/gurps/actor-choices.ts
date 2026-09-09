@@ -21,7 +21,7 @@ export interface ActorChoice {
 
 /**
  * The actors the strip can be switched to without selecting a token: one per controllable token on
- * the canvas. Several tokens of a linked actor collapse to one choice -- they are the same document
+ * the canvas. Several tokens of a linked actor fold into one choice -- they are the same document
  * -- while unlinked tokens each carry their own synthetic actor and so stay separate.
  */
 export function actorChoices(tokens: TokenLike[]): ActorChoice[] {

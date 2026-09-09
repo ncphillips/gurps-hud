@@ -18,37 +18,40 @@
 
   const columns = $derived([basic, secondary]);
 
-  const ROW = "flex w-full items-baseline gap-[6px] rounded-hud-xs px-[5px] py-0";
-  const VALUE = "w-[30px] flex-none text-left font-hud-mono text-[11.5px]/[1.5] font-bold";
-  const LABEL = "truncate font-hud text-[11.5px]/[1.5] font-medium text-hud-ink/60";
+  const ROW =
+    "hud:flex hud:w-full hud:items-baseline hud:gap-[6px] hud:rounded-hud-xs hud:px-[5px] hud:py-0";
+  const VALUE =
+    "hud:w-[30px] hud:flex-none hud:text-left hud:font-hud-mono hud:text-[11.5px]/[1.5] hud:font-bold";
+  const LABEL =
+    "hud:truncate hud:font-hud hud:text-[11.5px]/[1.5] hud:font-medium hud:text-hud-ink/60";
 </script>
 
-<div class="flex gap-[6px] p-[5px]">
+<div class="hud:flex hud:gap-[6px] hud:p-[5px]">
   {#each columns as column (column.header)}
-    <div class="w-[142px] rounded-hud-sm bg-white/[.04] px-[2px] pb-[3px]">
+    <div class="hud:w-[142px] hud:rounded-hud-sm hud:bg-white/[.04] hud:px-[2px] hud:pb-[3px]">
       <div
-        class="mb-[2px] border-b border-white/[.09] px-[5px] pt-[3px] pb-[2px] font-hud-mono text-[8px] font-bold tracking-[.13em] text-hud-ink/40"
+        class="hud:mb-[2px] hud:border-b hud:border-white/[.09] hud:px-[5px] hud:pt-[3px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/40"
       >
         {column.header}
       </div>
       {#each column.groups as group, groupIndex (groupIndex)}
         {#if groupIndex > 0}
-          <div class="mx-[5px] my-[2px] h-px bg-white/[.08]"></div>
+          <div class="hud:mx-[5px] hud:my-[2px] hud:h-px hud:bg-white/[.08]"></div>
         {/if}
         {#each group as row (row.label)}
           {#if row.otf}
             <button
               type="button"
               title={t("attributes.roll", { label: row.label })}
-              class="{ROW} cursor-pointer transition-colors duration-75 hover:bg-hud-accent/22"
+              class="{ROW} hud:cursor-pointer hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent/22"
               onclick={(event) => onroll(row.otf!, event)}
             >
-              <span class="{VALUE} text-hud-accent">{row.value}</span>
+              <span class="{VALUE} hud:text-hud-accent">{row.value}</span>
               <span class={LABEL}>{row.label}</span>
             </button>
           {:else}
             <div class={ROW}>
-              <span class="{VALUE} text-hud-ink/70">{row.value}</span>
+              <span class="{VALUE} hud:text-hud-ink/70">{row.value}</span>
               <span class={LABEL}>{row.label}</span>
             </div>
           {/if}

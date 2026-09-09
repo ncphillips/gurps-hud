@@ -112,7 +112,7 @@
    * is one row of the strip and not a bar in its own right. Shared by the filled and empty branches
    * so they cannot drift apart, and by the library, which lays the other forty slots out in a grid.
    */
-  const SIZE = "h-[32px] w-[32px]";
+  const SIZE = "hud:h-[32px] hud:w-[32px]";
 </script>
 
 {#if slot.name}
@@ -134,13 +134,13 @@
     }}
     class={[
       SIZE,
-      "cursor-pointer overflow-hidden rounded-hud-sm text-center font-hud-mono text-[12px]/[32px] font-semibold text-hud-ink/50 transition-colors duration-75 hover:bg-hud-accent hover:text-hud-on-accent",
-      drag.over === slot.slot ? "bg-hud-accent" : "bg-white/[.07]",
+      "hud:cursor-pointer hud:overflow-hidden hud:rounded-hud-sm hud:text-center hud:font-hud-mono hud:text-[12px]/[32px] hud:font-semibold hud:text-hud-ink/50 hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",
+      drag.over === slot.slot ? "hud:bg-hud-accent" : "hud:bg-white/[.07]",
     ]}
     onclick={() => onexecute(slot.slot)}
   >
     {#if slot.img}
-      <img src={slot.img} alt={slot.name} class="h-full w-full object-cover" />
+      <img src={slot.img} alt={slot.name} class="hud:h-full hud:w-full hud:object-cover" />
     {:else}
       {slot.hotkey}
     {/if}
@@ -150,8 +150,8 @@
   <div
     class={[
       SIZE,
-      "rounded-hud-sm border border-dashed bg-white/[.04]",
-      drag.over === slot.slot ? "border-hud-accent" : "border-white/[.12]",
+      "hud:rounded-hud-sm hud:border hud:border-dashed hud:bg-white/[.04]",
+      drag.over === slot.slot ? "hud:border-hud-accent" : "hud:border-white/[.12]",
     ]}
     title={t("macros.emptySlot", { hotkey: slot.hotkey })}
     data-hud-macro-slot={slot.slot}

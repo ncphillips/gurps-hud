@@ -1,7 +1,7 @@
 /* GURPS HUD */
 @layer theme, base, components, utilities;
-@import "tailwindcss/theme" layer(theme);
-@import "tailwindcss/utilities" layer(utilities);
+@import "tailwindcss/theme" layer(theme) prefix(hud);
+@import "tailwindcss/utilities" layer(utilities) prefix(hud);
 
 @source "../**/*.{svelte,ts}";
 

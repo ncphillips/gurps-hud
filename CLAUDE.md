@@ -39,6 +39,11 @@ Test world: **Dungeon Crawler World** (`gurps` system).
   version is stamped by the release workflow, never hand-edited.
 - Tailwind for layout and most styling; `src/styles/gurps-hud.css` only for overriding Foundry's
   own selectors (e.g. `.window-content` padding) which Tailwind classes can't reach.
+- Every Tailwind utility carries the `hud:` prefix — `hud:flex`, `hud:hover:bg-hud-accent`, and the
+  marker class `hud:group`. Unprefixed, Tailwind's scanner turns any word in the source (including
+  prose in a comment) into a global class, and `.collapse` alone hid Foundry's own sidebar toggle.
+  Theme variables are declared bare in `@theme` but emitted prefixed, so read them back as
+  `var(--hud-color-hud-panel)`.
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
   into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
   Tailwind utility on the same element.
