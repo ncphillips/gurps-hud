@@ -25,6 +25,7 @@
     updatePool,
   } from "@/gurps/game-aid";
   import { t } from "@/i18n";
+  import { warn } from "@/log";
   import { actorChoices } from "@/gurps/actor-choices";
   import type { ActorChoice } from "@/gurps/actor-choices";
   import { allAttackPicks, buildHudView, buildTargetView, emptyHudView } from "@/gurps/hud-view";
@@ -92,7 +93,20 @@
    * Which attacks the strip shows, read off the actor rather than held here: the flag is the record,
    * and every write to it comes back through `updateActor` like any other change to the character.
    */
-  const picks = $derived(atRevision(revision, () => attackPicks(actor)));
+  const saved = $derived(atRevision(revision, () => attackPicks(actor)));
+
+  /**
+   * A write that has not come back yet. A world's flag write goes to the server and returns through
+   * `updateActor`, and until it does the actor still carries the old list -- so a second edit made
+   * inside that gap, two Deletes in a row, would be computed from the list before the first one and
+   * put the first attack back. The pending list stands in for the flag until the flag catches up,
+   * and it is stamped with whose it is so switching characters mid-write shows the new one's picks.
+   */
+  let pending = $state.raw<{ actorId: string | null; picks: AttackPicks } | null>(null);
+
+  const picks = $derived(
+    pending && pending.actorId === (actor?.id ?? null) ? pending.picks : saved,
+  );
 
   /*
    * The strip is always on screen, so with nothing selected it renders the empty view rather than
@@ -221,8 +235,20 @@
     setCurrentActor(choice.actor, choice.key);
   }
 
+  /**
+   * Shows the edit at once and writes it, then hands the answer back to the actor. A refused write
+   * -- a player curating a token they do not own -- drops the pending list, so the strip snaps back
+   * to what the character actually carries rather than showing an edit that never happened.
+   */
   function savePicks(next: AttackPicks): void {
-    void saveAttackPicks(actor, next);
+    const write = { actorId: actor?.id ?? null, picks: next };
+    pending = write;
+
+    saveAttackPicks(actor, next)
+      .catch((reason: unknown) => warn("could not save the picked attacks", reason))
+      .finally(() => {
+        if (pending === write) pending = null;
+      });
   }
 
   /**

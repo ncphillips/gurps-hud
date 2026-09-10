@@ -18,6 +18,7 @@
  *   ?open_sheet=brent|goblin       opens a stand-in character sheet whose attack rows can be
  *                                  dragged onto the strip, as a real sheet's can
  *   ?set_macro_page=3              which hotbar page the number keys address
+ *   ?delay_writes=true             makes writing to an actor take a round trip, as a world does
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
@@ -26,6 +27,7 @@ import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
 import { CAST, TOKENS, castMember } from "./cast";
+import type { HarnessActor } from "./cast";
 import { fire, hooksStub } from "./hooks";
 import { openSheet } from "./sheet";
 
@@ -64,6 +66,28 @@ if (params.get("pick_attacks") !== "none") {
   for (const member of Object.values(CAST)) {
     void member.setFlag?.("gurps-hud", "attacks", allAttackPicks(member.system));
   }
+}
+
+/*
+ * A world's writes go to the server and come back: nothing the HUD writes is readable off the actor
+ * until the update returns and `updateActor` fires. The harness's land the instant they are made,
+ * which hides every bug living in that gap, so `?delay_writes=true` opens the gap back up. Applied
+ * after the picks above so the strip still starts full.
+ */
+const ROUND_TRIP = 400;
+
+function delayWrites(member: HarnessActor): void {
+  const write = member.setFlag;
+  if (!write) return;
+
+  member.setFlag = async (scope: string, key: string, value: unknown) => {
+    await new Promise((resolve) => setTimeout(resolve, ROUND_TRIP));
+    return write.call(member, scope, key, value);
+  };
+}
+
+if (flag("delay_writes")) {
+  for (const member of Object.values(CAST)) delayWrites(member);
 }
 
 /*

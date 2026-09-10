@@ -109,11 +109,14 @@ export function dragPayload(actorId: string | null | undefined, key: string): st
  * differ only in whether the key was already there, and removing it first covers both.
  *
  * A drop that would cross groups -- a bow onto the melee rows -- changes nothing, because "before"
- * has no meaning in a list the attack cannot join.
+ * has no meaning in a list the attack cannot join. Neither does a drop on the attack itself: the
+ * row under the pointer at the end of a short drag is the row the drag started on, and "ahead of
+ * where you already are" is where it already is.
  */
 export function placePick(picks: AttackPicks, key: string, before: string | null): AttackPicks {
   const kind = attackKind(key);
   if (!kind) return picks;
+  if (before === key) return picks;
   if (before !== null && attackKind(before) !== kind) return picks;
 
   const group = picks[kind].filter((each) => each !== key);

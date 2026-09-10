@@ -128,6 +128,13 @@ describe("placePick", () => {
     ]);
   });
 
+  /* A short drag that goes nowhere: the row under the pointer is the row being dragged. */
+  test("an attack dropped on itself", () => {
+    const picks = { melee: ["system.melee.0", "system.melee.1", "system.melee.2"], ranged: [] };
+
+    expect(placePick(picks, "system.melee.1", "system.melee.1")).toEqual(picks);
+  });
+
   test("a ranged attack dropped on a melee row", () => {
     const picks = { melee: ["system.melee.0"], ranged: ["system.ranged.0"] };
 

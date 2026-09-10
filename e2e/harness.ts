@@ -29,6 +29,8 @@ export interface HarnessParams {
   open_sheet?: CastMember;
   /** Which hotbar page the number keys address. */
   set_macro_page?: number;
+  /** Makes writing to an actor take a round trip, so the HUD reads a stale flag while it is in flight. */
+  delay_writes?: boolean;
   /** Appends a `<pre id="measurements">` of key bounding boxes. */
   measure?: boolean;
 }

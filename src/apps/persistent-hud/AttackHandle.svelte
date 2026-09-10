@@ -30,23 +30,27 @@
   function dragStart(event: DragEvent): void {
     drag.from = attackKey;
     drag.landed = false;
+    drag.outside = false;
     event.dataTransfer?.setData("text/plain", dragPayload(actorId, attackKey));
   }
 
   /**
-   * A drag that ended without the strip taking the drop went off the strip, and that is how an
-   * attack is removed -- the same gesture as flicking a macro off the hotbar. Dropping it somewhere
-   * on the strip that is not an attack row does nothing at all: the strip marks the drop as landed
-   * even where it cannot act on it, so a near miss is a near miss rather than a deletion.
+   * An attack carried out of the tables and let go of nowhere is removed -- the same gesture as
+   * flicking a macro off the hotbar. Both halves are needed. Dropping it somewhere on the strip
+   * that is not an attack row does nothing at all, because the strip marks the drop as landed even
+   * where it cannot act on it, so a near miss is a near miss rather than a deletion. And a drag
+   * cancelled with Escape ends with the same `dragend` and nothing dropped, so the attack having
+   * actually left the tables is the only thing that tells a deletion from a change of mind.
    */
   function dragEnd(): void {
-    const dropped = drag.landed;
+    const carriedOff = !drag.landed && drag.outside;
     const key = drag.from;
     drag.from = null;
     drag.over = null;
     drag.landed = false;
+    drag.outside = false;
 
-    if (!dropped && key) onremove(key);
+    if (carriedOff && key) onremove(key);
   }
 
   /**
@@ -83,10 +87,6 @@
   ondragstart={dragStart}
   ondragend={dragEnd}
   onkeydown={keydown}
-  oncontextmenu={(event) => {
-    event.preventDefault();
-    onremove(attackKey);
-  }}
   class="hud:flex hud:h-[14px] hud:w-[11px] hud:flex-none hud:cursor-grab hud:items-center hud:justify-center hud:text-hud-ink/25 hud:transition-colors hud:duration-75 hud:hover:text-hud-ink/60 hud:active:cursor-grabbing"
 >
   <svg viewBox="0 0 12 12" width="9" height="9" fill="currentColor" aria-hidden="true">

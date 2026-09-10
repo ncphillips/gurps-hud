@@ -24,6 +24,23 @@ function grip(page: Page, key: string) {
   return page.locator(`[data-hud-attack-handle="${key}"]`);
 }
 
+/**
+ * An attack carried off the HUD, the way a hand carries it: the pointer travels rather than
+ * teleporting. `dragTo` jumps straight to the destination, and a browser only announces leaving an
+ * element it announced entering -- so a drag that never moved while still on the strip never
+ * reports leaving it, and the strip cannot tell it from a drag cancelled where it stood.
+ */
+async function dragOffTheHud(page: Page, key: string, to: { x: number; y: number }): Promise<void> {
+  const handle = grip(page, key);
+  const box = (await handle.boundingBox())!;
+
+  await handle.hover();
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 20, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.move(to.x, to.y, { steps: 10 });
+  await page.mouse.up();
+}
+
 test.describe("picking attacks", () => {
   test("shows nothing until somebody says what to show", async ({ page }) => {
     await openHarness(page, { pick_attacks: "none" });
@@ -87,7 +104,7 @@ test.describe("reordering attacks", () => {
 test.describe("removing attacks", () => {
   test("drops the attack dragged clear of the strip", async ({ page }) => {
     await openHarness(page);
-    await grip(page, PUNCH).dragTo(page.locator("body"), { targetPosition: { x: 780, y: 60 } });
+    await dragOffTheHud(page, PUNCH, { x: 780, y: 60 });
 
     expect(await picked(page)).toEqual([SPEAR, KICK, THROWN]);
   });
@@ -106,6 +123,22 @@ test.describe("removing attacks", () => {
     await page.keyboard.press("Delete");
 
     expect(await picked(page)).toEqual([SPEAR, PUNCH, KICK]);
+  });
+
+  /*
+   * Two deletes inside one round trip. A world's write is not readable off the actor until it comes
+   * back, so the second delete must be computed from the first one's result rather than from the
+   * list the strip is still showing -- otherwise the second write puts the first attack back.
+   */
+  test("a second attack deleted before the first delete has landed", async ({ page }) => {
+    await openHarness(page, { delay_writes: true });
+
+    await grip(page, PUNCH).focus();
+    await page.keyboard.press("Delete");
+    await grip(page, KICK).focus();
+    await page.keyboard.press("Delete");
+
+    await expect.poll(() => picked(page)).toEqual([SPEAR, THROWN]);
   });
 
   /* Emptying the list is how the offer to fill it comes back -- there is no other reset. */

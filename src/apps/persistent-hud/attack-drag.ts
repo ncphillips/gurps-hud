@@ -14,8 +14,14 @@ export interface AttackDrag {
    * was moved from one dragged clear of the strip, which is the gesture that takes it off.
    */
   landed: boolean;
+  /**
+   * Whether the attack has been carried out of the tables. Removal needs this as well as a drag
+   * that never landed, because Escape ends a drag exactly the way letting go over the desktop
+   * does -- `dragend`, nothing dropped -- and cancelling a drag must not delete the attack.
+   */
+  outside: boolean;
 }
 
 export function attackDrag(): AttackDrag {
-  return { from: null, over: null, landed: false };
+  return { from: null, over: null, landed: false, outside: false };
 }

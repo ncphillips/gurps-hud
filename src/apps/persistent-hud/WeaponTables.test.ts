@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
-import { describe, expect, it, test, vi } from "vitest";
+import { afterEach, describe, expect, it, test, vi } from "vitest";
+import type { Mock } from "vitest";
+import { dragging } from "@/drag-testing";
+import type { Gesture } from "@/drag-testing";
 import { dragPayload, noPicks } from "@/gurps/attack-picks";
 import { emptyHudView } from "@/gurps/hud-view";
 import { attackDrag } from "./attack-drag";
@@ -29,17 +32,6 @@ function props(overrides: Partial<Props> = {}): Props {
   };
 }
 
-/** A drag payload as the character sheet -- or the strip's own grip -- hands it over. */
-function carrying(key: string, actorId = "actor-brent"): { dataTransfer: DataTransfer } {
-  return {
-    dataTransfer: {
-      types: ["text/plain"],
-      getData: () => dragPayload(actorId, key),
-      setData: () => undefined,
-    } as unknown as DataTransfer,
-  };
-}
-
 function grip(key: string): Element {
   const element = document.querySelector(`[data-hud-attack-handle="${key}"]`);
   if (!element) throw new Error(`no grip rendered for ${key}`);
@@ -52,8 +44,46 @@ function row(key: string): Element {
   return element;
 }
 
+/** The name cell of a row -- one of the children the pointer crosses on its way across it. */
+function nameCellIn(key: string): Element {
+  return row(key).querySelector("span")!;
+}
+
 function tables(): Element {
   return document.querySelector("[data-hud-attacks]")!;
+}
+
+/** An attack dragged off a character sheet, which is where every pick comes from. */
+function draggedOffTheSheet(key: string, actorId = "actor-brent"): Gesture {
+  return dragging(dragPayload(actorId, key));
+}
+
+/** An attack already picked, taken by its own grip: the drag that reorders one or takes it off. */
+function draggedByItsGrip(key: string): Gesture {
+  return dragging(dragPayload("actor-brent", key), grip(key));
+}
+
+/** A macro dragged out of the footer -- an attack's MIME type, and nothing to do with an attack. */
+function draggedFromTheMacroFooter(): Gesture {
+  return dragging(JSON.stringify({ type: "Macro", uuid: "Macro.1", slot: 1 }));
+}
+
+/*
+ * Foundry's own drop handlers sit on the page behind the strip, and a drop the tables cannot use
+ * has to reach them. Nothing here mounts Foundry, so the stand-in is a listener on the document --
+ * removed after the test, or the next test's drops would still be counted by this one's spy.
+ */
+const listening: Array<() => void> = [];
+afterEach(() => {
+  for (const stop of listening.splice(0)) stop();
+});
+
+function dropsReachingThePage(): Mock {
+  const reached = vi.fn();
+  document.addEventListener("drop", reached);
+  listening.push(() => document.removeEventListener("drop", reached));
+
+  return reached;
 }
 
 describe("WeaponTables, with nothing picked", () => {
@@ -97,7 +127,7 @@ describe("WeaponTables, dropping an attack", () => {
     const onplace = vi.fn();
     render(WeaponTables, props({ onplace }));
 
-    await fireEvent.drop(tables(), carrying(PUNCH));
+    await draggedOffTheSheet(PUNCH).dropOn(tables());
 
     expect(onplace).toHaveBeenCalledWith(expect.anything(), null);
   });
@@ -106,7 +136,7 @@ describe("WeaponTables, dropping an attack", () => {
     const onplace = vi.fn();
     render(WeaponTables, props({ onplace }));
 
-    await fireEvent.drop(row(PUNCH), carrying(THROWN));
+    await draggedOffTheSheet(THROWN).dropOn(row(PUNCH));
 
     expect(onplace).toHaveBeenCalledWith(expect.anything(), PUNCH);
   });
@@ -115,7 +145,7 @@ describe("WeaponTables, dropping an attack", () => {
     const onplace = vi.fn();
     render(WeaponTables, props({ onplace }));
 
-    await fireEvent.drop(row(PUNCH), carrying(SPEAR));
+    await draggedOffTheSheet(SPEAR).dropOn(row(PUNCH));
 
     expect(onplace).toHaveBeenCalledOnce();
   });
@@ -124,9 +154,39 @@ describe("WeaponTables, dropping an attack", () => {
     const drag = attackDrag();
     render(WeaponTables, props({ drag }));
 
-    await fireEvent.dragEnter(row(PUNCH), carrying(SPEAR));
+    await draggedOffTheSheet(SPEAR).over(row(PUNCH));
 
     expect(drag.over).toBe(PUNCH);
+  });
+
+  /* The name and the readouts are most of a row, and crossing onto one of them leaves the row. */
+  test("the pointer crossing from the row onto the attack's name", async () => {
+    const drag = attackDrag();
+    render(WeaponTables, props({ drag }));
+
+    await draggedOffTheSheet(SPEAR).over(row(PUNCH)).over(nameCellIn(PUNCH));
+
+    expect(drag.over).toBe(PUNCH);
+  });
+});
+
+describe("WeaponTables, a drag that is not an attack", () => {
+  it("lets a macro dropped on a weapon row through to the page behind the strip", async () => {
+    render(WeaponTables, props());
+    const reachedThePage = dropsReachingThePage();
+
+    await draggedFromTheMacroFooter().dropOn(row(PUNCH));
+
+    expect(reachedThePage).toHaveBeenCalledOnce();
+  });
+
+  test("a macro dropped on a weapon row", async () => {
+    const onplace = vi.fn();
+    render(WeaponTables, props({ onplace }));
+
+    await draggedFromTheMacroFooter().dropOn(row(PUNCH));
+
+    expect(onplace).not.toHaveBeenCalled();
   });
 });
 
@@ -135,20 +195,29 @@ describe("WeaponTables, the grip", () => {
     const onremove = vi.fn();
     render(WeaponTables, props({ onremove }));
 
-    await fireEvent.dragStart(grip(SPEAR), carrying(SPEAR));
-    await fireEvent.dragEnd(grip(SPEAR));
+    await draggedByItsGrip(SPEAR).outOf(tables());
 
     expect(onremove).toHaveBeenCalledWith(SPEAR);
   });
 
-  test("a drag the strip took the drop for", async () => {
-    const drag = attackDrag();
+  /*
+   * Escape ends a drag where it stands: `dragend` fires with nothing dropped, exactly as it does
+   * for an attack flicked off the strip. The attack never went anywhere, so it is still picked.
+   */
+  test("a drag cancelled without ever leaving the tables", async () => {
     const onremove = vi.fn();
-    render(WeaponTables, props({ drag, onremove }));
+    render(WeaponTables, props({ onremove }));
 
-    await fireEvent.dragStart(grip(SPEAR), carrying(SPEAR));
-    await fireEvent.drop(row(PUNCH), carrying(SPEAR));
-    await fireEvent.dragEnd(grip(SPEAR));
+    await draggedByItsGrip(SPEAR).over(row(PUNCH)).cancel();
+
+    expect(onremove).not.toHaveBeenCalled();
+  });
+
+  test("a drag the tables took the drop for", async () => {
+    const onremove = vi.fn();
+    render(WeaponTables, props({ onremove }));
+
+    await draggedByItsGrip(SPEAR).dropOn(row(PUNCH));
 
     expect(onremove).not.toHaveBeenCalled();
   });
@@ -162,13 +231,14 @@ describe("WeaponTables, the grip", () => {
     expect(onremove).toHaveBeenCalledWith(THROWN);
   });
 
-  it("removes the attack on a right-click", async () => {
+  /* Nothing tells you it would, and an 11px target is too easy to hit by accident. */
+  test("a right-click on the grip", async () => {
     const onremove = vi.fn();
     render(WeaponTables, props({ onremove }));
 
     await fireEvent.contextMenu(grip(THROWN));
 
-    expect(onremove).toHaveBeenCalledWith(THROWN);
+    expect(onremove).not.toHaveBeenCalled();
   });
 
   it("moves the attack a place down the group on Alt+ArrowDown", async () => {

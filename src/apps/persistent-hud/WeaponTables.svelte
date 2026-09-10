@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { droppedAttack } from "@/gurps/attack-picks";
   import type { HudView } from "@/gurps/hud-view";
   import { t } from "@/i18n";
   import AttackHandle from "./AttackHandle.svelte";
@@ -60,8 +61,20 @@
     return dropTarget ? `${rest} hud:border-t-hud-accent` : rest;
   }
 
+  /**
+   * Whether an attack is what was let go of. Foundry drags everything on `text/plain` -- macros,
+   * documents, the sheet's own rows -- so a drop the tables cannot use has to be left alone
+   * entirely: swallowing it would stop it reaching the handlers behind the strip, and dragging a
+   * macro clear of the HUD is how the hotbar is told to give up its slot.
+   */
+  function isAttack(event: DragEvent): boolean {
+    return droppedAttack(event.dataTransfer?.getData("text/plain")) !== null;
+  }
+
   /** Insert ahead of this row. Stops here so the container below does not also append it. */
   function dropOn(event: DragEvent, key: string): void {
+    if (!isAttack(event)) return;
+
     event.preventDefault();
     event.stopPropagation();
     drag.over = null;
@@ -71,10 +84,24 @@
 
   /** Anywhere in the tables that is not a row: the attack joins the end of whichever group it names. */
   function dropInTables(event: DragEvent): void {
+    if (!isAttack(event)) return;
+
     event.preventDefault();
     drag.over = null;
     drag.landed = true;
     onplace(event, null);
+  }
+
+  /**
+   * Whether the pointer only crossed into something the element it is leaving contains, which is
+   * not leaving at all. A row is mostly its own cells -- the grip, the name, every readout -- and
+   * the browser announces crossing onto one of them as the cell's `dragenter` followed by the
+   * row's `dragleave`, naming the cell in `relatedTarget`.
+   */
+  function crossedInside(event: DragEvent): boolean {
+    const leaving = event.currentTarget as Element | null;
+    const onto = event.relatedTarget as Node | null;
+    return !!leaving && !!onto && leaving.contains(onto);
   }
 
   function dragEnter(event: DragEvent, key: string): void {
@@ -83,8 +110,22 @@
   }
 
   /** A drag that leaves the strip entirely never fires `dragend` here, so the marker self-clears. */
-  function dragLeave(key: string): void {
+  function dragLeave(event: DragEvent, key: string): void {
+    if (crossedInside(event)) return;
     if (drag.over === key) drag.over = null;
+  }
+
+  /**
+   * The tables are the boundary an attack has to cross to be taken off: coming back in makes the
+   * drag a move again, so a drag that ends here ends over the list it came from.
+   */
+  function enterTables(): void {
+    drag.outside = false;
+  }
+
+  function leaveTables(event: DragEvent): void {
+    if (crossedInside(event)) return;
+    drag.outside = true;
   }
 </script>
 
@@ -97,6 +138,8 @@
   data-hud-attacks
   class="hud:flex hud:min-h-0 hud:flex-1 hud:flex-col hud:gap-px hud:overflow-y-auto hud:px-[3px] hud:pb-[3px] hud:[scrollbar-color:rgb(255_255_255/.18)_transparent] hud:[scrollbar-width:thin]"
   ondragover={(event) => event.preventDefault()}
+  ondragenter={enterTables}
+  ondragleave={leaveTables}
   ondrop={dropInTables}
 >
   {#if view.melee.length > 0}
@@ -118,7 +161,7 @@
         title={row.equipped ? t("weapons.readied") : undefined}
         ondragover={(event) => event.preventDefault()}
         ondragenter={(event) => dragEnter(event, row.key)}
-        ondragleave={() => dragLeave(row.key)}
+        ondragleave={(event) => dragLeave(event, row.key)}
         ondrop={(event) => dropOn(event, row.key)}
       >
         <AttackHandle
@@ -185,7 +228,7 @@
         title={row.equipped ? t("weapons.readied") : undefined}
         ondragover={(event) => event.preventDefault()}
         ondragenter={(event) => dragEnter(event, row.key)}
-        ondragleave={() => dragLeave(row.key)}
+        ondragleave={(event) => dragLeave(event, row.key)}
         ondrop={(event) => dropOn(event, row.key)}
       >
         <AttackHandle
