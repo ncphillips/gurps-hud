@@ -7,6 +7,22 @@
 const DOUBLE_QUOTE = '"';
 const SINGLE_QUOTE = "'";
 
+/**
+ * What a character the OTF grammar cannot carry is replaced with. The Game Aid picks the same
+ * character: `parselink` rewrites every `\"` and `\'` to `*` before it parses anything, so a name
+ * it cannot quote already reaches the roll with an asterisk where the quote was.
+ */
+const UNQUOTABLE = "*";
+
+/**
+ * Characters that escape a quoted name no matter which quote encloses it. `|` splits a second,
+ * fully parsed action off the OTF (`Sk:"a|/r 3d6"` rolls the 3d6), and the split happens before the
+ * parser reads a quote. A backslash never escapes anything -- the grammar has no escape syntax --
+ * but one at the end of a name would be paired with the closing quote we add and collapsed to `*`,
+ * leaving the name unterminated and its tail parsed as OTF.
+ */
+const OTF_SYNTAX = /[|\\]/g;
+
 export interface AttackRef {
   name?: string;
   mode?: string;
@@ -15,13 +31,21 @@ export interface AttackRef {
 /** `M` melee · `R` ranged · `P` parry · `B` block · `D` damage. */
 export type AttackOtfPrefix = "M" | "R" | "P" | "B" | "D";
 
-/** Mirrors the Game Aid's own quoting, so names with quotes in them still parse. */
+/**
+ * Mirrors the Game Aid's own quoting, so names with quotes in them still parse. A name is enclosed
+ * in whichever quote it does not contain -- the grammar reads a quoted name as `"[^"]+"` or
+ * `'[^']+'`, with no escape sequence inside either -- and anything that would still end the name
+ * early is replaced rather than escaped. Replacing costs the lookup that one name, exactly as the
+ * Game Aid's own `*` does; escaping would let the rest of the name run on as OTF syntax.
+ */
 function quotedName(name: string): string {
-  if (name.includes(DOUBLE_QUOTE)) {
-    return SINGLE_QUOTE + name.replace(/'/g, "\\'") + SINGLE_QUOTE;
+  const safe = name.replace(OTF_SYNTAX, UNQUOTABLE);
+
+  if (safe.includes(DOUBLE_QUOTE)) {
+    return SINGLE_QUOTE + safe.replaceAll(SINGLE_QUOTE, UNQUOTABLE) + SINGLE_QUOTE;
   }
 
-  return DOUBLE_QUOTE + name + DOUBLE_QUOTE;
+  return DOUBLE_QUOTE + safe + DOUBLE_QUOTE;
 }
 
 export function quotedAttackName(attack: AttackRef): string {
