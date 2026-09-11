@@ -17,6 +17,12 @@ export default defineConfig({
   use: {
     baseURL: HARNESS,
     trace: "on-first-retry",
+    /*
+     * Set only where the pinned Chromium cannot be downloaded and a pre-installed one has to stand
+     * in for it -- see `.claude/hooks/session-start.sh`. Unset locally and in CI, where it means
+     * "the build Playwright pins", which is the one we want.
+     */
+    launchOptions: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH },
   },
   /*
    * Two groups, split by filename like the Vitest suites: `*.spec.ts` drives the HUD and asserts on

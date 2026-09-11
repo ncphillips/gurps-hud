@@ -44,7 +44,14 @@ export default defineConfig({
             provider: "playwright",
             headless: true,
             screenshotFailures: false,
-            instances: [{ browser: "chromium" }],
+            // `launch.executablePath` is set only where the pinned Chromium cannot be downloaded
+            // and a pre-installed one stands in -- see `.claude/hooks/session-start.sh`.
+            instances: [
+              {
+                browser: "chromium",
+                launch: { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH },
+              },
+            ],
           },
         },
       },
