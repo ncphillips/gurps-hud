@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# The verify job only reads the repo; artifact uploads authenticate with the Actions
+# runtime token, not GITHUB_TOKEN. Pinning this here stops the job inheriting the
+# repository's read-write default.
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
