@@ -15,7 +15,15 @@ describe("quotedAttackName", () => {
   });
 
   test("a double-quoted name that also contains a single quote", () => {
-    expect(quotedAttackName({ name: `Bob's 12" Blade` })).toBe(`'Bob\\'s 12" Blade'`);
+    expect(quotedAttackName({ name: `Bob's 12" Blade` })).toBe(`'Bob*s 12" Blade'`);
+  });
+
+  test("a name ending in a backslash, which would pair with the closing quote", () => {
+    expect(quotedAttackName({ name: '12" Blade\\' })).toBe(`'12" Blade*'`);
+  });
+
+  test("a name carrying a chained action", () => {
+    expect(quotedAttackName({ name: "Punch|/r 3d6" })).toBe('"Punch*/r 3d6"');
   });
 });
 
@@ -48,6 +56,10 @@ describe("skillOtf", () => {
 
   test("a skill name containing a double quote", () => {
     expect(skillOtf('Guns (12" Cannon)')).toBe("Sk:'Guns (12\" Cannon)'");
+  });
+
+  test("a skill name that tries to close its own quote and chain another roll", () => {
+    expect(skillOtf('Brawling" | /r [1d6]')).toBe(`Sk:'Brawling" * /r [1d6]'`);
   });
 });
 
