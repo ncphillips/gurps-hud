@@ -38,8 +38,8 @@ function skills(rows: Array<[name: string, level: number]>) {
  * `hud-view.ts` rounds back down. Copying the quirk is the point: it is what a world hands the
  * strip, so the harness shows the same Move a world would.
  *
- * The base is Basic Move, halved once per condition (B419). Encumbrance is left out; no member of
- * the cast carries any.
+ * The base is Basic Move, halved once per condition (B380, B426). Encumbrance is left out; no
+ * member of the cast carries any.
  */
 function postureMove(system: GurpsSystem, posture: string): number {
   let move = Number(system.basicmove.value);

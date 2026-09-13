@@ -187,7 +187,7 @@ describe("currentMove", () => {
   });
 
   it("halves for reeling and exhausted before taking the posture's share", () => {
-    // Basic Move 5, halved twice rounding up (B419), is 2; crouching takes that to 1.
+    // Basic Move 5, halved twice rounding up (B380, B426), is 2; crouching takes that to 1.
     const sheet = crouching(2, {
       conditions: { posture: "crouch", maneuver: "attack", reeling: true, exhausted: true },
     });
