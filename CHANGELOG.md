@@ -35,6 +35,12 @@ The strip stops guessing which attacks matter and stops disappearing when nothin
 
 ### Fixed
 
+- **A posture's Move rounds down.** Crouching, kneeling and crawling take a fraction of Move —
+  two-thirds, a third, a third — and GURPS rounds those fractions down, so a Move 5 character
+  crouching moves 3. The Game Aid rounds them up and the strip was reading its number straight, so
+  the same character was shown as moving 4. The strip now rounds the posture's share itself. Move
+  the system has not adjusted — outside combat, or when a maneuver holds it lower still — is
+  reported exactly as the system has it.
 - **The HUD no longer hides Foundry's sidebar collapse button.** Tailwind's scanner treats any word
   in the source — comments included — as a class candidate, and utilities were being emitted
   unscoped, so two prose comments mentioning "collapse" were enough to ship a global
