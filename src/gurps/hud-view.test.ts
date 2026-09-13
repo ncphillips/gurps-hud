@@ -206,6 +206,30 @@ describe("currentMove", () => {
     expect(currentMove(sheet)).toBe("2");
   });
 
+  /**
+   * Encumbrance comes off Basic Move before the conditions halve what is left (B17), which is the
+   * opposite order to the Game Aid's. The two agree up to Basic Move 11 and part company above it:
+   * 14 under light encumbrance is 11, reeling halves that up to 6, and crouching takes 4. Halving
+   * first, as the system does, would say 3.
+   */
+  test("a fast, wounded, encumbered monster", () => {
+    const sheet = crouching(4, {
+      basicmove: { value: "14" },
+      conditions: { posture: "crouch", maneuver: "move", reeling: true },
+      encumbrance: {
+        "00000": { key: "enc0", level: 0, move: 14 },
+        "00001": { key: "enc1", level: 1, move: 11, current: true },
+      },
+    });
+    expect(currentMove(sheet)).toBe("4");
+  });
+
+  /* Sitting is Move 0, and a zero is a number worth showing rather than a blank. */
+  test("a sitting character", () => {
+    const conditions = { posture: "sit", maneuver: "attack" };
+    expect(currentMove(system({ currentmove: 0, conditions } as Partial<GurpsSystem>))).toBe("0");
+  });
+
   /* Out of combat the Game Aid does not touch Move, so a fraction that rounds up to the character's
      full Move is taken at face value rather than read as an adjustment it never made. */
   test("a crouching Move 2 character out of combat", () => {
