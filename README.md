@@ -61,9 +61,15 @@ The target box will now list _their_ hit locations.
 
 ```bash
 npm install
+npm run setup   # shallow-clones the pinned GURPS system source into .reference/ (gitignored)
 npm run dev     # Vite on :30001, proxying Foundry on :30000
 npm run build   # emits dist/
 ```
+
+`npm run setup` is optional for building, but the HUD is written against the GURPS 4e Game Aid's
+actor data model, so having its source on hand is how you check the real shape of `actor.system`
+instead of guessing. It is pinned in `scripts/setup-reference.sh`; override with
+`GURPS_SYSTEM_REPO` / `GURPS_SYSTEM_REF` to read a fork or a newer release.
 
 Symlink the build output into Foundry, then enable the module in a `gurps` world:
 

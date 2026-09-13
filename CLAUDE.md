@@ -7,14 +7,14 @@ Guidance for Claude Code when working in this repository.
 **GURPS HUD** (`id: gurps-hud`) is a FoundryVTT v14 module providing a clean, concise
 heads-up display for GURPS 4e play.
 
-- **System:** [`gurps`](https://github.com/crnormand/gurps) — "GURPS 4e Game Aid (Unofficial)",
-  currently 0.18.23 locally. This module reads that system's actor data model; it is not
-  system-agnostic. Its source is checked out at `../../crnormand/gurps` and granted to Claude
-  via `permissions.additionalDirectories` in `.claude/settings.json` — read it to find the real
-  shapes of `actor.system` (attributes, HP/FP, skills, melee/ranged) rather than guessing.
-- **Design inspiration:** [pf2e-hud](https://github.com/reonZ/pf2e-hud) by reonZ. It is installed
-  locally at `~/Library/Application Support/FoundryVTT/Data/modules/pf2e-hud` — read its source
-  for reference on layout and interaction patterns, but do not copy code.
+- **System:** [`gurps`](https://github.com/crnormand/gurps) — "GURPS 4e Game Aid (Unofficial)".
+  This module reads that system's actor data model; it is not system-agnostic. `npm run setup`
+  clones the pinned version into `.reference/gurps` (gitignored) and `.claude/settings.json`
+  grants it via `permissions.additionalDirectories` — read it to find the real shapes of
+  `actor.system` (attributes, HP/FP, skills, melee/ranged) rather than guessing. The pin lives in
+  `scripts/setup-reference.sh`; bump it in the same change that bumps the `relationships.systems`
+  compatibility in `src/module.json`. A repo-wide search will not reach it — `.reference/` is
+  gitignored — so name the path when you search it: `rg <pattern> .reference/gurps`.
 - **Audience:** GM-first. HUDs should work for any hovered/selected token, including NPCs;
   player-character conveniences layer on later.
 

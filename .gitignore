@@ -5,3 +5,4 @@ dist/
 *.local.md
 test-results/
 playwright-report/
+.reference/

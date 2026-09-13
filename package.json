@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "setup": "./scripts/setup-reference.sh",
     "dev": "vite",
     "harness": "vite --config vite.harness.config.ts",
     "build": "vite build",

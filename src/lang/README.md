@@ -42,4 +42,4 @@ The strip is pixel-matched to `design-handoff/`, and some text is laid out to a 
 Anything the **GURPS system** names: posture labels, hit locations, and the label of a maneuver
 outside the HUD's own menu. Those ship with the GURPS 4e Game Aid and are looked up from its
 translations at runtime (`localize` in `src/gurps/game-aid.ts`), so translating them here would
-duplicate work already done in `crnormand/gurps/lang/`.
+duplicate work already done in `.reference/gurps/lang/` (see `npm run setup`).
