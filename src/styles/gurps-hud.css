@@ -106,8 +106,7 @@
  */
 /*
  * Docked to the bottom-left of the canvas. `#interface` is `position: relative`, so anchoring to it
- * sidesteps `#ui-middle` (60% wide and centred, therefore unable to reach the left edge). The UI
- * scale is applied by hand because only Foundry's own regions get it from core.
+ * sidesteps `#ui-middle` (60% wide and centred, therefore unable to reach the left edge).
  */
 #interface #gurps-hud-persistent {
   position: absolute;
@@ -119,8 +118,32 @@
   width: fit-content;
   pointer-events: auto;
   z-index: var(--z-index-app, 30);
+}
+
+/*
+ * Foundry's UI scale, applied by hand because only core's own regions get it from core. Scoped to
+ * the class, not to `#interface`, so the dev harness -- which has no `#interface` to anchor to --
+ * scales the same way a world does. This one covers the adopted modifier bucket as well as the
+ * strip, which is right: the bucket is Foundry furniture and follows Foundry's scale.
+ */
+.gurps-hud-persistent {
   transform: scale(var(--ui-scale, 1));
   transform-origin: bottom left;
+}
+
+/*
+ * The reader's size setting, on the strip alone. It sits here rather than on the element above so
+ * that it stops at the strip's own edge: the modifier bucket is adopted into that element (see
+ * PersistentHudApp#adoptBucket) and is not ours to resize.
+ *
+ * `zoom` rather than another factor in the transform above, because it re-runs layout at the new
+ * size instead of stretching the painted result. Every box in the strip is laid out in fixed pixels
+ * against the mock, so under a transform the 8px column headings would stay 8px text enlarged after
+ * the fact, on one composited layer for the GPU to resample. Under `zoom` they are laid out at 12px
+ * and every 1px border lands on a whole device pixel.
+ */
+.gurps-hud-strip {
+  zoom: var(--gurps-hud-scale, 1);
 }
 
 /*
@@ -137,7 +160,9 @@
 
 /*
  * Make room for the strip. `#ui-left` is inside a `scale(var(--ui-scale))` transform and so is laid
- * out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion.
+ * out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion. The
+ * reader's size needs none either: it is zoom on a *child* of the measured element, so the height
+ * that comes back already counts it.
  */
 body.gurps-hud-active #ui-left {
   padding-bottom: calc(16px + var(--gurps-hud-height, 0px));

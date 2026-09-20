@@ -278,7 +278,8 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-white/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
+  data-hud-strip
+  class="gurps-hud-strip hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-white/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
   ondragover={(event) => {
     if (drag.from !== null) event.preventDefault();
   }}

@@ -1,5 +1,10 @@
 {
   "gurps-hud.keybindings.togglePersistentHud": "GURPS HUD: Toggle the persistent HUD",
+  "gurps-hud.settings.size.name": "HUD size",
+  "gurps-hud.settings.size.hint": "How large the HUD is drawn. Medium is the size it was designed at; pick small on a cramped screen and large on a big one.",
+  "gurps-hud.settings.size.small": "Small",
+  "gurps-hud.settings.size.medium": "Medium",
+  "gurps-hud.settings.size.large": "Large",
   "gurps-hud.condition.reelingAndExhausted.label": "RLNG+TIRED",
   "gurps-hud.condition.reelingAndExhausted.title": "Reeling and Exhausted: Move and Dodge are halved",
   "gurps-hud.condition.reeling.label": "REELING",

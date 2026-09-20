@@ -1,4 +1,5 @@
 import type { AttackPicks } from "./gurps/attack-picks";
+import type { HudSize } from "./settings";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -14,6 +15,14 @@ declare module "fvtt-types/configuration" {
       /** Foundry's per-class render hook for the Game Aid's `ModifierBucket` application. */
       renderModifierBucket: (app: object, html: unknown, data: object) => void;
     }
+  }
+
+  interface SettingConfig {
+    /**
+     * How large the strip is drawn. Client-scoped: it is a fact about the screen the HUD is read
+     * on, not about the world.
+     */
+    "gurps-hud.size": HudSize;
   }
 
   interface FlagConfig {

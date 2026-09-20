@@ -32,6 +32,12 @@ The strip stops guessing which attacks matter and stops disappearing when nothin
     the HUD and deleting the attack.
 - **The HUD stays up with nothing selected.** Previously it required a selected actor, so it
   vanished between turns and out of combat. (#16)
+- **Pick how big the HUD is.** The strip is drawn to fixed measurements taken from a design made on
+  a 1280×713 canvas, so it keeps that size whatever it is shown on: room to spare on a 2560-wide
+  screen, where its smallest labels are too small to read, and not enough on the 1024×768 Foundry
+  allows at the least. **HUD size** in the module settings draws it small, medium or large — medium
+  being the design's own size — and takes effect the moment you pick one. It is per-player, since
+  the right size is a fact about the screen you are reading it on.
 
 ### Fixed
 

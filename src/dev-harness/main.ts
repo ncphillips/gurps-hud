@@ -19,6 +19,9 @@
  *                                  dragged onto the strip, as a real sheet's can
  *   ?set_macro_page=3              which hotbar page the number keys address
  *   ?delay_writes=true             makes writing to an actor take a round trip, as a world does
+ *   ?hud_size=small|large          draws the strip at that size, as the setting does
+ *   ?show_bucket=true              puts a stand-in modifier bucket beside the strip, as the Game
+ *                                  Aid's is adopted into the HUD in a world
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
  */
 import "@/styles/gurps-hud.css";
@@ -26,6 +29,7 @@ import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
+import { applyHudSize } from "@/settings";
 import { CAST, TOKENS, castMember } from "./cast";
 import type { HarnessActor } from "./cast";
 import { fire, hooksStub } from "./hooks";
@@ -57,6 +61,10 @@ const selectedActor = params.has("selected_actor")
   ? castMember(params.get("selected_actor"))
   : CAST.brent;
 const targetActor = castMember(params.get("target_actor"));
+
+// A world reads this off the client's setting; the harness reads it off the URL. Same custom
+// property either way, so the strip scales here exactly as it does in Foundry.
+applyHudSize(params.get("hud_size"));
 
 /*
  * An actor starts with no attacks picked, but the design mock is drawn with Brent's weapon tables
@@ -186,6 +194,21 @@ host.className = "gurps-hud gurps-hud-persistent";
 document.body.append(host);
 
 mount(PersistentHud, { target: host });
+
+/*
+ * A stand-in for the Game Aid's modifier bucket, which `PersistentHudApp#adoptBucket` moves inside
+ * the HUD element so it sits beside the strip. Its size is the point: it is Foundry's furniture, so
+ * the HUD's own size setting has to stop at the strip's edge rather than run through it.
+ */
+if (flag("show_bucket")) {
+  const bucket = document.createElement("div");
+  bucket.id = "bucket-container";
+  bucket.textContent = "+0";
+  bucket.style.cssText =
+    "width:120px;height:60px;display:grid;place-items:center;border-radius:6px;" +
+    "border:1px solid #b04a3a;background:#16171b;color:#e8e6e1;font:600 22px system-ui";
+  host.append(bucket);
+}
 
 const sheetOwner = castMember(params.get("open_sheet"));
 if (sheetOwner) openSheet(sheetOwner);
