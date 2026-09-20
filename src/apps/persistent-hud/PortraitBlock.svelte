@@ -69,6 +69,7 @@
 </script>
 
 <div
+  data-hud-portrait-block
   class="hud:flex hud:w-[143px] hud:flex-none hud:flex-col hud:rounded-l-hud hud:border-r hud:border-hud-veil/[.08] hud:bg-hud-deep"
 >
   <div class="hud:flex hud:items-center hud:gap-[2px] hud:pr-[7px] hud:pl-[3px] hud:py-[2px]">
