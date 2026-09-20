@@ -5,16 +5,16 @@ import { t } from "./i18n";
  * bar is on screen.
  *
  * The first two are published to the stylesheet rather than threaded through the components, because
- * both are read in more places than the strip -- the size by the padding that lifts Foundry's player
- * list clear of it, the palette by every colour in `gurps-hud.css`. The hotbar is not: it decides
+ * both are read in more places than the strip -- the scale by the padding that lifts Foundry's
+ * player list clear of it, the palette by every colour in `gurps-hud.css`. The hotbar is not: it decides
  * what the strip renders and what the application does to Foundry's own furniture, so it is read
  * back through `currentHotbarMode` and announced on a hook.
  */
 
 const MODULE = "gurps-hud";
 
-/** The setting key, so `game.settings.get(MODULE, SIZE_SETTING)` and the registration agree. */
-export const SIZE_SETTING = "size";
+/** The setting key, so `game.settings.get(MODULE, SCALE_SETTING)` and the registration agree. */
+export const SCALE_SETTING = "scale";
 
 /** The setting key, so `game.settings.get(MODULE, THEME_SETTING)` and the registration agree. */
 export const THEME_SETTING = "theme";
@@ -28,48 +28,66 @@ const SCALE_VAR = "--gurps-hud-scale";
 /** The attribute `gurps-hud.css` hangs the light palette off. */
 const THEME_ATTR = "data-hud-theme";
 
+/** 1x: the strip as designed, the mock pixel for pixel on the 1280x713 it was drawn for. */
+export const DEFAULT_HUD_SCALE = 1;
+
 /**
- * What each size scales the strip by.
- *
- * The ladder is lopsided, and the mock's own type is why. Its smallest text -- the `MELEE` and
- * `RANGED` column headings -- is set at 8px, which is already the floor, so the strip has far more
- * room to grow than to shrink:
- *
- *   small (0.9)    585x173. Headings at 7.2px; below this they stop being readable at all.
- *   medium (1)     650x192. The mock, pixel for pixel, on the 1280x713 it was drawn for.
- *   large (1.5)    975x287. Headings at 12px, and 38% of a 2560 canvas rather than 25%.
- *
- * Large is the size that earns the setting. Everything in the strip is laid out in fixed pixels, so
- * on a big canvas the 8px headings stay 8px however much room is going spare; 1.5 is the difference
- * between squinting at them and reading them. Small is only ever modest relief -- on the 1024x768
- * Foundry floors at, it takes the strip from 63% of the width to 57%, and going further would cost
- * legibility rather than buy space.
+ * The floor, and the mock's own type is what sets it. The smallest text in the strip -- the `MELEE`
+ * and `RANGED` column headings -- is set at 8px, which is already the floor, so 0.9x puts them at
+ * 7.2px and anything below stops being readable at all. Shrinking was never worth much anyway: on
+ * the 1024x768 Foundry floors at, 0.9x takes the strip from 63% of the width to 57%.
  */
-export const HUD_SCALES = {
-  small: 0.9,
-  medium: 1,
-  large: 1.5,
-} as const;
+export const MIN_HUD_SCALE = 0.9;
 
-export type HudSize = keyof typeof HUD_SCALES;
+/**
+ * The ceiling, and growing is what earns the setting. Everything in the strip is laid out in fixed
+ * pixels, so on a big canvas the 8px headings stay 8px however much room is going spare; 2x is the
+ * difference between squinting at them and reading them, and still leaves the strip inside half of
+ * a 2560 canvas.
+ */
+export const MAX_HUD_SCALE = 2;
 
-function isHudSize(size: unknown): size is HudSize {
-  return typeof size === "string" && size in HUD_SCALES;
-}
+/**
+ * What the slider moves by. Everything in the strip is laid out in whole pixels against the mock,
+ * and `zoom` re-runs that layout: on a tenth the 1px borders and the 8px headings land somewhere
+ * predictable, where an arbitrary 1.07x rounds them inconsistently across the strip.
+ */
+export const HUD_SCALE_STEP = 0.1;
 
-/** Anything the catalogue does not name reads as medium, which is the strip as designed. */
-export function hudScale(size: unknown): number {
-  return isHudSize(size) ? HUD_SCALES[size] : HUD_SCALES.medium;
+/**
+ * The multiple a stored setting -- or a harness parameter -- amounts to, as `NaN` when it does not
+ * amount to one. `Number` alone will not do: it reads both `null` and `""` as 0, and the reader who
+ * has never opened the config is exactly the one handing over an absent value.
+ */
+function hudMultiple(scale: unknown): number {
+  if (typeof scale === "number") return scale;
+
+  return typeof scale === "string" && scale.trim() !== "" ? Number(scale) : NaN;
 }
 
 /**
- * Publishes the size as a custom property on the document, rather than on the HUD's own element:
+ * The multiple `zoom` takes. Clamped here as well as in the slider -- the slider is not the only
+ * writer, since a client setting is reachable from a macro or the console -- but deliberately not
+ * rounded to the step, so an off-step multiple set that way still works.
+ *
+ * Anything that is not a multiple reads as the strip as designed. That includes the named sizes
+ * this setting used to store, which is what a client upgrading across the change reads back.
+ */
+export function hudScale(scale: unknown): number {
+  const multiple = hudMultiple(scale);
+  if (!Number.isFinite(multiple)) return DEFAULT_HUD_SCALE;
+
+  return Math.min(Math.max(multiple, MIN_HUD_SCALE), MAX_HUD_SCALE);
+}
+
+/**
+ * Publishes the scale as a custom property on the document, rather than on the HUD's own element:
  * the strip's transform is not its only reader. `#ui-left` is padded clear of the strip by its
  * measured height, and that height has to be scaled by the same number or the player list sits
  * behind a large strip and floats above a small one.
  */
-export function applyHudSize(size: unknown): void {
-  document.documentElement.style.setProperty(SCALE_VAR, String(hudScale(size)));
+export function applyHudScale(scale: unknown): void {
+  document.documentElement.style.setProperty(SCALE_VAR, String(hudScale(scale)));
 }
 
 /**
@@ -109,7 +127,7 @@ export function resolveHudTheme(theme: unknown): ResolvedTheme {
 let chosenTheme: HudTheme = "dark";
 
 /**
- * Publishes the palette as an attribute on the document, beside the size's custom property and for
+ * Publishes the palette as an attribute on the document, beside the scale's custom property and for
  * the same reason: the strip is not the only thing drawn in it. Popovers are portalled, and the
  * stylesheet's own Foundry overrides sit outside the HUD element entirely.
  */
@@ -182,19 +200,15 @@ export function showsDefaultHotbar(mode: HotbarMode): boolean {
 export const HOTBAR_MODE_HOOK = "gurps-hud.hotbarMode";
 
 export function registerSettings(): void {
-  game.settings!.register(MODULE, SIZE_SETTING, {
-    name: t("settings.size.name"),
-    hint: t("settings.size.hint"),
+  game.settings!.register(MODULE, SCALE_SETTING, {
+    name: t("settings.scale.name"),
+    hint: t("settings.scale.hint"),
     scope: "client",
     config: true,
-    type: String,
-    choices: {
-      small: t("settings.size.small"),
-      medium: t("settings.size.medium"),
-      large: t("settings.size.large"),
-    },
-    default: "medium",
-    onChange: (size) => applyHudSize(size),
+    type: Number,
+    range: { min: MIN_HUD_SCALE, max: MAX_HUD_SCALE, step: HUD_SCALE_STEP },
+    default: DEFAULT_HUD_SCALE,
+    onChange: (scale) => applyHudScale(scale),
   });
 
   game.settings!.register(MODULE, THEME_SETTING, {
@@ -228,9 +242,9 @@ export function registerSettings(): void {
   });
 }
 
-export function currentHudSize(): HudSize {
-  const size = game.settings?.get(MODULE, SIZE_SETTING);
-  return isHudSize(size) ? size : "medium";
+export function currentHudScale(): number {
+  const scale = hudMultiple(game.settings?.get(MODULE, SCALE_SETTING));
+  return Number.isFinite(scale) ? scale : DEFAULT_HUD_SCALE;
 }
 
 export function currentHudTheme(): HudTheme {

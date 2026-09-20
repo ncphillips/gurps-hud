@@ -1,17 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import {
-  applyHudSize,
+  applyHudScale,
   applyHudTheme,
   currentHotbarMode,
+  DEFAULT_HUD_SCALE,
   HOTBAR_SETTING,
   hudScale,
+  HUD_SCALE_STEP,
+  MAX_HUD_SCALE,
+  MIN_HUD_SCALE,
   HOTBAR_MODE_HOOK,
   registerSettings,
   resolveHotbarMode,
   resolveHudTheme,
   showsDefaultHotbar,
   showsHudHotbar,
-  SIZE_SETTING,
+  SCALE_SETTING,
   THEME_SETTING,
 } from "./settings";
 
@@ -41,9 +45,10 @@ function registered(register: ReturnType<typeof stubSettings>, key: string) {
   return call?.[2] as {
     scope: string;
     config: boolean;
-    default: string;
+    default: unknown;
     choices: Record<string, string>;
-    onChange: (value: string) => void;
+    range: { min: number; max: number; step: number };
+    onChange: (value: unknown) => void;
   };
 }
 
@@ -74,33 +79,44 @@ function themeAttribute(): string | null {
 }
 
 describe("hudScale", () => {
-  it("is 1 at medium, the size the strip was designed at", () => {
-    expect(hudScale("medium")).toBe(1);
+  it("is the multiple the reader chose", () => {
+    expect(hudScale(1.3)).toBe(1.3);
   });
 
-  it("is under 1 at small", () => {
-    expect(hudScale("small")).toBeLessThan(1);
+  /* The slider cannot ask for these, but a macro or the console can, and `zoom` would take them. */
+  test("a multiple under the floor", () => {
+    expect(hudScale(0.1)).toBe(MIN_HUD_SCALE);
   });
 
-  it("is over 1 at large", () => {
-    expect(hudScale("large")).toBeGreaterThan(1);
+  test("a multiple over the ceiling", () => {
+    expect(hudScale(10)).toBe(MAX_HUD_SCALE);
   });
 
-  test("a size the catalogue does not have", () => {
-    expect(hudScale("enormous")).toBe(1);
+  /* What a client who stored one of the old named sizes reads back as. */
+  test("a scale that is not a number at all", () => {
+    expect(hudScale("large")).toBe(DEFAULT_HUD_SCALE);
+  });
+
+  /* `Number(null)` is 0, which clamps to the floor -- so the harness's absent parameter is here. */
+  test("no scale at all", () => {
+    expect(hudScale(null)).toBe(DEFAULT_HUD_SCALE);
+  });
+
+  test("an empty scale", () => {
+    expect(hudScale("")).toBe(DEFAULT_HUD_SCALE);
   });
 });
 
-describe("applyHudSize", () => {
+describe("applyHudScale", () => {
   beforeEach(() => {
     document.documentElement.style.removeProperty("--gurps-hud-scale");
   });
 
-  it("publishes the size's scale as --gurps-hud-scale", () => {
-    applyHudSize("large");
+  it("publishes the chosen scale as --gurps-hud-scale", () => {
+    applyHudScale(1.5);
 
     expect(document.documentElement.style.getPropertyValue("--gurps-hud-scale")).toBe(
-      String(hudScale("large")),
+      String(hudScale(1.5)),
     );
   });
 });
@@ -261,46 +277,46 @@ describe("registerSettings", () => {
     vi.unstubAllGlobals();
   });
 
-  it("registers the size under the module id", () => {
+  it("registers the scale under the module id", () => {
     const register = stubSettings();
     registerSettings();
 
-    expect(register).toHaveBeenCalledWith("gurps-hud", SIZE_SETTING, expect.anything());
+    expect(register).toHaveBeenCalledWith("gurps-hud", SCALE_SETTING, expect.anything());
   });
 
-  it("offers three sizes", () => {
+  it("offers the multiples between the floor and the ceiling, a tenth at a time", () => {
     const register = stubSettings();
     registerSettings();
 
-    expect(Object.keys(registered(register, SIZE_SETTING).choices)).toEqual([
-      "small",
-      "medium",
-      "large",
-    ]);
+    expect(registered(register, SCALE_SETTING).range).toEqual({
+      min: MIN_HUD_SCALE,
+      max: MAX_HUD_SCALE,
+      step: HUD_SCALE_STEP,
+    });
   });
 
-  it("defaults to medium", () => {
+  it("defaults to 1x, the size the strip was designed at", () => {
     const register = stubSettings();
     registerSettings();
 
-    expect(registered(register, SIZE_SETTING).default).toBe("medium");
+    expect(registered(register, SCALE_SETTING).default).toBe(DEFAULT_HUD_SCALE);
   });
 
-  /* The right size is a fact about the screen the HUD is read on, not about the world. */
-  it("stores the size per client", () => {
+  /* The right scale is a fact about the screen the HUD is read on, not about the world. */
+  it("stores the scale per client", () => {
     const register = stubSettings();
     registerSettings();
 
-    expect(registered(register, SIZE_SETTING).scope).toBe("client");
+    expect(registered(register, SCALE_SETTING).scope).toBe("client");
   });
 
-  it("applies a size the moment it changes, without a reload", () => {
+  it("applies a scale the moment it changes, without a reload", () => {
     const register = stubSettings();
     registerSettings();
-    registered(register, SIZE_SETTING).onChange("small");
+    registered(register, SCALE_SETTING).onChange(1.5);
 
     expect(document.documentElement.style.getPropertyValue("--gurps-hud-scale")).toBe(
-      String(hudScale("small")),
+      String(hudScale(1.5)),
     );
   });
 

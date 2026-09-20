@@ -82,7 +82,7 @@ them for the specs.
   world — see `e2e/CLAUDE.md`.
 - The HUD renders under `border-box`, so a fixed pixel width includes its own padding and borders.
   Parts of the strip are fixed and measured: the portrait block is a 143px column at every size,
-  which is the box `e2e/hud-size.spec.ts` reads the size setting off. Open the harness with
+  which is the box `e2e/hud-scale.spec.ts` reads the scale setting off. Open the harness with
   `?measure=true` before changing a fixed width.
 - Hover states may only change `color`, `background-color` and `border-color`. Anything that gains a
   border on hover carries a 1px transparent border at rest, so hover can never move geometry.

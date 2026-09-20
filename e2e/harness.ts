@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import type { HotbarMode, HudSize, HudTheme } from "../src/settings";
+import type { HotbarMode, HudTheme } from "../src/settings";
 
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
 export type CastMember = "thor" | "goblin" | "dragon";
@@ -12,8 +12,11 @@ export type Panel = "attrs" | "skills" | "maneuver" | "posture" | "target" | "ac
  * selected", not a missing value. `src/dev-harness/main.ts` is the reference for what each does.
  */
 export interface HarnessParams {
-  /** Draws the strip at that size, as the `gurps-hud.size` setting does. Omit for medium. */
-  hud_size?: HudSize;
+  /**
+   * Draws the strip at that multiple of its designed size, as the `gurps-hud.scale` setting does.
+   * Omit for 1, which is the strip as designed.
+   */
+  hud_scale?: number;
   /**
    * Draws the strip in that palette, as the `gurps-hud.theme` setting does. Omit for dark, which is
    * the palette the mock was drawn in. `"system"` defers to `page.emulateMedia({ colorScheme })`.

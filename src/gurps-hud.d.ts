@@ -1,5 +1,5 @@
 import type { AttackPicks } from "./gurps/attack-picks";
-import type { HotbarMode, HudSize, HudTheme } from "./settings";
+import type { HotbarMode, HudTheme } from "./settings";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -25,12 +25,12 @@ declare module "fvtt-types/configuration" {
 
   interface SettingConfig {
     /**
-     * How large the strip is drawn. Client-scoped: it is a fact about the screen the HUD is read
-     * on, not about the world.
+     * How large the strip is drawn, as a multiple of the size it was designed at. Client-scoped:
+     * it is a fact about the screen the HUD is read on, not about the world.
      */
-    "gurps-hud.size": HudSize;
+    "gurps-hud.scale": number;
     /**
-     * Which palette the strip is drawn in. Client-scoped for the same reason as the size: which
+     * Which palette the strip is drawn in. Client-scoped for the same reason as the scale: which
      * one reads well is a fact about the room and the screen, not about the world.
      */
     "gurps-hud.theme": HudTheme;

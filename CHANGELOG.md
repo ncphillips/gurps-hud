@@ -21,12 +21,19 @@ from that tag.
 - **Light mode.** The HUD was drawn dark and could only be read dark, which is a poor deal for
   anyone playing in a bright room or running the rest of Foundry light. **HUD theme** in the module
   settings draws it dark, light, or whatever your desktop is set to, and takes effect the moment you
-  pick one — no reload, and it follows the desktop as that changes. It is per-player, like the size,
+  pick one — no reload, and it follows the desktop as that changes. It is per-player, like the scale,
   because which one reads well is a fact about your room rather than about the world. Dark stays the
   default, so nothing changes for anyone who does not go looking.
 
 ### Changed
 
+- **The HUD is drawn at any scale you like, not one of three.** Small, medium and large were three
+  rungs on a question that is really about your screen: at 1440p the design's own size is a shade
+  small and large overshoots, with nothing in between to pick. **HUD scale** in the module settings
+  is now a slider from 0.9× to 2×, a tenth at a time, and still takes effect the moment you move it.
+  The floor is where the strip's smallest labels stop being readable at all, and the ceiling goes
+  well past where large stopped. If you had chosen a size, you are back at 1× and will want to set
+  it again.
 - **The strip's quiet text is readable.** Column headings, maneuver hints and the muted half of a
   pool were drawn faint enough to fail WCAG AA — in places at 1.9:1 against a 4.5:1 requirement — and
   at 8px that is the difference between quiet and unreadable. They are now one ink held at the AA

@@ -19,7 +19,8 @@
  *                                  dragged onto the strip, as a real sheet's can
  *   ?set_macro_page=3              which hotbar page the number keys address
  *   ?delay_writes=true             makes writing to an actor take a round trip, as a world does
- *   ?hud_size=small|large          draws the strip at that size, as the setting does
+ *   ?hud_scale=1.5                 draws the strip at that multiple of its designed size, as the
+ *                                  setting does
  *   ?hud_theme=light|dark|system   draws the strip in that palette, as the setting does; `system`
  *                                  follows the desktop, so a spec asks for a palette by name
  *   ?hud_hotbar=default|both       whose macro bar is on screen, as the setting does; only the
@@ -33,7 +34,7 @@ import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
-import { applyHudSize, applyHudTheme, resolveHudTheme } from "@/settings";
+import { applyHudScale, applyHudTheme, resolveHudTheme } from "@/settings";
 import { CAST, TOKENS, castMember } from "./cast";
 import type { HarnessActor } from "./cast";
 import { fire, hooksStub } from "./hooks";
@@ -69,7 +70,7 @@ const targetActor = castMember(params.get("target_actor"));
 // A world reads these off the client's settings; the harness reads them off the URL. Same custom
 // property and same attribute either way, so the strip scales -- and is coloured -- here exactly as
 // it is in Foundry.
-applyHudSize(params.get("hud_size"));
+applyHudScale(params.get("hud_scale"));
 applyHudTheme(params.get("hud_theme"));
 
 /*

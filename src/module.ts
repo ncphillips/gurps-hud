@@ -3,9 +3,9 @@ import { log } from "./log";
 import { t } from "./i18n";
 import { PersistentHudApp } from "./apps/persistent-hud/PersistentHudApp";
 import {
-  applyHudSize,
+  applyHudScale,
   applyHudTheme,
-  currentHudSize,
+  currentHudScale,
   currentHudTheme,
   registerSettings,
 } from "./settings";
@@ -33,7 +33,7 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  applyHudSize(currentHudSize());
+  applyHudScale(currentHudScale());
   applyHudTheme(currentHudTheme());
   void persistentHud?.render({ force: true });
 });
