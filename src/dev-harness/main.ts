@@ -7,7 +7,7 @@
  * The whole cast is always on the canvas (see cast.ts); every parameter names the *action* it takes
  * on that scene rather than just the thing it concerns, so a URL reads as the state it sets up:
  *
- *   ?selected_actor=thor|goblin   who the strip is showing; `selected_actor=` selects nobody,
+ *   ?selected_actor=thor|gunner   who the strip is showing; `selected_actor=` selects nobody,
  *                                  which is the empty strip a GM sees before clicking a token
  *   ?target_actor=goblin           who is targeted, so the TARGET pill lists their hit locations
  *   ?set_maneuver=attack           puts the selected actor in the active combat performing it

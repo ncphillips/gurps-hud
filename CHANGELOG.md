@@ -7,6 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.5.1 (unreleased)
+
+### Fixed
+
+- **A firearm's range fits its column.** The range column was drawn at the width a thrown spear's
+  `9/13` needs, so a 9mm's `160/1,800` was painted straight over the rate of fire beside it and off
+  the edge of the strip ([#24](https://github.com/ncphillips/gurps-hud/issues/24)). The column is now as wide as the ranges the character on screen
+  actually carries — heading included — so a rifle reads whole and nobody who fights with a bow
+  pays for it.
+
 ## v0.5.0
 
 ### Added

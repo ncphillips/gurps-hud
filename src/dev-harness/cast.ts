@@ -294,7 +294,84 @@ function dragon(): HarnessActor {
   );
 }
 
-export const CAST = { thor: thor(), goblin: goblin(), dragon: dragon() };
+/**
+ * Off the genre the rest of the cast is in, and deliberately: firearms are where GURPS ranges get
+ * long. A thrown spear reads "9/13" where a rifle reads "800/3,500", and the strip has to hold the
+ * second as readably as the first -- these two weapons are the ones from issue #24.
+ */
+function gunner(): HarnessActor {
+  return actor(
+    "actor-gunner",
+    "Hired Gun",
+    sheet({
+      attributes: {
+        ST: { value: 11 },
+        DX: { value: 13 },
+        IQ: { value: 11 },
+        HT: { value: 12 },
+        WILL: { value: 11 },
+        PER: { value: 12 },
+        QN: { value: 10 },
+      },
+      HP: { value: 12, max: 12 },
+      FP: { value: 12, max: 12 },
+      thrust: "1d−1",
+      swing: "1d+1",
+      basicspeed: { value: "6.25" },
+      basicmove: { value: "6" },
+      currentmove: 6,
+      currentdodge: 9,
+      equipment: {
+        carried: keyed([
+          { name: "Assault Rifle, 5.56mm", equipped: true },
+          { name: "Auto Pistol, .40", equipped: false },
+        ]),
+        other: {},
+      },
+      melee: keyed([
+        { name: "Knife", level: 12, damage: "1d−2 cut", reach: "C,1", parry: "9", block: "" },
+        { name: "Punch", level: 13, damage: "1d−2 cr", reach: "C", parry: "9", block: "" },
+      ]),
+      ranged: keyed([
+        {
+          name: "Assault Rifle, 5.56mm",
+          level: 15,
+          damage: "5d pi",
+          acc: "5",
+          range: "800/3,500",
+          rof: "12",
+        },
+        {
+          name: "Auto Pistol, .40",
+          level: 14,
+          damage: "2d+2 pi+",
+          acc: "2",
+          range: "160/1,800",
+          rof: "3",
+        },
+      ]),
+      skills: skills([
+        ["Guns (Rifle)", 15],
+        ["Guns (Pistol)", 14],
+        ["Knife", 12],
+        ["Soldier", 12],
+      ]),
+      hitlocations: hitLocations([
+        ["Eye", "-9", "0", "-"],
+        ["Skull", "-7", "2", "3-4"],
+        ["Face", "-5", "0", "5"],
+        ["Torso", "0", "2", "9-10"],
+        ["Groin", "-3", "2", "11"],
+        ["Arm", "-2", "2", "8"],
+        ["Leg", "-2", "2", "6-7"],
+        ["Neck", "-5", "0", "17-18"],
+        ["Vitals", "-3", "2", "-"],
+      ]),
+    }),
+  );
+}
+
+export const CAST = { thor: thor(), goblin: goblin(), dragon: dragon(), gunner: gunner() };
 
 export type CastMember = keyof typeof CAST;
 
@@ -310,4 +387,5 @@ export const TOKENS = [
   { id: "t-thor", name: CAST.thor.name, actor: CAST.thor, isOwner: true },
   { id: "t-goblin", name: CAST.goblin.name, actor: CAST.goblin, isOwner: true },
   { id: "t-dragon", name: CAST.dragon.name, actor: CAST.dragon, isOwner: false },
+  { id: "t-gunner", name: CAST.gunner.name, actor: CAST.gunner, isOwner: true },
 ].map((token) => ({ ...token, document: { texture: { src: null } } }));

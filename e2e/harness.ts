@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import type { HotbarMode, HudTheme } from "../src/settings";
 
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
-export type CastMember = "thor" | "goblin" | "dragon";
+export type CastMember = "thor" | "goblin" | "dragon" | "gunner";
 
 export type Panel = "attrs" | "skills" | "maneuver" | "posture" | "target" | "actor";
 

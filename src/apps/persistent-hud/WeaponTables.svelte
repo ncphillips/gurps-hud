@@ -5,6 +5,7 @@
   import AttackHandle from "./AttackHandle.svelte";
   import RollValue from "./RollValue.svelte";
   import type { AttackDrag } from "./attack-drag";
+  import { DESIGNED_RANGE_COLUMN_PX, readoutWidth } from "./column-width";
 
   let {
     view,
@@ -43,6 +44,18 @@
 
   /** Keeps the header's columns over the rows', now that every row leads with a grip. */
   const GRIP = "hud:w-[11px] hud:flex-none";
+
+  /*
+   * The one column whose values are not all the same size: a bow reads "9/13" and a rifle reads
+   * "800/3,500". Widened for the character actually on screen, and on the heading as well as the
+   * values, or the heading would be left standing over the column beside it.
+   */
+  const rangeColumn = $derived(
+    readoutWidth(
+      view.ranged.map((row) => row.range),
+      DESIGNED_RANGE_COLUMN_PX,
+    ),
+  );
 
   /**
    * Rows carry a 1px transparent border at rest so hover can only ever change its colour. Anything
@@ -216,7 +229,9 @@
       <span class="hud:w-[38px] hud:text-center">{t("weapons.acc")}</span>
       <span class="hud:w-[30px] hud:text-center">{t("weapons.level")}</span>
       <span class="hud:w-[62px] hud:px-[4px]">{t("weapons.damage")}</span>
-      <span class="hud:w-[30px] hud:text-center">{t("weapons.range")}</span>
+      <span data-hud-range-heading class="hud:text-center" style="width: {rangeColumn}px"
+        >{t("weapons.range")}</span
+      >
       <span class="hud:w-[30px] hud:text-center">{t("weapons.rof")}</span>
     </div>
 
@@ -258,7 +273,9 @@
           class="hud:w-[62px] hud:px-[4px] hud:font-hud-mono hud:text-[10.5px]/[1.35] hud:font-medium"
           {onroll}
         />
-        <span class="hud:w-[30px] hud:text-center {READOUT}">{row.range}</span>
+        <span data-hud-range class="hud:text-center {READOUT}" style="width: {rangeColumn}px"
+          >{row.range}</span
+        >
         <span class="hud:w-[30px] hud:text-center {READOUT}">{row.rof}</span>
       </div>
     {/each}
