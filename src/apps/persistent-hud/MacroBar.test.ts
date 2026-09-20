@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
-import { describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, test, vi } from "vitest";
+import type { Mock } from "vitest";
 import type { MacroPage, MacroSlot } from "@/gurps/game-aid";
 import MacroBar from "./MacroBar.svelte";
 
@@ -50,6 +51,24 @@ async function expand(): Promise<HTMLElement> {
   return library();
 }
 
+/**
+ * Foundry's own keybindings, which are not here: they listen on the document, so the stand-in is a
+ * listener there and a key pressed on something the strip contains. Returns the spy, and stops
+ * listening once the test that asked for it is over.
+ */
+function foundrysKeyHandlers(): Mock {
+  const foundry = vi.fn();
+  document.addEventListener("keydown", foundry);
+  listening.push(() => document.removeEventListener("keydown", foundry));
+
+  return foundry;
+}
+
+const listening: Array<() => void> = [];
+afterEach(() => {
+  for (const stop of listening.splice(0)) stop();
+});
+
 /** Five pages, because that is how many Foundry's hotbar has. */
 function pages(): MacroPage[] {
   return [
@@ -75,7 +94,7 @@ function props(overrides: Partial<MacroBarProps> = {}): MacroBarProps {
 }
 
 describe("MacroBar removing", () => {
-  test("right-clicking a filled slot", async () => {
+  it("takes a macro off the bar when it is right-clicked", async () => {
     const onremove = vi.fn();
     render(MacroBar, props({ onremove }));
 
@@ -93,7 +112,7 @@ describe("MacroBar removing", () => {
     expect(onremove).not.toHaveBeenCalled();
   });
 
-  test("pressing Delete on a focused macro", async () => {
+  it("takes a macro off the bar on Delete", async () => {
     const onremove = vi.fn();
     render(MacroBar, props({ onremove }));
 
@@ -102,18 +121,16 @@ describe("MacroBar removing", () => {
     expect(onremove).toHaveBeenCalledWith(2);
   });
 
-  test("pressing Delete does not reach Foundry's own key handlers", async () => {
-    const foundry = vi.fn();
-    document.addEventListener("keydown", foundry);
+  it("keeps Delete from reaching Foundry's own key handlers", async () => {
+    const foundry = foundrysKeyHandlers();
     render(MacroBar, props());
 
     await fireEvent.keyDown(screen.getByTitle("Dodge"), { key: "Delete", bubbles: true });
-    document.removeEventListener("keydown", foundry);
 
     expect(foundry).not.toHaveBeenCalled();
   });
 
-  test("pressing Delete does not also execute the macro", async () => {
+  it("does not also run the macro it just removed", async () => {
     const onexecute = vi.fn();
     render(MacroBar, props({ onexecute }));
 
@@ -124,7 +141,7 @@ describe("MacroBar removing", () => {
 });
 
 describe("MacroBar reordering", () => {
-  test("dragging a macro onto another filled slot", async () => {
+  it("moves a macro to the slot it is dropped on", async () => {
     const onmove = vi.fn();
     render(MacroBar, props({ onmove }));
 
@@ -154,7 +171,7 @@ describe("MacroBar reordering", () => {
     expect(onmove).not.toHaveBeenCalled();
   });
 
-  test("a reordering drop is not treated as an assignment", async () => {
+  it("does not treat a reordering drop as an assignment", async () => {
     const onassign = vi.fn();
     render(MacroBar, props({ onassign }));
 
@@ -184,7 +201,7 @@ describe("MacroBar reordering", () => {
     expect(onmove).not.toHaveBeenCalled();
   });
 
-  test("pressing Alt+ArrowRight on a focused macro", async () => {
+  it("moves a macro a slot to the right on Alt+ArrowRight", async () => {
     const onmove = vi.fn();
     render(MacroBar, props({ onmove }));
 
@@ -193,7 +210,7 @@ describe("MacroBar reordering", () => {
     expect(onmove).toHaveBeenCalledWith(1, 2);
   });
 
-  test("pressing Alt+ArrowLeft on a focused macro", async () => {
+  it("moves a macro a slot to the left on Alt+ArrowLeft", async () => {
     const onmove = vi.fn();
     render(MacroBar, props({ onmove }));
 
@@ -223,7 +240,8 @@ describe("MacroBar reordering", () => {
     expect(onmove).not.toHaveBeenCalled();
   });
 
-  test("pressing ArrowRight without Alt", async () => {
+  /* Foundry's own keybindings listen on the document, where an arrow is history navigation. */
+  test("an arrow pressed without Alt", async () => {
     const onmove = vi.fn();
     render(MacroBar, props({ onmove }));
 
@@ -231,10 +249,51 @@ describe("MacroBar reordering", () => {
 
     expect(onmove).not.toHaveBeenCalled();
   });
+
+  /*
+   * The slot buttons are keyed by slot number, so a move swaps which macro a given button holds
+   * while leaving the button itself -- and the focus on it -- exactly where it was. Without moving
+   * focus along, a second Alt+Arrow picks up whatever just swapped into the slot under the cursor's
+   * keyboard focus rather than the macro the user is walking across the bar.
+   */
+  it("moves focus along with the macro it nudged", async () => {
+    render(MacroBar, props());
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+
+    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
+
+    expect(document.activeElement).toBe(slotAt(2));
+  });
+
+  it("walks one macro across the bar over repeated nudges", async () => {
+    const onmove = vi.fn();
+    render(MacroBar, props({ onmove }));
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+
+    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
+    await fireEvent.keyDown(document.activeElement!, { key: "ArrowRight", altKey: true });
+
+    expect(onmove.mock.calls).toEqual([
+      [1, 2],
+      [2, 3],
+    ]);
+  });
+
+  test("Alt+ArrowLeft on the first slot, where nothing moves", async () => {
+    render(MacroBar, props());
+    const attack = screen.getByTitle("Attack");
+    attack.focus();
+
+    await fireEvent.keyDown(attack, { key: "ArrowLeft", altKey: true });
+
+    expect(document.activeElement).toBe(attack);
+  });
 });
 
 describe("MacroBar executing", () => {
-  test("clicking a filled slot", async () => {
+  it("runs the macro in the slot that was clicked", async () => {
     const onexecute = vi.fn();
     render(MacroBar, props({ onexecute }));
 
@@ -242,28 +301,37 @@ describe("MacroBar executing", () => {
 
     expect(onexecute).toHaveBeenCalledWith(1);
   });
+
+  test("clicking an empty slot", async () => {
+    const onexecute = vi.fn();
+    render(MacroBar, props({ onexecute }));
+
+    await fireEvent.click(slotAt(3));
+
+    expect(onexecute).not.toHaveBeenCalled();
+  });
 });
 
 describe("MacroBar paging", () => {
-  test("rendering page 2", async () => {
+  it("shows the macros on the page it was given", async () => {
     render(MacroBar, props({ page: 2 }));
 
     expect(screen.getByTitle("Parry")).toBeDefined();
   });
 
-  test("rendering page 2 does not show page 1's macros", async () => {
+  it("leaves the other pages' macros off the bar", async () => {
     render(MacroBar, props({ page: 2 }));
 
     expect(screen.queryByTitle("Attack")).toBeNull();
   });
 
-  test("the page indicator on page 3", async () => {
+  it("numbers the page the bar is showing", async () => {
     render(MacroBar, props({ page: 3 }));
 
     expect(hook("macro-page").textContent?.trim()).toBe("3");
   });
 
-  test("clicking the next-page control", async () => {
+  it("turns to the next page", async () => {
     const onpage = vi.fn();
     render(MacroBar, props({ onpage }));
 
@@ -272,7 +340,7 @@ describe("MacroBar paging", () => {
     expect(onpage).toHaveBeenCalledWith(2);
   });
 
-  test("clicking the previous-page control", async () => {
+  it("turns back to the previous page", async () => {
     const onpage = vi.fn();
     render(MacroBar, props({ page: 3, onpage }));
 
@@ -281,6 +349,7 @@ describe("MacroBar paging", () => {
     expect(onpage).toHaveBeenCalledWith(2);
   });
 
+  /* The stock hotbar's arrows cycle rather than stopping at the first and last page. */
   test("clicking the next-page control on the last page", async () => {
     const onpage = vi.fn();
     render(MacroBar, props({ page: 5, onpage }));
@@ -301,13 +370,13 @@ describe("MacroBar paging", () => {
 });
 
 describe("MacroBar library", () => {
-  test("before the library is expanded", async () => {
+  it("keeps the library shut until somebody asks for it", async () => {
     render(MacroBar, props());
 
     expect(queryHook("macro-library")).toBeNull();
   });
 
-  test("clicking the expand control", async () => {
+  it("opens the library when the expand control is clicked", async () => {
     render(MacroBar, props());
 
     await fireEvent.click(screen.getByTitle("Show all macros"));
@@ -324,13 +393,13 @@ describe("MacroBar library", () => {
     expect(queryHook("macro-library")).toBeNull();
   });
 
-  test("the library lists every page's macros", async () => {
+  it("lists the macros the bar has no room for", async () => {
     render(MacroBar, props());
 
     expect(within(await expand()).getByTitle("Parry")).toBeDefined();
   });
 
-  test("selecting a page from the library", async () => {
+  it("turns the bar to a page picked in the library", async () => {
     const onpage = vi.fn();
     render(MacroBar, props({ onpage }));
 
@@ -339,7 +408,7 @@ describe("MacroBar library", () => {
     expect(onpage).toHaveBeenCalledWith(4);
   });
 
-  test("dragging a macro from the bar into the library", async () => {
+  it("moves a macro dragged out of the bar and into the library", async () => {
     const onmove = vi.fn();
     render(MacroBar, props({ onmove }));
 
@@ -352,64 +421,43 @@ describe("MacroBar library", () => {
 });
 
 /*
- * The slot buttons are keyed by slot number, so a move swaps which macro a given button holds
- * while leaving the button itself -- and the focus on it -- exactly where it was. Without moving
- * focus along, a second Alt+Arrow picks up whatever just swapped into the slot under the cursor's
- * keyboard focus rather than the macro the user is walking across the bar.
+ * Escape is taken in the capture phase and stopped, because Foundry's own keybindings listen on the
+ * document and Escape there closes windows and opens the game menu. That is only the library's to
+ * take while it is open, so the listener goes up with the panel and comes down with it.
  */
-describe("MacroBar keyboard reordering", () => {
-  test("Alt+ArrowRight on a focused macro", async () => {
-    render(MacroBar, props());
-    const attack = screen.getByTitle("Attack");
-    attack.focus();
-    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
-
-    expect(document.activeElement).toBe(slotAt(2));
-  });
-
-  test("Alt+ArrowRight twice, walking one macro across the bar", async () => {
-    const onmove = vi.fn();
-    render(MacroBar, props({ onmove }));
-    const attack = screen.getByTitle("Attack");
-    attack.focus();
-    await fireEvent.keyDown(attack, { key: "ArrowRight", altKey: true });
-    await fireEvent.keyDown(document.activeElement!, { key: "ArrowRight", altKey: true });
-
-    expect(onmove.mock.calls).toEqual([
-      [1, 2],
-      [2, 3],
-    ]);
-  });
-
-  test("Alt+ArrowLeft on the first slot, where nothing moves", async () => {
-    render(MacroBar, props());
-    const attack = screen.getByTitle("Attack");
-    attack.focus();
-    await fireEvent.keyDown(attack, { key: "ArrowLeft", altKey: true });
-
-    expect(document.activeElement).toBe(attack);
-  });
-});
-
 describe("MacroBar dismissing the library", () => {
-  test("pressing Escape with the library open", async () => {
+  it("closes the library on Escape", async () => {
     render(MacroBar, props());
     await expand();
+
     await fireEvent.keyDown(document, { key: "Escape" });
 
     expect(queryHook("macro-library")).toBeNull();
   });
 
-  test("pressing Escape with the library closed", async () => {
-    render(MacroBar, props());
-    await fireEvent.keyDown(document, { key: "Escape" });
-
-    expect(queryHook("macro-library")).toBeNull();
-  });
-
-  test("pointing at something outside the footer", async () => {
+  it("keeps Escape from reaching Foundry while the library is open", async () => {
+    const foundry = foundrysKeyHandlers();
     render(MacroBar, props());
     await expand();
+
+    await fireEvent.keyDown(document.body, { key: "Escape", bubbles: true });
+
+    expect(foundry).not.toHaveBeenCalled();
+  });
+
+  it("leaves Escape to Foundry while the library is closed", async () => {
+    const foundry = foundrysKeyHandlers();
+    render(MacroBar, props());
+
+    await fireEvent.keyDown(document.body, { key: "Escape", bubbles: true });
+
+    expect(foundry).toHaveBeenCalled();
+  });
+
+  it("closes the library when the pointer goes down outside the footer", async () => {
+    render(MacroBar, props());
+    await expand();
+
     await fireEvent.pointerDown(document.body);
 
     expect(queryHook("macro-library")).toBeNull();
@@ -418,6 +466,7 @@ describe("MacroBar dismissing the library", () => {
   test("pointing at a slot inside the library", async () => {
     render(MacroBar, props());
     await expand();
+
     await fireEvent.pointerDown(screen.getByTitle("Parry"));
 
     expect(queryHook("macro-library")).not.toBeNull();

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { openHarness } from "./harness";
+import { openHarness, type HarnessParams, type Panel } from "./harness";
 
 /*
  * The hover panels are the one part of the strip whose correctness is pure geometry: a panel that
@@ -15,24 +15,40 @@ test.describe("hover panels", () => {
     expect((await panel.boundingBox())!.width).toBe(400);
   });
 
-  test("every panel's bridge closes the gap to its trigger", async ({ page }) => {
-    await openHarness(page, { hover_panel: "posture" });
-    const trigger = page.locator('[data-hud-trigger="posture"]');
-    const bridge = trigger.locator("[data-hud-popover-bridge]");
-    const panel = trigger.locator("[data-hud-popover]");
+  /*
+   * Every panel the strip has, with whatever the harness needs to open it. Each floats a different
+   * distance clear of a trigger in a different corner, and a gap left open anywhere is the same
+   * bug -- so the claim is about all six rather than about whichever one it was first found on.
+   */
+  const BRIDGED: Array<[Panel, HarnessParams]> = [
+    ["attrs", { hover_panel: "attrs" }],
+    ["skills", { hover_panel: "skills" }],
+    ["maneuver", { set_maneuver: "attack", hover_panel: "maneuver" }],
+    ["posture", { hover_panel: "posture" }],
+    ["target", { target_actor: "goblin", hover_panel: "target" }],
+    ["actor", { hover_panel: "actor" }],
+  ];
 
-    const [b, p, t] = await Promise.all([
-      bridge.boundingBox(),
-      panel.boundingBox(),
-      trigger.boundingBox(),
-    ]);
+  for (const [panel, params] of BRIDGED) {
+    test(`the ${panel} panel's bridge closes the gap to its trigger`, async ({ page }) => {
+      await openHarness(page, params);
+      const trigger = page.locator(`[data-hud-trigger="${panel}"]`);
+      const bridge = trigger.locator("[data-hud-popover-bridge]");
+      const popover = trigger.locator("[data-hud-popover]");
 
-    // The bridge spans exactly from the trigger's top edge up to the panel's bottom edge.
-    expect([Math.round(b!.y + b!.height), Math.round(b!.y)]).toEqual([
-      Math.round(t!.y),
-      Math.round(p!.y + p!.height),
-    ]);
-  });
+      const [b, p, t] = await Promise.all([
+        bridge.boundingBox(),
+        popover.boundingBox(),
+        trigger.boundingBox(),
+      ]);
+
+      // The bridge spans exactly from the trigger's top edge up to the panel's bottom edge.
+      expect([Math.round(b!.y + b!.height), Math.round(b!.y)]).toEqual([
+        Math.round(t!.y),
+        Math.round(p!.y + p!.height),
+      ]);
+    });
+  }
 
   /*
    * The posture badge sits inside the portrait, below the character name, so the straight-line path

@@ -3,11 +3,11 @@ import { maneuverGroups, maneuverById } from "./maneuvers";
 
 describe("maneuverGroups", () => {
   it("opens with Attack, the default maneuver", () => {
-    expect(maneuverGroups()[0].maneuvers[0]).toEqual({
-      id: "attack",
-      name: "Attack",
-      hint: "1 action · Move ≤ 1 hex",
-    });
+    expect(maneuverGroups()[0].maneuvers[0].id).toBe("attack");
+  });
+
+  it("gives each tile the hint that says what the maneuver costs", () => {
+    expect(maneuverGroups()[0].maneuvers[0].hint).toBe("1 action · Move ≤ 1 hex");
   });
 
   it("heads the two groups that need one after the maneuver they narrow", () => {

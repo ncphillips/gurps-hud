@@ -167,6 +167,23 @@ describe("removePick", () => {
 
     expect(removePick(picks, "system.melee.9")).toEqual(picks);
   });
+
+  /* The key names its own group, so a bow leaves the ranged list and the melee one is untouched. */
+  test("a ranged attack", () => {
+    const picks = { melee: ["system.melee.0"], ranged: ["system.ranged.0", "system.ranged.1"] };
+
+    expect(removePick(picks, "system.ranged.0")).toEqual({
+      melee: ["system.melee.0"],
+      ranged: ["system.ranged.1"],
+    });
+  });
+
+  /* Identity, not equality: a key that names no group is handed straight back, unexamined. */
+  test("a key naming something that is not an attack", () => {
+    const picks = { melee: ["system.melee.0"], ranged: ["system.ranged.0"] };
+
+    expect(removePick(picks, "system.skills.0")).toBe(picks);
+  });
 });
 
 describe("nudgePick", () => {
@@ -177,6 +194,31 @@ describe("nudgePick", () => {
       "system.melee.1",
       "system.melee.0",
     ]);
+  });
+
+  it("swaps an attack with the one above it", () => {
+    const picks = { melee: ["system.melee.0", "system.melee.1"], ranged: [] };
+
+    expect(nudgePick(picks, "system.melee.1", -1).melee).toEqual([
+      "system.melee.1",
+      "system.melee.0",
+    ]);
+  });
+
+  /* The key names its own group: a bow is reordered among the ranged attacks, not the melee ones. */
+  test("a ranged attack", () => {
+    const picks = { melee: ["system.melee.0"], ranged: ["system.ranged.0", "system.ranged.1"] };
+
+    expect(nudgePick(picks, "system.ranged.0", 1).ranged).toEqual([
+      "system.ranged.1",
+      "system.ranged.0",
+    ]);
+  });
+
+  test("a key naming something that is not an attack", () => {
+    const picks = { melee: ["system.melee.0"], ranged: ["system.ranged.0"] };
+
+    expect(nudgePick(picks, "system.skills.0", 1)).toBe(picks);
   });
 
   test("the first attack nudged upwards", () => {
@@ -224,5 +266,14 @@ describe("readPicks", () => {
 
   test("a flag holding something other than a list of keys", () => {
     expect(readPicks({ melee: "system.melee.0", ranged: [7] })).toEqual(noPicks());
+  });
+
+  /*
+   * All or nothing. A flag with one good group and one bad one was not written by this module, so
+   * the good half is no more trustworthy than the bad one -- and keeping it would leave the actor
+   * with a list nobody can explain.
+   */
+  test("a flag whose groups are half readable", () => {
+    expect(readPicks({ melee: ["system.melee.0"], ranged: 7 })).toEqual(noPicks());
   });
 });

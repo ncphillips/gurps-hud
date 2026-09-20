@@ -32,12 +32,18 @@ describe("Readout", () => {
     expect(container.querySelector("span")?.className).toContain(READOUT_TEXT.md);
   });
 
+  test("small, for a condition label too long to fit at the grid's size", () => {
+    const { container } = render(Readout, { size: "sm", children });
+
+    expect(container.querySelector("span")?.className).toContain(READOUT_TEXT.sm);
+  });
+
   /*
    * A size prop rather than a class the caller overrides: both sizes are arbitrary Tailwind text
    * utilities, so which one wins is decided by their order in the generated stylesheet, not by
    * their order in the class string. Appending would work by luck.
    */
-  test("small, for a condition label too long to fit at the grid's size", () => {
+  it("replaces the grid's size rather than appending to it", () => {
     const { container } = render(Readout, { size: "sm", children });
 
     expect(container.querySelector("span")?.className).not.toContain(READOUT_TEXT.md);

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 import type { MacroPage, MacroSlot } from "@/gurps/game-aid";
 import { macroDrag } from "./macro-drag";
 import MacroLibrary from "./MacroLibrary.svelte";
@@ -55,13 +55,13 @@ function props(overrides: Partial<MacroLibraryProps> = {}): MacroLibraryProps {
 }
 
 describe("MacroLibrary", () => {
-  test("rendering all five pages", async () => {
+  it("shows every slot on the hotbar, not just the page the bar is on", async () => {
     render(MacroLibrary, props());
 
     expect(document.querySelectorAll("[data-hud-macro-slot]")).toHaveLength(50);
   });
 
-  test("a macro on the last page", async () => {
+  it("reaches a macro the bar has no room for", async () => {
     render(MacroLibrary, props());
 
     expect(screen.getByTitle("Macro 41")).toBeDefined();
@@ -69,7 +69,7 @@ describe("MacroLibrary", () => {
 });
 
 describe("MacroLibrary paging", () => {
-  test("clicking a page number", async () => {
+  it("turns the bar to the page that was picked", async () => {
     const onpage = vi.fn();
     render(MacroLibrary, props({ onpage }));
 
@@ -78,13 +78,13 @@ describe("MacroLibrary paging", () => {
     expect(onpage).toHaveBeenCalledWith(4);
   });
 
-  test("the current page is marked", async () => {
+  it("marks the page the bar is already on", async () => {
     render(MacroLibrary, props({ page: 3 }));
 
     expect(screen.getByTitle("Switch to page 3").getAttribute("aria-current")).toBe("true");
   });
 
-  test("another page is not marked", async () => {
+  it("leaves every other page unmarked", async () => {
     render(MacroLibrary, props({ page: 3 }));
 
     expect(screen.getByTitle("Switch to page 2").getAttribute("aria-current")).toBeNull();
@@ -92,7 +92,7 @@ describe("MacroLibrary paging", () => {
 });
 
 describe("MacroLibrary reordering", () => {
-  test("dragging a macro onto an empty slot on another page", async () => {
+  it("moves a macro to the slot it is dropped on, on any page", async () => {
     const onmove = vi.fn();
     render(MacroLibrary, props({ onmove }));
 
@@ -102,7 +102,7 @@ describe("MacroLibrary reordering", () => {
     expect(onmove).toHaveBeenCalledWith(1, 25);
   });
 
-  test("dragging a macro onto a filled slot on another page", async () => {
+  test("a macro dropped on a slot another macro already holds", async () => {
     const onmove = vi.fn();
     render(MacroLibrary, props({ onmove }));
 
@@ -133,7 +133,7 @@ describe("MacroLibrary reordering", () => {
 });
 
 describe("MacroLibrary removing", () => {
-  test("right-clicking a filled slot", async () => {
+  it("takes a macro off the hotbar when it is right-clicked", async () => {
     const onremove = vi.fn();
     render(MacroLibrary, props({ onremove }));
 
@@ -142,7 +142,7 @@ describe("MacroLibrary removing", () => {
     expect(onremove).toHaveBeenCalledWith(20);
   });
 
-  test("pressing Delete on a focused macro", async () => {
+  it("takes a macro off the hotbar on Delete", async () => {
     const onremove = vi.fn();
     render(MacroLibrary, props({ onremove }));
 
@@ -153,7 +153,7 @@ describe("MacroLibrary removing", () => {
 });
 
 describe("MacroLibrary executing", () => {
-  test("clicking a filled slot", async () => {
+  it("runs the macro in the slot that was clicked", async () => {
     const onexecute = vi.fn();
     render(MacroLibrary, props({ onexecute }));
 
@@ -164,7 +164,7 @@ describe("MacroLibrary executing", () => {
 });
 
 describe("MacroLibrary keyboard", () => {
-  test("pressing Alt+ArrowRight", async () => {
+  it("moves a macro a slot to the right on Alt+ArrowRight", async () => {
     const onmove = vi.fn();
     render(MacroLibrary, props({ onmove }));
 
@@ -182,7 +182,7 @@ describe("MacroLibrary keyboard", () => {
     expect(onmove).not.toHaveBeenCalled();
   });
 
-  test("pressing Alt+ArrowDown", async () => {
+  it("moves a macro down a page on Alt+ArrowDown, since a page is a row", async () => {
     const onmove = vi.fn();
     render(MacroLibrary, props({ onmove }));
 
@@ -191,7 +191,7 @@ describe("MacroLibrary keyboard", () => {
     expect(onmove).toHaveBeenCalledWith(1, 11);
   });
 
-  test("pressing Alt+ArrowUp", async () => {
+  it("moves a macro up a page on Alt+ArrowUp", async () => {
     const onmove = vi.fn();
     render(MacroLibrary, props({ onmove }));
 
@@ -218,7 +218,7 @@ describe("MacroLibrary keyboard", () => {
     expect(onmove).not.toHaveBeenCalled();
   });
 
-  test("pressing Delete does not reach Foundry's own key handlers", async () => {
+  it("keeps Delete from reaching Foundry's own key handlers", async () => {
     const foundry = vi.fn();
     document.addEventListener("keydown", foundry);
     render(MacroLibrary, props());

@@ -18,6 +18,7 @@ import {
   shockPenalty,
   skillRows,
 } from "./hud-view";
+import type { AttrColumn } from "./hud-view";
 import type { GurpsSystem } from "./system-types";
 
 const localize = (key: string) => `[${key}]`;
@@ -66,12 +67,22 @@ describe("poolTone", () => {
     expect(poolTone(4, 12)).toBe("warn");
   });
 
+  /* The warn band runs all the way down to 1: danger is what a pool that is spent reads as. */
+  test("a pool one point above zero", () => {
+    expect(poolTone(1, 12)).toBe("warn");
+  });
+
   test("a pool at zero", () => {
     expect(poolTone(0, 12)).toBe("danger");
   });
 
   test("a pool below zero", () => {
     expect(poolTone(-3, 12)).toBe("danger");
+  });
+
+  /* A sheet can carry a pool with no maximum, and a third of nothing would warn forever. */
+  test("a pool with no maximum", () => {
+    expect(poolTone(5, 0)).toBe("ok");
   });
 });
 
@@ -103,6 +114,10 @@ describe("postureBadge", () => {
   test("crawling", () => {
     expect(postureBadge("crawl", localize).tone).toBe("danger");
   });
+
+  it("carries the posture id so the badge can mark the current option", () => {
+    expect(postureBadge("kneel", localize).id).toBe("kneel");
+  });
 });
 
 describe("shockPenalty", () => {
@@ -114,8 +129,13 @@ describe("shockPenalty", () => {
     expect(shockPenalty(["shock2"])).toBe(-2);
   });
 
-  test("several shock statuses at once", () => {
+  it("takes the worst of several shock statuses", () => {
     expect(shockPenalty(["shock1", "shock4"])).toBe(-4);
+  });
+
+  /* Worst, not last: the order the Game Aid hands the statuses back in is not the HUD's to rely on. */
+  test("the worst shock status arriving first", () => {
+    expect(shockPenalty(["shock4", "shock1"])).toBe(-4);
   });
 });
 
@@ -278,8 +298,15 @@ describe("rangedRows", () => {
 });
 
 describe("attrColumns", () => {
+  /*
+   * A row is looked up by its label rather than by where it sits, so which group a row is in stays
+   * one claim made once -- below -- instead of a position every other test has to be rewritten for.
+   */
+  const rowIn = (column: AttrColumn, label: string) =>
+    column.groups.flat().find((row) => row.label === label);
+
   it("rolls Strength against the ST attribute", () => {
-    expect(attrColumns(system()).basic.groups[0][0]).toEqual({
+    expect(rowIn(attrColumns(system()).basic, "Strength (ST)")).toEqual({
       label: "Strength (ST)",
       value: "9",
       otf: "ST",
@@ -287,7 +314,7 @@ describe("attrColumns", () => {
   });
 
   it("reads Basic Thrust off the actor without making it rollable", () => {
-    expect(attrColumns(system()).basic.groups[1][0]).toEqual({
+    expect(rowIn(attrColumns(system()).basic, "Basic Thrust")).toEqual({
       label: "Basic Thrust",
       value: "1d-2",
       otf: null,
@@ -295,12 +322,32 @@ describe("attrColumns", () => {
   });
 
   it("rolls Fright Check by its Game Aid name", () => {
-    expect(attrColumns(system()).secondary.groups[0][1].otf).toBe("Fright Check");
+    expect(rowIn(attrColumns(system()).secondary, "Fright Check")?.otf).toBe("Fright Check");
   });
 
   it("rolls Taste/Smell by its Game Aid name", () => {
-    const touch = attrColumns(system()).secondary.groups[1];
-    expect(touch.find((r) => r.label === "Taste/Smell")?.otf).toBe("Taste Smell");
+    expect(rowIn(attrColumns(system()).secondary, "Taste/Smell")?.otf).toBe("Taste Smell");
+  });
+
+  /* Groups are rendered with a hairline between them, so the split is the panel's own layout. */
+  it("separates the rollable basic attributes from the values derived off them", () => {
+    const labels = attrColumns(system()).basic.groups.map((group) => group.map((row) => row.label));
+
+    expect(labels).toEqual([
+      ["Strength (ST)", "Dexterity (DX)", "Intelligence (IQ)", "Health (HT)"],
+      ["Basic Thrust", "Basic Swing", "Basic Speed", "Basic Move"],
+    ]);
+  });
+
+  it("separates Will and Fright Check from the senses", () => {
+    const labels = attrColumns(system()).secondary.groups.map((group) =>
+      group.map((row) => row.label),
+    );
+
+    expect(labels).toEqual([
+      ["Will", "Fright Check"],
+      ["Perception (Per)", "Vision", "Hearing", "Taste/Smell", "Touch"],
+    ]);
   });
 });
 
@@ -404,12 +451,6 @@ describe("postureOptions", () => {
 
   it("labels each option with the Game Aid's own status name", () => {
     expect(postureOptions(localize)[5].label).toBe("[GURPS.status.Prone]");
-  });
-});
-
-describe("postureBadge", () => {
-  it("carries the posture id so the badge can mark the current option", () => {
-    expect(postureBadge("kneel", localize).id).toBe("kneel");
   });
 });
 

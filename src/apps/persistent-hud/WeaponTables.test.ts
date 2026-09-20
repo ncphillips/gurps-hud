@@ -53,9 +53,13 @@ function tables(): Element {
   return document.querySelector("[data-hud-attacks]")!;
 }
 
-/** An attack dragged off a character sheet, which is where every pick comes from. */
-function draggedOffTheSheet(key: string, actorId = "actor-thor"): Gesture {
-  return dragging(dragPayload(actorId, key));
+/*
+ * An attack dragged off a character sheet, which is where every pick comes from. Always Thor's own
+ * sheet: refusing another character's attack is the strip's decision, not the tables' -- it is
+ * `isFromActor` in `PersistentHud`, and e2e/attack-picks.spec.ts is where the gesture is driven.
+ */
+function draggedOffTheSheet(key: string): Gesture {
+  return dragging(dragPayload("actor-thor", key));
 }
 
 /** An attack already picked, taken by its own grip: the drag that reorders one or takes it off. */
