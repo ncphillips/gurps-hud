@@ -45,13 +45,13 @@
       </button>
     {:else}
       <div class={ROW}>
-        <span class="{NAME} hud:text-hud-ink/45">{skill.name}</span>
+        <span class="{NAME} hud:text-hud-faint">{skill.name}</span>
         <span class="{LEVEL} hud:text-hud-ink/28">{skill.level.text}</span>
       </div>
     {/if}
   {:else}
     <div
-      class="hud:col-span-full hud:px-[6px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-ink/30"
+      class="hud:col-span-full hud:px-[6px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-faint"
     >
       {t("skills.empty")}
     </div>

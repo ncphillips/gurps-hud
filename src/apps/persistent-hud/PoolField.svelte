@@ -93,12 +93,12 @@
   <button
     type="button"
     {title}
-    class="{BOX} hud:cursor-text hud:transition-colors hud:duration-75 hud:hover:bg-white/[.14] {TEXT[
+    class="{BOX} hud:cursor-text hud:transition-colors hud:duration-75 hud:hover:bg-hud-veil/[.14] {TEXT[
       pool.tone
     ]}"
     onclick={begin}
     onkeydown={idleKeydown}
   >
-    {pool.value}<span class="hud:text-[9.5px] hud:text-hud-ink/45">/{pool.max}</span>
+    {pool.value}<span class="hud:text-[9.5px] hud:text-hud-faint">/{pool.max}</span>
   </button>
 {/if}

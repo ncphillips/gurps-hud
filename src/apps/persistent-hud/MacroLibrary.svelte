@@ -59,11 +59,11 @@
 
 <div bind:this={grid} data-hud-macro-library class="hud:w-fit hud:p-[6px]">
   <div
-    class="hud:mb-[5px] hud:flex hud:items-baseline hud:justify-between hud:gap-[10px] hud:px-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/40"
+    class="hud:mb-[5px] hud:flex hud:items-baseline hud:justify-between hud:gap-[10px] hud:px-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
   >
     <span>{t("macros.library.label")}</span>
     <span
-      class="hud:font-hud hud:text-[9.5px] hud:font-medium hud:tracking-normal hud:normal-case hud:text-hud-ink/30"
+      class="hud:font-hud hud:text-[9.5px] hud:font-medium hud:tracking-normal hud:normal-case hud:text-hud-faint"
     >
       {t("macros.library.hint")}
     </span>
@@ -80,7 +80,7 @@
             "hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:rounded-hud-sm hud:border hud:text-center hud:font-hud-mono hud:text-[11px]/[20px] hud:font-bold hud:transition-colors hud:duration-75 hud:hover:border-hud-accent hud:hover:text-hud-ink",
             entry.page === page
               ? "hud:border-hud-accent hud:bg-hud-accent/22 hud:text-hud-accent"
-              : "hud:border-transparent hud:bg-white/[.05] hud:text-hud-ink/35",
+              : "hud:border-transparent hud:bg-hud-veil/[.05] hud:text-hud-faint",
           ]}
           onclick={() => onpage(entry.page)}
         >

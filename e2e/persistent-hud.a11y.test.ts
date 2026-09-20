@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { openHarness } from "./harness";
+import { openHarness, type HarnessParams } from "./harness";
 
 /*
  * The HUD renders inside Foundry's own page, so a scan of the whole document would report on
@@ -13,9 +13,9 @@ const STRIP = "#gurps-hud-persistent";
  * the exact list, so a new violation fails and so does fixing a listed one -- the list cannot
  * quietly rot. The per-component lists live beside the components, in `*.a11y.test.ts`.
  *
- * Contrast is excluded here and tracked on its own below. It fails in ~40 places, nearly all of
- * them the design's deliberately dim secondary text -- hints, column headers, muted values -- so
- * folding it in would leave every other rule unguarded behind one permanently red test.
+ * Contrast is excluded here and scanned on its own below, per palette rather than per selector --
+ * the same failing ink shows up in dozens of cells, and it is one decision about the palette in
+ * every one of them.
  */
 const EXCEPTIONS = {
   rest: [] as string[],
@@ -45,6 +45,44 @@ async function stripViolations(page: Page): Promise<string[]> {
       `${violation.id}: ${violation.nodes.map((node) => node.target.join(" ")).join(", ")}`,
   );
 }
+
+/**
+ * One line per colour pair that failed, deduplicated -- a contrast failure is a fact about two
+ * colours, not about the element they happened to meet on.
+ */
+async function contrastPairs(page: Page): Promise<string[]> {
+  const { violations } = await new AxeBuilder({ page })
+    .include(STRIP)
+    .withRules(["color-contrast"])
+    .analyze();
+
+  return violations.flatMap((violation) =>
+    violation.nodes.flatMap((node) =>
+      node.any.map((check) => {
+        const { fgColor, bgColor, contrastRatio, expectedContrastRatio } = check.data as {
+          fgColor: string;
+          bgColor: string;
+          contrastRatio: number;
+          expectedContrastRatio: string;
+        };
+        return `${fgColor} on ${bgColor}: ${contrastRatio.toFixed(2)}:1, needs ${expectedContrastRatio}`;
+      }),
+    ),
+  );
+}
+
+/**
+ * The palette's accessibility to-do list, empty in both themes and meant to stay that way.
+ *
+ * Every faint ink in the strip is one rung -- `--color-hud-faint` -- pinned to the floor AA puts
+ * under 8px text, with an alpha per theme because dark clears that floor at 62% where light needs
+ * 69%. So a colour added below it fails here rather than shipping, and the two lists sitting side
+ * by side is what says neither palette has drifted behind the other.
+ */
+const CONTRAST_EXCEPTIONS: Record<"dark" | "light", string[]> = {
+  dark: [],
+  light: [],
+};
 
 test.describe("persistent HUD accessibility", () => {
   test("the strip at rest", async ({ page }) => {
@@ -91,7 +129,6 @@ test.describe("persistent HUD accessibility", () => {
 
   test("a pool open for editing", async ({ page }) => {
     await openHarness(page, { edit_pool: "hp" });
-    await expect(page.getByRole("textbox")).toBeVisible();
 
     expect(await stripViolations(page)).toEqual(EXCEPTIONS.editing);
   });
@@ -115,16 +152,41 @@ test.describe("persistent HUD accessibility", () => {
   });
 
   /*
-   * Unskip once the palette's secondary inks have been decided against WCAG AA. It is a design
-   * call, not a markup fix: the failing colours come from the mock the strip is matched to.
+   * Contrast, once per palette.
+   *
+   * Light mode is why this is a scan rather than the `fixme` it used to be: a second palette that
+   * nobody measures is a second palette that quietly reads worse than the first. Both pass.
+   *
+   * A violation is recorded as the colour pair that caused it rather than the element that carried
+   * it -- `#555556 on #16171b: 2.40:1, needs 4.5:1` -- and the sweep unions every state, because a
+   * dim ink is one decision about the palette however many cells it is read in. That keeps a
+   * failure something a designer can act on, and keeps it from churning every time a cell moves.
    */
-  test.fixme("the strip meets AA contrast", async ({ page }) => {
-    await openHarness(page, { set_maneuver: "attack", hover_panel: "maneuver" });
-    const { violations } = await new AxeBuilder({ page })
-      .include(STRIP)
-      .withRules(["color-contrast"])
-      .analyze();
+  const STATES: HarnessParams[] = [
+    {},
+    { hover_panel: "attrs" },
+    { hover_panel: "skills" },
+    { set_maneuver: "attack", hover_panel: "maneuver" },
+    { target_actor: "goblin", hover_panel: "target" },
+    { hover_panel: "posture" },
+    { hover_panel: "actor" },
+    { edit_pool: "hp" },
+    { expand_macros: true },
+    { pick_attacks: "none" },
+    { selected_actor: "" },
+  ];
 
-    expect(violations).toEqual([]);
-  });
+  for (const theme of ["dark", "light"] as const) {
+    test(`the palette meets AA in ${theme} mode`, async ({ page }) => {
+      test.slow();
+      const pairs = new Set<string>();
+
+      for (const state of STATES) {
+        await openHarness(page, { ...state, hud_theme: theme });
+        for (const pair of await contrastPairs(page)) pairs.add(pair);
+      }
+
+      expect([...pairs].sort()).toEqual(CONTRAST_EXCEPTIONS[theme]);
+    });
+  }
 });

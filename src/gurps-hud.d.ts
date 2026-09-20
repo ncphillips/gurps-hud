@@ -1,5 +1,5 @@
 import type { AttackPicks } from "./gurps/attack-picks";
-import type { HudSize } from "./settings";
+import type { HudSize, HudTheme } from "./settings";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -23,6 +23,11 @@ declare module "fvtt-types/configuration" {
      * on, not about the world.
      */
     "gurps-hud.size": HudSize;
+    /**
+     * Which palette the strip is drawn in. Client-scoped for the same reason as the size: which
+     * one reads well is a fact about the room and the screen, not about the world.
+     */
+    "gurps-hud.theme": HudTheme;
   }
 
   interface FlagConfig {

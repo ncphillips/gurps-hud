@@ -66,7 +66,12 @@
   src: url("/modules/gurps-hud/styles/fonts/JetBrainsMono-700.woff2") format("woff2");
 }
 
-/* Design tokens from design-handoff/README.md. */
+/*
+ * Design tokens from design-handoff/README.md, which is a dark mock -- so dark is what `@theme`
+ * holds and what the strip falls back to. The light palette is further down, hung off the attribute
+ * `applyHudTheme` writes; it overrides these same variables, so every utility follows without a
+ * `dark:` variant anywhere in a component.
+ */
 @theme {
   --color-hud-panel: #16171b;
   --color-hud-deep: #0f1013;
@@ -76,12 +81,39 @@
   --color-hud-ink: #e8e6e1;
   --color-hud-on-accent: #17181b;
 
+  /*
+   * The quiet end of the ink: column headings, maneuver hints, the MACROS label, the `/22` beside a
+   * pool. It carries its alpha rather than being a flat grey, so it composites over whatever it
+   * happens to sit on -- panel, popover, the hover-lifted pool box -- and keeps the same relation
+   * to each. That is also why it is one rung and not the six the mock draws: it is pinned to the
+   * floor WCAG AA puts under 8px text, and there is no room below a floor. Sized against the
+   * lightest ground it lands on, which is the pool box under the cursor.
+   *
+   * The alpha differs per theme, and has to. A 30% veil of ink over a dark ground multiplies its
+   * luminance where the same veil over a light one barely halves it, so dark clears AA at 62% where
+   * light needs 69%. One number for both would mean over-lighting dark to pay for light.
+   */
+  --color-hud-faint: rgb(232 230 225 / 0.62);
+
+  /*
+   * The colour every raised surface and hairline in the strip is a few percent of -- the ladder of
+   * `bg-hud-veil/[.05]` fills and `border-hud-veil/[.09]` lines the mock is built from. It is the
+   * one token that is not a colour anybody sees: at 4-18% over the surface beneath it, what it
+   * does is lift or divide, and it has to be the ink's end of the scale to do that. Spelled as a
+   * token rather than `white` so light mode can turn the whole ladder over at once.
+   */
+  --color-hud-veil: #ffffff;
+
+  /* The scrollbar thumb, which `scrollbar-color` takes as a whole colour rather than a fill. */
+  --color-hud-scroll: #ffffff2e;
+
   --color-hud-accent: #d99a4e;
   --color-hud-accent-hi: #eab472;
   --color-hud-defence: #a9cbe4;
   --color-hud-defence-bg: #1f2530;
 
-  --color-hud-hp: #cf5c4a;
+  /* Lifted off the mock's #cf5c4a: at 4.3:1 on a hover-lifted row it was the one ink short of AA. */
+  --color-hud-hp: #dd6f5d;
   --color-hud-fp: #5f9ea8;
   --color-hud-ok: #7fb08a;
 
@@ -98,6 +130,52 @@
 
   /* The strip never grows past this; the weapon list scrolls instead. */
   --spacing-hud-max: 200px;
+}
+
+/*
+ * Light mode.
+ *
+ * `applyHudTheme` resolves the reader's choice -- dark, light, or whatever the desktop says -- and
+ * writes the answer to `<html>` as `data-hud-theme`, so this only ever has the two palettes to
+ * state. In `@layer base` rather than unlayered, per the rule below: an unlayered rule outranks
+ * every Tailwind utility, and these are variables the utilities read rather than rules that beat
+ * them.
+ *
+ * Every value here is its dark counterpart turned over, and the inks are matched by contrast rather
+ * than by eye: `--color-hud-accent` reads 7.4:1 on the dark panel, so the light amber is the one
+ * that reads about as far against the light panel. That is what keeps the two palettes the same
+ * design rather than two, and it is what `e2e/persistent-hud.a11y.test.ts` scans both of.
+ */
+@layer base {
+  :root {
+    /* The "no portrait" hatch. A whole image rather than two colours, so a theme swaps one value. */
+    --gurps-hud-hatch: repeating-linear-gradient(135deg, #2a2c33 0 6px, #23252b 6px 12px);
+  }
+
+  [data-hud-theme="light"] {
+    --hud-color-hud-panel: #f1f0ec;
+    --hud-color-hud-deep: #e4e2db;
+    --hud-color-hud-popover: #faf9f5;
+    --hud-color-hud-drawer: #eceae4;
+
+    --hud-color-hud-ink: #1a1b1f;
+    --hud-color-hud-on-accent: #fbf8f3;
+    --hud-color-hud-faint: rgb(26 27 31 / 0.69);
+
+    --hud-color-hud-veil: #1a1b1f;
+    --hud-color-hud-scroll: #1a1b1f38;
+
+    --hud-color-hud-accent: #70420b;
+    --hud-color-hud-accent-hi: #56350d;
+    --hud-color-hud-defence: #2a5675;
+    --hud-color-hud-defence-bg: #dde6ef;
+
+    --hud-color-hud-hp: #b03a26;
+    --hud-color-hud-fp: #2f6a72;
+    --hud-color-hud-ok: #35694a;
+
+    --gurps-hud-hatch: repeating-linear-gradient(135deg, #dbd8d0 0 6px, #e4e1da 6px 12px);
+  }
 }
 
 /*

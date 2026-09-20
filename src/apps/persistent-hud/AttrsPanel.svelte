@@ -23,20 +23,20 @@
   const VALUE =
     "hud:w-[30px] hud:flex-none hud:text-left hud:font-hud-mono hud:text-[11.5px]/[1.5] hud:font-bold";
   const LABEL =
-    "hud:truncate hud:font-hud hud:text-[11.5px]/[1.5] hud:font-medium hud:text-hud-ink/60";
+    "hud:truncate hud:font-hud hud:text-[11.5px]/[1.5] hud:font-medium hud:text-hud-faint";
 </script>
 
 <div class="hud:flex hud:gap-[6px] hud:p-[5px]">
   {#each columns as column (column.header)}
-    <div class="hud:w-[142px] hud:rounded-hud-sm hud:bg-white/[.04] hud:px-[2px] hud:pb-[3px]">
+    <div class="hud:w-[142px] hud:rounded-hud-sm hud:bg-hud-veil/[.04] hud:px-[2px] hud:pb-[3px]">
       <div
-        class="hud:mb-[2px] hud:border-b hud:border-white/[.09] hud:px-[5px] hud:pt-[3px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/40"
+        class="hud:mb-[2px] hud:border-b hud:border-hud-veil/[.09] hud:px-[5px] hud:pt-[3px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
       >
         {column.header}
       </div>
       {#each column.groups as group, groupIndex (groupIndex)}
         {#if groupIndex > 0}
-          <div class="hud:mx-[5px] hud:my-[2px] hud:h-px hud:bg-white/[.08]"></div>
+          <div class="hud:mx-[5px] hud:my-[2px] hud:h-px hud:bg-hud-veil/[.08]"></div>
         {/if}
         {#each group as row (row.label)}
           {#if row.otf}

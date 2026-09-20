@@ -54,7 +54,7 @@
   data-hud-popover
   class="hud:absolute {align === 'right'
     ? 'hud:right-0'
-    : 'hud:left-0'} hud:z-20 hud:rounded-hud-lg hud:border hud:border-white/[.15] hud:bg-hud-popover hud:shadow-hud-popover {className}"
+    : 'hud:left-0'} hud:z-20 hud:rounded-hud-lg hud:border hud:border-hud-veil/[.15] hud:bg-hud-popover hud:shadow-hud-popover {className}"
   style="bottom: calc(100% + {offset}px)"
   data-hud-panel={name}
 >

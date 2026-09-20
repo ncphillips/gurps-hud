@@ -69,17 +69,17 @@
 </script>
 
 <div
-  class="hud:flex hud:w-[143px] hud:flex-none hud:flex-col hud:rounded-l-hud hud:border-r hud:border-white/[.08] hud:bg-hud-deep"
+  class="hud:flex hud:w-[143px] hud:flex-none hud:flex-col hud:rounded-l-hud hud:border-r hud:border-hud-veil/[.08] hud:bg-hud-deep"
 >
   <div class="hud:flex hud:items-center hud:gap-[2px] hud:pr-[7px] hud:pl-[3px] hud:py-[2px]">
     <button
       type="button"
       class="hud:flex hud:h-[14px] hud:w-[14px] hud:flex-none hud:items-center hud:justify-center hud:rounded-hud-xs hud:border hud:border-transparent hud:transition-colors hud:duration-75 {enabled
-        ? 'hud:cursor-pointer hud:hover:border-white/[.18] hud:hover:bg-white/[.08]'
+        ? 'hud:cursor-pointer hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.08]'
         : 'hud:text-hud-ink/20'} {locked
         ? 'hud:text-hud-accent'
         : enabled
-          ? 'hud:text-hud-ink/35 hud:hover:text-hud-ink/70'
+          ? 'hud:text-hud-faint hud:hover:text-hud-ink/70'
           : ''}"
       title={locked ? t("portrait.lock.locked") : t("portrait.lock.unlocked")}
       aria-pressed={locked}
@@ -105,7 +105,7 @@
     >
       <div
         class="hud:flex hud:items-center hud:justify-center hud:gap-[4px] hud:rounded-hud-xs hud:border hud:border-transparent hud:px-[3px] hud:font-hud hud:text-[12.5px]/[1.25] hud:font-semibold hud:text-hud-ink hud:transition-colors hud:duration-75 {switchable
-          ? 'hud:hover:border-white/[.18] hud:hover:bg-white/[.06]'
+          ? 'hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.06]'
           : ''}"
         title={!enabled
           ? t("portrait.selectCharacter")
@@ -115,7 +115,7 @@
       >
         <span class="hud:truncate">{view.name}</span>
         {#if switchable}
-          <span class="hud:flex-none hud:text-[8px] hud:text-hud-ink/45">▴</span>
+          <span class="hud:flex-none hud:text-[8px] hud:text-hud-faint">▴</span>
         {/if}
       </div>
 
@@ -131,7 +131,7 @@
               type="button"
               class="hud:flex hud:cursor-pointer hud:items-center hud:gap-[6px] hud:rounded-hud-sm hud:px-[5px] hud:py-[3px] hud:text-left hud:font-hud hud:text-[12px]/[1.2] hud:font-semibold hud:transition-colors hud:duration-75 {selected
                 ? 'hud:bg-hud-accent hud:text-hud-on-accent'
-                : 'hud:bg-white/[.045] hud:text-hud-ink/85 hud:hover:bg-white/[.09]'}"
+                : 'hud:bg-hud-veil/[.045] hud:text-hud-ink/85 hud:hover:bg-hud-veil/[.09]'}"
               onclick={() => onselectactor(choice)}
             >
               {#if choice.img}
@@ -142,7 +142,7 @@
                 />
               {:else}
                 <span
-                  class="hud:h-[18px] hud:w-[18px] hud:flex-none hud:rounded-hud-xs hud:bg-white/[.08]"
+                  class="hud:h-[18px] hud:w-[18px] hud:flex-none hud:rounded-hud-xs hud:bg-hud-veil/[.08]"
                 ></span>
               {/if}
               <span class="hud:truncate">{choice.name}</span>
@@ -167,9 +167,7 @@
         class="hud:absolute hud:inset-0 hud:h-full hud:w-full hud:object-cover"
       />
     {:else}
-      <div
-        class="hud:absolute hud:inset-0 hud:bg-[repeating-linear-gradient(135deg,#2a2c33_0_6px,#23252b_6px_12px)]"
-      ></div>
+      <div class="hud:absolute hud:inset-0 hud:bg-[image:var(--gurps-hud-hatch)]"></div>
     {/if}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
@@ -181,13 +179,13 @@
     >
       <span
         class="hud:flex hud:items-center hud:gap-[5px] hud:rounded-hud-xs hud:border hud:border-transparent hud:bg-hud-deep/80 hud:px-[5px] hud:py-px hud:font-hud-mono hud:text-[9px] hud:font-semibold hud:uppercase hud:transition-colors hud:duration-75 {enabled
-          ? `hud:hover:border-white/[.18] ${TONE_TEXT[view.posture.tone]}`
+          ? `hud:hover:border-hud-veil/[.18] ${TONE_TEXT[view.posture.tone]}`
           : 'hud:text-hud-ink/28'}"
         title={enabled ? t("portrait.posture") : undefined}
       >
         {view.posture.label}
         {#if enabled}
-          <span class="hud:text-[8px] hud:text-hud-ink/45">▴</span>
+          <span class="hud:text-[8px] hud:text-hud-faint">▴</span>
         {/if}
       </span>
 
@@ -203,7 +201,7 @@
               type="button"
               class="hud:flex hud:cursor-pointer hud:items-center hud:justify-between hud:rounded-hud-sm hud:px-[7px] hud:py-[3px] hud:text-left hud:font-hud hud:text-[12px]/[1.2] hud:font-semibold hud:transition-colors hud:duration-75 {isSelected
                 ? 'hud:bg-hud-accent hud:text-hud-on-accent'
-                : `hud:bg-white/[.045] hud:hover:bg-white/[.09] ${TONE_TEXT[option.tone]}`}"
+                : `hud:bg-hud-veil/[.045] hud:hover:bg-hud-veil/[.09] ${TONE_TEXT[option.tone]}`}"
               onclick={() => onposture(option.id)}
             >
               {option.label}
@@ -217,7 +215,7 @@
       title={t("portrait.move.title")}
     >
       <span
-        class="hud:font-hud-mono hud:text-[9px] hud:font-semibold hud:uppercase hud:text-hud-ink/55"
+        class="hud:font-hud-mono hud:text-[9px] hud:font-semibold hud:uppercase hud:text-hud-faint"
       >
         {t("portrait.move.label")}
       </span>
@@ -269,7 +267,7 @@
         kind="condition"
         class={idle
           ? enabled
-            ? "hud:text-hud-ink/40"
+            ? "hud:text-hud-faint"
             : "hud:text-hud-ink/20"
           : TONE_TEXT[view.condition.tone]}
       />

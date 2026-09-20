@@ -87,7 +87,7 @@
   ondragstart={dragStart}
   ondragend={dragEnd}
   onkeydown={keydown}
-  class="hud:flex hud:h-[14px] hud:w-[11px] hud:flex-none hud:cursor-grab hud:items-center hud:justify-center hud:text-hud-ink/25 hud:transition-colors hud:duration-75 hud:hover:text-hud-ink/60 hud:active:cursor-grabbing"
+  class="hud:flex hud:h-[14px] hud:w-[11px] hud:flex-none hud:cursor-grab hud:items-center hud:justify-center hud:text-hud-ink/25 hud:transition-colors hud:duration-75 hud:hover:text-hud-faint hud:active:cursor-grabbing"
 >
   <svg viewBox="0 0 12 12" width="9" height="9" fill="currentColor" aria-hidden="true">
     <circle cx="4" cy="2.5" r="1" />

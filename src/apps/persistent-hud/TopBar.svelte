@@ -74,13 +74,13 @@
    * panels a caret. Hover only recolours, so the bar never shifts under the cursor.
    */
   const TRIGGER =
-    "hud:group hud:flex hud:items-center hud:gap-[8px] hud:rounded-hud-sm hud:border hud:border-white/[.09] hud:bg-white/[.06] hud:px-[7px] hud:py-[4px] hud:transition-colors hud:duration-75";
+    "hud:group hud:flex hud:items-center hud:gap-[8px] hud:rounded-hud-sm hud:border hud:border-hud-veil/[.09] hud:bg-hud-veil/[.06] hud:px-[7px] hud:py-[4px] hud:transition-colors hud:duration-75";
   const TRIGGER_HOVER = "hud:hover:border-hud-accent hud:hover:bg-hud-accent";
   const LABEL =
-    "hud:font-hud-mono hud:text-[9px] hud:font-bold hud:tracking-[.12em] hud:text-hud-ink/60";
+    "hud:font-hud-mono hud:text-[9px] hud:font-bold hud:tracking-[.12em] hud:text-hud-faint";
   const LABEL_HOVER = "hud:group-hover:text-hud-on-accent";
-  const CARET = "hud:font-hud-mono hud:text-[9px] hud:font-bold hud:text-hud-ink/45";
-  const CARET_HOVER = "hud:group-hover:text-hud-on-accent/55";
+  const CARET = "hud:font-hud-mono hud:text-[9px] hud:font-bold hud:text-hud-faint";
+  const CARET_HOVER = "hud:group-hover:text-hud-on-accent/80";
 
   /*
    * Panels sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
@@ -93,12 +93,12 @@
    * carries the width, the cap and the scrolling. 400px is the mock's width under border-box.
    */
   const SKILLS_PANEL =
-    "hud:max-h-[280px] hud:w-[400px] hud:overflow-y-auto hud:[scrollbar-color:rgb(255_255_255/.18)_transparent] hud:[scrollbar-width:thin]";
+    "hud:max-h-[280px] hud:w-[400px] hud:overflow-y-auto hud:[scrollbar-color:var(--hud-color-hud-scroll)_transparent] hud:[scrollbar-width:thin]";
 </script>
 
 {#snippet trigger(label: string, title: string, active: boolean)}
   <div class="{TRIGGER} {active ? TRIGGER_HOVER : ''}" title={active ? title : undefined}>
-    <span class="{LABEL} {active ? LABEL_HOVER : 'hud:text-hud-ink/32'}">{label}</span>
+    <span class="{LABEL} {active ? LABEL_HOVER : 'hud:text-hud-faint'}">{label}</span>
     {#if active}
       <span class="{CARET} {CARET_HOVER}">▴</span>
     {/if}
@@ -136,7 +136,7 @@
     {/if}
   </div>
 
-  <div class="hud:mx-[2px] hud:h-[18px] hud:w-px hud:bg-white/[.09]"></div>
+  <div class="hud:mx-[2px] hud:h-[18px] hud:w-px hud:bg-hud-veil/[.09]"></div>
 
   <button
     type="button"
@@ -147,13 +147,13 @@
     disabled={!enabled}
     onclick={(event) => onroll("Dodge", event)}
   >
-    <span class="{LABEL} {enabled ? LABEL_HOVER : 'hud:text-hud-ink/32'}"
+    <span class="{LABEL} {enabled ? LABEL_HOVER : 'hud:text-hud-faint'}"
       >{t("topBar.dodge.label")}</span
     >
     <span
       class="hud:font-hud-mono hud:text-[13px]/none hud:font-bold {enabled
         ? 'hud:text-hud-defence hud:group-hover:text-hud-on-accent'
-        : 'hud:text-hud-ink/35'}"
+        : 'hud:text-hud-faint'}"
     >
       {view.dodge}
     </span>
@@ -170,13 +170,13 @@
       class="{TRIGGER} hud:min-w-[140px] {maneuverEnabled ? TRIGGER_HOVER : ''}"
       title={maneuverTitle}
     >
-      <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'hud:text-hud-ink/32'}">
+      <span class="{LABEL} {maneuverEnabled ? LABEL_HOVER : 'hud:text-hud-faint'}">
         {t("topBar.maneuver.label")}
       </span>
       <span
         class="hud:font-hud hud:text-[11.5px]/none hud:font-semibold hud:tracking-[.01em] hud:whitespace-nowrap {maneuverEnabled
           ? 'hud:text-hud-ink hud:group-hover:text-hud-on-accent'
-          : 'hud:text-hud-ink/35'}"
+          : 'hud:text-hud-faint'}"
       >
         {maneuver?.name ?? "—"}
       </span>
@@ -195,7 +195,7 @@
           {#if group.heading}
             <div
               data-hud-maneuver-heading={group.heading}
-              class="hud:col-span-2 hud:px-[8px] hud:pt-[6px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/30"
+              class="hud:col-span-2 hud:px-[8px] hud:pt-[6px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
             >
               {group.heading.toUpperCase()}
             </div>
@@ -207,7 +207,7 @@
               data-hud-maneuver={option.id}
               class="hud:flex hud:cursor-pointer hud:items-baseline hud:gap-[6px] hud:overflow-hidden hud:rounded-hud-sm hud:px-[7px] hud:py-[2px] hud:text-left hud:whitespace-nowrap hud:transition-colors hud:duration-75 {isSelected
                 ? 'hud:bg-hud-accent'
-                : 'hud:bg-white/[.045] hud:hover:bg-white/[.09]'}"
+                : 'hud:bg-hud-veil/[.045] hud:hover:bg-hud-veil/[.09]'}"
               onclick={() => onselect(option.id)}
             >
               <span
@@ -219,8 +219,8 @@
               </span>
               <span
                 class="hud:truncate hud:font-hud hud:text-[10px]/[1.45] hud:font-medium {isSelected
-                  ? 'hud:text-hud-on-accent/72'
-                  : 'hud:text-hud-ink/38'}"
+                  ? 'hud:text-hud-on-accent/80'
+                  : 'hud:text-hud-faint'}"
               >
                 {option.hint}
               </span>
@@ -239,19 +239,19 @@
     onmouseleave={onclose}
   >
     <div class="{TRIGGER} {targetView ? TRIGGER_HOVER : ''}" title={targetTitle}>
-      <span class="{LABEL} {targetView ? LABEL_HOVER : 'hud:text-hud-ink/32'}">
+      <span class="{LABEL} {targetView ? LABEL_HOVER : 'hud:text-hud-faint'}">
         {t("topBar.target.label")}
       </span>
       <span
         class="hud:font-hud hud:text-[11.5px]/none hud:font-semibold hud:tracking-[.01em] hud:whitespace-nowrap {targetView
           ? 'hud:text-hud-ink hud:group-hover:text-hud-on-accent'
-          : 'hud:text-hud-ink/35'}"
+          : 'hud:text-hud-faint'}"
       >
         {targetView ? target : "—"}
       </span>
       {#if targetRow && targetRow.penalty !== 0}
         <span
-          class="hud:font-hud-mono hud:text-[10.5px]/none hud:font-bold hud:text-hud-hp hud:group-hover:text-hud-on-accent/70"
+          class="hud:font-hud-mono hud:text-[10.5px]/none hud:font-bold hud:text-hud-hp hud:group-hover:text-hud-on-accent/80"
         >
           {targetRow.penalty}
         </span>
@@ -268,7 +268,7 @@
         class="hud:flex hud:w-[236px] hud:flex-col hud:p-[5px]"
       >
         <div
-          class="hud:flex hud:gap-[6px] hud:px-[7px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/30"
+          class="hud:flex hud:gap-[6px] hud:px-[7px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
         >
           <span class="hud:w-[36px]">{t("topBar.target.roll")}</span>
           <span class="hud:flex-1">{t("topBar.target.location")}</span>
@@ -281,13 +281,13 @@
             type="button"
             class="hud:flex hud:cursor-pointer hud:items-baseline hud:gap-[6px] hud:rounded-hud-sm hud:px-[7px] hud:py-[2px] hud:text-left hud:transition-colors hud:duration-75 {isSelected
               ? 'hud:bg-hud-accent hud:text-hud-on-accent'
-              : 'hud:hover:bg-white/[.08]'}"
+              : 'hud:hover:bg-hud-veil/[.08]'}"
             onclick={() => onselecttarget(location.where)}
           >
             <span
               class="hud:w-[36px] hud:font-hud-mono hud:text-[9.5px] hud:font-medium {isSelected
-                ? 'hud:text-hud-on-accent/70'
-                : 'hud:text-hud-ink/40'}">{location.roll || "—"}</span
+                ? 'hud:text-hud-on-accent/80'
+                : 'hud:text-hud-faint'}">{location.roll || "—"}</span
             >
             <span
               class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12px]/[1.3] hud:font-semibold {isSelected
@@ -298,18 +298,18 @@
               class="hud:w-[28px] hud:text-right hud:font-hud-mono hud:text-[11px] hud:font-bold {isSelected
                 ? ''
                 : location.penalty === 0
-                  ? 'hud:text-hud-ink/30'
+                  ? 'hud:text-hud-faint'
                   : 'hud:text-hud-hp'}">{penaltyText(location.penalty)}</span
             >
             <span
               class="hud:w-[22px] hud:text-right hud:font-hud-mono hud:text-[10.5px] hud:font-medium {isSelected
-                ? 'hud:text-hud-on-accent/70'
-                : 'hud:text-hud-ink/50'}">{location.dr || "—"}</span
+                ? 'hud:text-hud-on-accent/80'
+                : 'hud:text-hud-faint'}">{location.dr || "—"}</span
             >
           </button>
         {:else}
           <div
-            class="hud:px-[7px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-ink/30"
+            class="hud:px-[7px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-faint"
           >
             {t("topBar.target.empty", { name: targetView.name })}
           </div>

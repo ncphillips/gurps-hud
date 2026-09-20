@@ -38,8 +38,8 @@
   } = $props();
 
   const HEADER =
-    "hud:flex hud:gap-[7px] hud:px-[7px] hud:pb-px hud:font-hud-mono hud:text-[8px]/[1.4] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/30";
-  const READOUT = "hud:font-hud-mono hud:text-[10.5px] hud:font-medium hud:text-hud-ink/50";
+    "hud:flex hud:gap-[7px] hud:px-[7px] hud:pb-px hud:font-hud-mono hud:text-[8px]/[1.4] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint";
+  const READOUT = "hud:font-hud-mono hud:text-[10.5px] hud:font-medium hud:text-hud-faint";
 
   /** Keeps the header's columns over the rows', now that every row leads with a grip. */
   const GRIP = "hud:w-[11px] hud:flex-none";
@@ -54,7 +54,7 @@
    */
   function rowClass(equipped: boolean, dropTarget: boolean): string {
     const base =
-      "hud:flex hud:items-center hud:gap-[7px] hud:rounded-hud-sm hud:border hud:px-[7px] hud:py-0 hud:transition-colors hud:duration-75 hud:hover:border-hud-accent/55 hud:hover:bg-white/[.045]";
+      "hud:flex hud:items-center hud:gap-[7px] hud:rounded-hud-sm hud:border hud:px-[7px] hud:py-0 hud:transition-colors hud:duration-75 hud:hover:border-hud-accent/55 hud:hover:bg-hud-veil/[.045]";
     const rest = equipped
       ? `${base} hud:border-hud-accent/28 hud:bg-hud-accent/9`
       : `${base} hud:border-transparent hud:bg-transparent`;
@@ -136,7 +136,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   data-hud-attacks
-  class="hud:flex hud:min-h-0 hud:flex-1 hud:flex-col hud:gap-px hud:overflow-y-auto hud:px-[3px] hud:pb-[3px] hud:[scrollbar-color:rgb(255_255_255/.18)_transparent] hud:[scrollbar-width:thin]"
+  class="hud:flex hud:min-h-0 hud:flex-1 hud:flex-col hud:gap-px hud:overflow-y-auto hud:px-[3px] hud:pb-[3px] hud:[scrollbar-color:var(--hud-color-hud-scroll)_transparent] hud:[scrollbar-width:thin]"
   ondragover={(event) => event.preventDefault()}
   ondragenter={enterTables}
   ondragleave={leaveTables}
@@ -272,7 +272,7 @@
   -->
   {#if view.melee.length === 0 && view.ranged.length === 0}
     <div
-      class="hud:flex hud:items-center hud:gap-[7px] hud:px-[7px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-ink/30"
+      class="hud:flex hud:items-center hud:gap-[7px] hud:px-[7px] hud:py-[2px] hud:font-hud hud:text-[12px] hud:font-medium hud:text-hud-faint"
     >
       {#if !enabled}
         {t("weapons.noActor")}
@@ -283,7 +283,7 @@
         <button
           type="button"
           data-hud-pick-all
-          class="hud:cursor-pointer hud:rounded-hud-sm hud:border hud:border-white/[.18] hud:bg-white/[.05] hud:px-[7px] hud:py-px hud:font-hud hud:text-[12px] hud:font-semibold hud:text-hud-ink/70 hud:transition-colors hud:duration-75 hud:hover:border-hud-accent hud:hover:bg-hud-accent hud:hover:text-hud-on-accent"
+          class="hud:cursor-pointer hud:rounded-hud-sm hud:border hud:border-hud-veil/[.18] hud:bg-hud-veil/[.05] hud:px-[7px] hud:py-px hud:font-hud hud:text-[12px] hud:font-semibold hud:text-hud-ink/70 hud:transition-colors hud:duration-75 hud:hover:border-hud-accent hud:hover:bg-hud-accent hud:hover:text-hud-on-accent"
           onclick={onpickall}
         >
           {t("weapons.pickAll")}

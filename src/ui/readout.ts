@@ -4,7 +4,7 @@
  * width and one baseline across that swap, or editing a pool nudges everything beside it.
  */
 export const READOUT =
-  "hud:flex-1 hud:rounded-hud-xs hud:bg-white/[.07] hud:px-[4px] hud:py-px hud:text-right hud:font-hud-mono hud:font-bold";
+  "hud:flex-1 hud:rounded-hud-xs hud:bg-hud-veil/[.07] hud:px-[4px] hud:py-px hud:text-right hud:font-hud-mono hud:font-bold";
 
 /**
  * Kept apart from `READOUT` so a box can pick one: a condition like "Reeling" has to drop to `sm`

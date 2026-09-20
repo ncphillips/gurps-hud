@@ -44,6 +44,14 @@ Test world: **Dungeon Crawler World** (`gurps` system).
   prose in a comment) into a global class, and `.collapse` alone hid Foundry's own sidebar toggle.
   Theme variables are declared bare in `@theme` but emitted prefixed, so read them back as
   `var(--hud-color-hud-panel)`.
+- No component names a colour. The palette is the `@theme` block's tokens, which `gurps-hud.css`
+  re-declares under `[data-hud-theme="light"]`, so light mode is one block rather than a `dark:`
+  variant on every class. Raised surfaces and hairlines are alphas of `hud-veil` — the token that
+  was `white` while the HUD was dark-only — and the theme turns that whole ladder over at once.
+  `applyHudTheme` in `src/settings.ts` is what resolves the reader's choice, `system` included, and
+  writes the attribute. Quiet text is `hud-faint`, one rung pinned to the WCAG AA floor with a
+  different alpha per theme — never a new `text-hud-ink/NN` beneath it, which the contrast scan in
+  `e2e/persistent-hud.a11y.test.ts` will catch.
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
   into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
   Tailwind utility on the same element.

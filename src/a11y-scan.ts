@@ -9,9 +9,11 @@ import axe, { type ElementContext, type RunOptions } from "axe-core";
  * both ways: a new violation fails the scan, and so does fixing a listed one, so the list cannot
  * quietly rot.
  *
- * Contrast is off by default and tracked on its own. It fails in ~40 places across the strip,
- * nearly all of them the design's deliberately dim secondary text, so folding it in would leave
- * every other rule unguarded behind one permanently red test.
+ * Contrast is off by default and scanned elsewhere: `e2e/persistent-hud.a11y.test.ts` sweeps the
+ * assembled strip in both palettes and reports what fails as colour pairs rather than selectors.
+ * That is the right altitude for it -- one ink drawn too faint fails in dozens of cells, and it is
+ * the same decision about the palette in every one of them -- and it keeps each list here about
+ * markup. Both palettes pass, so those lists are empty.
  */
 export async function axeViolations(
   element: ElementContext,

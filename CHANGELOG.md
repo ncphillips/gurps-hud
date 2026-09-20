@@ -7,6 +7,29 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## [Unreleased]
+
+### Added
+
+- **Light mode.** The HUD was drawn dark and could only be read dark, which is a poor deal for
+  anyone playing in a bright room or running the rest of Foundry light. **HUD theme** in the module
+  settings draws it dark, light, or whatever your desktop is set to, and takes effect the moment you
+  pick one — no reload, and it follows the desktop as that changes. It is per-player, like the size,
+  because which one reads well is a fact about your room rather than about the world. Dark stays the
+  default, so nothing changes for anyone who does not go looking.
+
+### Changed
+
+- **The strip's quiet text is readable.** Column headings, maneuver hints and the muted half of a
+  pool were drawn faint enough to fail WCAG AA — in places at 1.9:1 against a 4.5:1 requirement — and
+  at 8px that is the difference between quiet and unreadable. They are now one ink held at the AA
+  floor, with its own strength in each palette, since a faint ink over a light ground loses far more
+  contrast than the same ink over a dark one. The hierarchy between a heading and a value is carried
+  by size and weight, which it mostly already was.
+- The accessibility suite measures colour contrast in both palettes rather than leaving it
+  unmeasured, and both pass — so a colour that reads too faint to meet AA now fails a test instead of
+  shipping.
+
 ## [0.4.0]
 
 The strip is drawn at the size the screen wants, and a drag on the weapon tables does what the

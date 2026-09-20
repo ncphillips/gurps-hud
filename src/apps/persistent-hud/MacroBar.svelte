@@ -99,15 +99,15 @@
    * same hierarchy -- 50px macros, arrows a fraction of that. `items-center` on the row centres them.
    */
   const CONTROL =
-    "hud:flex hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:items-center hud:justify-center hud:rounded-hud-sm hud:border hud:border-transparent hud:bg-white/[.05] hud:text-hud-ink/45 hud:transition-colors hud:duration-75 hud:hover:border-white/[.18] hud:hover:bg-white/[.1] hud:hover:text-hud-ink";
+    "hud:flex hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:items-center hud:justify-center hud:rounded-hud-sm hud:border hud:border-transparent hud:bg-hud-veil/[.05] hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.1] hud:hover:text-hud-ink";
 </script>
 
 <div
   bind:this={footer}
-  class="hud:relative hud:flex hud:items-center hud:gap-[6px] hud:rounded-br-hud hud:border-t hud:border-white/[.08] hud:bg-hud-deep hud:px-[11px] hud:py-[6px]"
+  class="hud:relative hud:flex hud:items-center hud:gap-[6px] hud:rounded-br-hud hud:border-t hud:border-hud-veil/[.08] hud:bg-hud-deep hud:px-[11px] hud:py-[6px]"
 >
   <span
-    class="hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-ink/32"
+    class="hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
     title={t("macros.hint")}
   >
     {t("macros.label")}
@@ -141,7 +141,7 @@
 
     <span
       data-hud-macro-page
-      class="hud:w-[13px] hud:text-center hud:font-hud-mono hud:text-[11px] hud:font-bold hud:text-hud-ink/60"
+      class="hud:w-[13px] hud:text-center hud:font-hud-mono hud:text-[11px] hud:font-bold hud:text-hud-faint"
       title={t("macros.page", { page, total: pages.length })}
     >
       {page}
@@ -158,7 +158,7 @@
     type="button"
     class={[
       CONTROL,
-      expanded ? "hud:border-white/[.18] hud:bg-white/[.08] hud:text-hud-accent" : "",
+      expanded ? "hud:border-hud-veil/[.18] hud:bg-hud-veil/[.08] hud:text-hud-accent" : "",
     ]}
     title={expanded ? t("macros.hide") : t("macros.show")}
     aria-expanded={expanded}

@@ -24,7 +24,7 @@
   const VARIANTS = {
     accent: "hud:text-hud-accent hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",
     defence: "hud:text-hud-defence hud:hover:bg-hud-defence hud:hover:text-hud-on-accent",
-    damage: "hud:text-hud-ink/62 hud:hover:bg-hud-ink hud:hover:text-hud-on-accent",
+    damage: "hud:text-hud-faint hud:hover:bg-hud-ink hud:hover:text-hud-on-accent",
   } as const;
 </script>
 

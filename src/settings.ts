@@ -1,13 +1,11 @@
 import { t } from "./i18n";
 
 /**
- * The HUD's own settings.
+ * The HUD's own settings: how big the strip is drawn, and which palette it is drawn in.
  *
- * There is one: how big the strip is. Everything in it is laid out in fixed pixels against
- * `design-handoff/`, which was drawn for a 1280x713 canvas, so on a 2560-wide one the same strip is
- * a quarter of the screen and the 8px labels are unreadable. Rather than give every box a second
- * set of measurements, the whole strip is scaled -- one transform, the mock's proportions kept
- * exactly -- and this is the multiplier.
+ * Both are published to the stylesheet rather than threaded through the components, because both
+ * are read in more places than the strip -- the size by the padding that lifts Foundry's player
+ * list clear of it, the palette by every colour in `gurps-hud.css`.
  */
 
 const MODULE = "gurps-hud";
@@ -15,8 +13,14 @@ const MODULE = "gurps-hud";
 /** The setting key, so `game.settings.get(MODULE, SIZE_SETTING)` and the registration agree. */
 export const SIZE_SETTING = "size";
 
+/** The setting key, so `game.settings.get(MODULE, THEME_SETTING)` and the registration agree. */
+export const THEME_SETTING = "theme";
+
 /** The custom property `gurps-hud.css` multiplies the UI scale by. */
 const SCALE_VAR = "--gurps-hud-scale";
+
+/** The attribute `gurps-hud.css` hangs the light palette off. */
+const THEME_ATTR = "data-hud-theme";
 
 /**
  * What each size scales the strip by.
@@ -62,6 +66,72 @@ export function applyHudSize(size: unknown): void {
   document.documentElement.style.setProperty(SCALE_VAR, String(hudScale(size)));
 }
 
+/**
+ * The palettes, in the order the setting offers them.
+ *
+ * `system` is not a palette: it is a deferral to `prefers-color-scheme`, resolved here so the
+ * stylesheet only ever has the two to write. Dark is first because dark is what the strip was drawn
+ * in -- `design-handoff/` is a dark mock, and every colour in `@theme` is its colour.
+ */
+export const HUD_THEMES = ["dark", "light", "system"] as const;
+
+export type HudTheme = (typeof HUD_THEMES)[number];
+
+/** The two the stylesheet knows about, `system` having been asked and answered. */
+export type ResolvedTheme = Exclude<HudTheme, "system">;
+
+function isHudTheme(theme: unknown): theme is HudTheme {
+  return typeof theme === "string" && (HUD_THEMES as readonly string[]).includes(theme);
+}
+
+/**
+ * Which palette a choice comes out as. Anything the catalogue does not name reads as dark, and so
+ * does a `system` nobody can answer: dark is the strip as designed, so it is what every unknown
+ * falls back to rather than a light strip appearing unasked.
+ */
+export function resolveHudTheme(theme: unknown): ResolvedTheme {
+  if (theme === "light" || theme === "dark") return theme;
+
+  return globalThis.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
+/**
+ * What the reader last asked for, as opposed to what that resolved to. Kept because `system` has to
+ * be re-resolved whenever the desktop changes its mind, and by then the setting is out of reach in
+ * the harness.
+ */
+let chosenTheme: HudTheme = "dark";
+
+/**
+ * Publishes the palette as an attribute on the document, beside the size's custom property and for
+ * the same reason: the strip is not the only thing drawn in it. Popovers are portalled, and the
+ * stylesheet's own Foundry overrides sit outside the HUD element entirely.
+ */
+export function applyHudTheme(theme: unknown): void {
+  chosenTheme = isHudTheme(theme) ? theme : "dark";
+  document.documentElement.setAttribute(THEME_ATTR, resolveHudTheme(chosenTheme));
+  watchColorScheme();
+}
+
+let colorSchemeQuery: MediaQueryList | null = null;
+
+/** Re-reads `chosenTheme`, so under light or dark a desktop that changes its mind changes nothing. */
+const onColorSchemeChange = () => applyHudTheme(chosenTheme);
+
+/**
+ * Follows the desktop for as long as the reader leaves the setting on `system`. A browser hands
+ * back the same `MediaQueryList` for a given query every time, so this settles on one listener for
+ * the life of the page rather than one per theme change.
+ */
+function watchColorScheme(): void {
+  const query = globalThis.matchMedia?.("(prefers-color-scheme: light)") ?? null;
+  if (query === colorSchemeQuery) return;
+
+  colorSchemeQuery?.removeEventListener("change", onColorSchemeChange);
+  colorSchemeQuery = query;
+  query?.addEventListener("change", onColorSchemeChange);
+}
+
 export function registerSettings(): void {
   game.settings!.register(MODULE, SIZE_SETTING, {
     name: t("settings.size.name"),
@@ -77,9 +147,29 @@ export function registerSettings(): void {
     default: "medium",
     onChange: (size) => applyHudSize(size),
   });
+
+  game.settings!.register(MODULE, THEME_SETTING, {
+    name: t("settings.theme.name"),
+    hint: t("settings.theme.hint"),
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      dark: t("settings.theme.dark"),
+      light: t("settings.theme.light"),
+      system: t("settings.theme.system"),
+    },
+    default: "dark",
+    onChange: (theme) => applyHudTheme(theme),
+  });
 }
 
 export function currentHudSize(): HudSize {
   const size = game.settings?.get(MODULE, SIZE_SETTING);
   return isHudSize(size) ? size : "medium";
+}
+
+export function currentHudTheme(): HudTheme {
+  const theme = game.settings?.get(MODULE, THEME_SETTING);
+  return isHudTheme(theme) ? theme : "dark";
 }

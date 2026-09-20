@@ -134,8 +134,8 @@
     }}
     class={[
       SIZE,
-      "hud:cursor-pointer hud:overflow-hidden hud:rounded-hud-sm hud:text-center hud:font-hud-mono hud:text-[12px]/[32px] hud:font-semibold hud:text-hud-ink/50 hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",
-      drag.over === slot.slot ? "hud:bg-hud-accent" : "hud:bg-white/[.07]",
+      "hud:cursor-pointer hud:overflow-hidden hud:rounded-hud-sm hud:text-center hud:font-hud-mono hud:text-[12px]/[32px] hud:font-semibold hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",
+      drag.over === slot.slot ? "hud:bg-hud-accent" : "hud:bg-hud-veil/[.07]",
     ]}
     onclick={() => onexecute(slot.slot)}
   >
@@ -150,8 +150,8 @@
   <div
     class={[
       SIZE,
-      "hud:rounded-hud-sm hud:border hud:border-dashed hud:bg-white/[.04]",
-      drag.over === slot.slot ? "hud:border-hud-accent" : "hud:border-white/[.12]",
+      "hud:rounded-hud-sm hud:border hud:border-dashed hud:bg-hud-veil/[.04]",
+      drag.over === slot.slot ? "hud:border-hud-accent" : "hud:border-hud-veil/[.12]",
     ]}
     title={t("macros.emptySlot", { hotkey: slot.hotkey })}
     data-hud-macro-slot={slot.slot}

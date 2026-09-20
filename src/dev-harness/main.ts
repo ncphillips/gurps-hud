@@ -20,6 +20,8 @@
  *   ?set_macro_page=3              which hotbar page the number keys address
  *   ?delay_writes=true             makes writing to an actor take a round trip, as a world does
  *   ?hud_size=small|large          draws the strip at that size, as the setting does
+ *   ?hud_theme=light|dark|system   draws the strip in that palette, as the setting does; `system`
+ *                                  follows the desktop, so a spec asks for a palette by name
  *   ?show_bucket=true              puts a stand-in modifier bucket beside the strip, as the Game
  *                                  Aid's is adopted into the HUD in a world
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
@@ -29,7 +31,7 @@ import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
-import { applyHudSize } from "@/settings";
+import { applyHudSize, applyHudTheme, resolveHudTheme } from "@/settings";
 import { CAST, TOKENS, castMember } from "./cast";
 import type { HarnessActor } from "./cast";
 import { fire, hooksStub } from "./hooks";
@@ -62,9 +64,11 @@ const selectedActor = params.has("selected_actor")
   : CAST.brent;
 const targetActor = castMember(params.get("target_actor"));
 
-// A world reads this off the client's setting; the harness reads it off the URL. Same custom
-// property either way, so the strip scales here exactly as it does in Foundry.
+// A world reads these off the client's settings; the harness reads them off the URL. Same custom
+// property and same attribute either way, so the strip scales -- and is coloured -- here exactly as
+// it is in Foundry.
 applyHudSize(params.get("hud_size"));
+applyHudTheme(params.get("hud_theme"));
 
 /*
  * An actor starts with no attacks picked, but the design mock is drawn with Brent's weapon tables
@@ -182,11 +186,20 @@ Object.assign(globalThis, {
   },
 });
 
-// The mock's canvas-mode backdrop, so screenshots line up with design-handoff/.
+/*
+ * The mock's canvas-mode backdrop, so screenshots line up with design-handoff/. It follows the
+ * theme because the strip is read against it: a light strip on the dark mock's ground says nothing
+ * about whether light mode works.
+ */
+const CANVAS = {
+  dark: { ground: "#1b1c20", grid: "rgba(255,255,255,.022)" },
+  light: { ground: "#cfcabd", grid: "rgba(0,0,0,.035)" },
+}[resolveHudTheme(params.get("hud_theme"))];
+
 document.body.style.cssText =
   "margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;" +
-  "background:#1b1c20;background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px)," +
-  "linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:46px 46px;padding:26px 20px 20px";
+  `background:${CANVAS.ground};background-image:linear-gradient(${CANVAS.grid} 1px,transparent 1px),` +
+  `linear-gradient(90deg,${CANVAS.grid} 1px,transparent 1px);background-size:46px 46px;padding:26px 20px 20px`;
 
 const host = document.createElement("div");
 host.id = "gurps-hud-persistent";

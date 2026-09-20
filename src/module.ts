@@ -2,7 +2,13 @@ import "./styles/gurps-hud.css";
 import { log } from "./log";
 import { t } from "./i18n";
 import { PersistentHudApp } from "./apps/persistent-hud/PersistentHudApp";
-import { applyHudSize, currentHudSize, registerSettings } from "./settings";
+import {
+  applyHudSize,
+  applyHudTheme,
+  currentHudSize,
+  currentHudTheme,
+  registerSettings,
+} from "./settings";
 
 const { MODIFIER_KEYS } = foundry.helpers.interaction.KeyboardManager;
 
@@ -28,5 +34,6 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   applyHudSize(currentHudSize());
+  applyHudTheme(currentHudTheme());
   void persistentHud?.render({ force: true });
 });
