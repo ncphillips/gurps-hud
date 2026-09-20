@@ -1,14 +1,10 @@
 import { render } from "@testing-library/svelte";
 import { describe, expect, it, vi } from "vitest";
-import { axeViolations } from "@/a11y-scan";
 import AttrsPanel from "./AttrsPanel.svelte";
 import { fixtureView } from "./hud-fixture";
 
-/** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS: string[] = [];
-
 describe("AttrsPanel accessibility", () => {
-  it("has no violations", async () => {
+  it("is accessible", async () => {
     const view = fixtureView();
     const { container } = render(AttrsPanel, {
       basic: view.attrs.basic,
@@ -16,6 +12,6 @@ describe("AttrsPanel accessibility", () => {
       onroll: vi.fn(),
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS);
+    await expect(container).toBeAccessible();
   });
 });

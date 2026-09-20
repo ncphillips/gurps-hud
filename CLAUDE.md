@@ -70,8 +70,8 @@ them for the specs.
   algebra over that list; a pick is the Game Aid's own key path (`system.melee.00000`), which is at
   once the drag payload the character sheet hands out, the row key `hud-view` builds, and what the
   `gurps-hud.attacks` actor flag stores. Keep those three spellings identical.
-- `*.a11y.test.ts` scans assert an exact `EXCEPTIONS` list, so fixing a listed violation fails the
-  scan too. See the `hud-a11y-tests` skill before touching them.
+- `*.a11y.test.ts` scans assert with `toBeAccessible`, whose `except` list is exact, so fixing a
+  listed violation fails the scan too. See the `hud-a11y-tests` skill before touching them.
 - Assertions only a browser can answer belong in `e2e/`, driving the harness rather than a live
   world — see `e2e/CLAUDE.md`.
 - The HUD renders under `border-box`, so a fixed pixel width includes its own padding and borders.

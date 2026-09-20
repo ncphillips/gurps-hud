@@ -1,22 +1,10 @@
 import { render } from "@testing-library/svelte";
 import { describe, expect, it, test, vi } from "vitest";
-import { axeViolations } from "@/a11y-scan";
 import { maneuverById } from "@/gurps/maneuvers";
 import { emptyHudView } from "@/gurps/hud-view";
 import { fixtureTargetView, fixtureView } from "./hud-fixture";
 import TopBar from "./TopBar.svelte";
 import type { Panel } from "./panels";
-
-/** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS = {
-  closed: [] as string[],
-  attrs: [] as string[],
-  skills: [] as string[],
-  maneuver: [] as string[],
-  target: [] as string[],
-  untargeted: [] as string[],
-  nothingSelected: [] as string[],
-};
 
 function props(openPanel: Panel | null = null) {
   return {
@@ -36,40 +24,40 @@ function props(openPanel: Panel | null = null) {
 }
 
 describe("TopBar accessibility", () => {
-  it("has no violations with every panel closed", async () => {
+  it("is accessible with every panel closed", async () => {
     const { container } = render(TopBar, { props: props() });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.closed);
+    await expect(container).toBeAccessible();
   });
 
   test("the attributes panel open", async () => {
     const { container } = render(TopBar, { props: props("attrs") });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.attrs);
+    await expect(container).toBeAccessible();
   });
 
   test("the skills panel open", async () => {
     const { container } = render(TopBar, { props: props("skills") });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.skills);
+    await expect(container).toBeAccessible();
   });
 
   test("the maneuver panel open", async () => {
     const { container } = render(TopBar, { props: props("maneuver") });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.maneuver);
+    await expect(container).toBeAccessible();
   });
 
   test("the target's hit locations open", async () => {
     const { container } = render(TopBar, { props: props("target") });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.target);
+    await expect(container).toBeAccessible();
   });
 
   test("no token targeted, so the target pill is inert", async () => {
     const { container } = render(TopBar, { props: { ...props(), targetView: null } });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.untargeted);
+    await expect(container).toBeAccessible();
   });
 
   test("nothing selected", async () => {
@@ -77,6 +65,6 @@ describe("TopBar accessibility", () => {
       props: { ...props(), view: emptyHudView(), enabled: false, maneuverEnabled: false },
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
+    await expect(container).toBeAccessible();
   });
 });

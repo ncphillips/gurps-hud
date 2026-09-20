@@ -1,50 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { test, type Page } from "@playwright/test";
+import { expect } from "./a11y";
 import { openHarness, type HarnessParams } from "./harness";
 
-/*
- * The HUD renders inside Foundry's own page, so a scan of the whole document would report on
- * Foundry's markup as much as ours. Every scan is anchored to the strip instead.
- */
 const STRIP = "#gurps-hud-persistent";
-
-/*
- * Known violations of the strip as a whole, i.e. its accessibility to-do list. Each scan asserts
- * the exact list, so a new violation fails and so does fixing a listed one -- the list cannot
- * quietly rot. The per-component lists live beside the components, in `*.a11y.test.ts`.
- *
- * Contrast is excluded here and scanned on its own below, per palette rather than per selector --
- * the same failing ink shows up in dozens of cells, and it is one decision about the palette in
- * every one of them.
- */
-const EXCEPTIONS = {
-  rest: [] as string[],
-  attrs: [] as string[],
-  skills: [] as string[],
-  maneuver: [] as string[],
-  target: [] as string[],
-  posture: [] as string[],
-  actor: [] as string[],
-  // The pool box turns into a bare <input> with nothing naming it. Tracked against the component
-  // in PoolField.a11y.test.ts, which is where the fix goes.
-  editing: ["label: input"],
-  macros: [] as string[],
-  nothingPicked: [] as string[],
-  nothingSelected: [] as string[],
-};
-
-/** One line per violation -- `rule: selector` -- the same shape the component scans assert on. */
-async function stripViolations(page: Page): Promise<string[]> {
-  const { violations } = await new AxeBuilder({ page })
-    .include(STRIP)
-    .disableRules(["color-contrast"])
-    .analyze();
-
-  return violations.map(
-    (violation) =>
-      `${violation.id}: ${violation.nodes.map((node) => node.target.join(" ")).join(", ")}`,
-  );
-}
 
 /**
  * One line per colour pair that failed, deduplicated -- a contrast failure is a fact about two
@@ -88,79 +47,76 @@ test.describe("persistent HUD accessibility", () => {
   test("the strip at rest", async ({ page }) => {
     await openHarness(page);
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.rest);
+    await expect(page).toBeAccessible();
   });
 
   test("the attributes panel open", async ({ page }) => {
     await openHarness(page, { hover_panel: "attrs" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.attrs);
+    await expect(page).toBeAccessible();
   });
 
   test("the skills panel open", async ({ page }) => {
     await openHarness(page, { hover_panel: "skills" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.skills);
+    await expect(page).toBeAccessible();
   });
 
   test("the maneuver panel open", async ({ page }) => {
     await openHarness(page, { set_maneuver: "attack", hover_panel: "maneuver" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.maneuver);
+    await expect(page).toBeAccessible();
   });
 
   test("the targeted token's hit locations open", async ({ page }) => {
     await openHarness(page, { target_actor: "goblin", hover_panel: "target" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.target);
+    await expect(page).toBeAccessible();
   });
 
   test("the posture menu open", async ({ page }) => {
     await openHarness(page, { hover_panel: "posture" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.posture);
+    await expect(page).toBeAccessible();
   });
 
   test("the character switcher open", async ({ page }) => {
     await openHarness(page, { hover_panel: "actor" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.actor);
+    await expect(page).toBeAccessible();
   });
 
   test("a pool open for editing", async ({ page }) => {
     await openHarness(page, { edit_pool: "hp" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.editing);
+    // The pool box turns into a bare <input> with nothing naming it. Tracked against the
+    // component in PoolField.a11y.test.ts, which is where the fix goes.
+    await expect(page).toBeAccessible({ except: ["label: input"] });
   });
 
   test("the macro library expanded", async ({ page }) => {
     await openHarness(page, { expand_macros: true });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.macros);
+    await expect(page).toBeAccessible();
   });
 
   test("an actor whose attacks have not been picked yet", async ({ page }) => {
     await openHarness(page, { pick_attacks: "none" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.nothingPicked);
+    await expect(page).toBeAccessible();
   });
 
   test("nothing selected", async ({ page }) => {
     await openHarness(page, { selected_actor: "" });
 
-    expect(await stripViolations(page)).toEqual(EXCEPTIONS.nothingSelected);
+    await expect(page).toBeAccessible();
   });
 
   /*
-   * Contrast, once per palette.
-   *
-   * Light mode is why this is a scan rather than the `fixme` it used to be: a second palette that
-   * nobody measures is a second palette that quietly reads worse than the first. Both pass.
-   *
-   * A violation is recorded as the colour pair that caused it rather than the element that carried
-   * it -- `#555556 on #16171b: 2.40:1, needs 4.5:1` -- and the sweep unions every state, because a
-   * dim ink is one decision about the palette however many cells it is read in. That keeps a
-   * failure something a designer can act on, and keeps it from churning every time a cell moves.
+   * Contrast, once per palette: a palette nobody measures is one that quietly reads worse than the
+   * other. The sweep unions every state, because a dim ink is one decision about the palette
+   * however many cells it is read in -- which keeps the failure something a designer can act on,
+   * and keeps it from churning every time a cell moves.
    */
   const STATES: HarnessParams[] = [
     {},

@@ -1,19 +1,11 @@
 import { render } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
 import { describe, expect, it, test, vi } from "vitest";
-import { axeViolations } from "@/a11y-scan";
 import { noPicks } from "@/gurps/attack-picks";
 import { emptyHudView } from "@/gurps/hud-view";
 import { attackDrag } from "./attack-drag";
 import { fixtureView } from "./hud-fixture";
 import WeaponTables from "./WeaponTables.svelte";
-
-/** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS = {
-  rows: [] as string[],
-  nothingPicked: [] as string[],
-  nothingSelected: [] as string[],
-};
 
 function props(
   overrides: Partial<ComponentProps<typeof WeaponTables>> = {},
@@ -33,16 +25,16 @@ function props(
 }
 
 describe("WeaponTables accessibility", () => {
-  it("has no violations", async () => {
+  it("is accessible", async () => {
     const { container } = render(WeaponTables, props());
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.rows);
+    await expect(container).toBeAccessible();
   });
 
   test("an actor whose attacks have not been picked yet", async () => {
     const { container } = render(WeaponTables, props({ view: fixtureView(noPicks()) }));
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingPicked);
+    await expect(container).toBeAccessible();
   });
 
   test("nothing selected", async () => {
@@ -51,6 +43,6 @@ describe("WeaponTables accessibility", () => {
       props({ view: emptyHudView(), enabled: false, actorId: null }),
     );
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
+    await expect(container).toBeAccessible();
   });
 });

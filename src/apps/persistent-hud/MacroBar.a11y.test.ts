@@ -1,14 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import { describe, expect, it, test, vi } from "vitest";
-import { axeViolations } from "@/a11y-scan";
 import type { MacroPage, MacroSlot } from "@/gurps/game-aid";
 import MacroBar from "./MacroBar.svelte";
-
-/** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS = {
-  bar: [] as string[],
-  library: [] as string[],
-};
 
 function filled(slot: number, name: string): MacroSlot {
   return { slot, hotkey: String(slot % 10), name, img: null, uuid: `Macro.${name}` };
@@ -41,16 +34,16 @@ function props() {
 }
 
 describe("MacroBar accessibility", () => {
-  it("has no violations as the collapsed bar", async () => {
+  it("is accessible as the collapsed bar", async () => {
     const { container } = render(MacroBar, props());
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.bar);
+    await expect(container).toBeAccessible();
   });
 
   test("expanded to the full macro library", async () => {
     const { container } = render(MacroBar, props());
     await fireEvent.click(screen.getByTitle("Show all macros"));
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.library);
+    await expect(container).toBeAccessible();
   });
 });

@@ -1,19 +1,9 @@
 import { render } from "@testing-library/svelte";
 import { describe, expect, it, test, vi } from "vitest";
-import { axeViolations } from "@/a11y-scan";
 import { emptyHudView } from "@/gurps/hud-view";
 import { fixtureActor, fixtureView } from "./hud-fixture";
 import PortraitBlock from "./PortraitBlock.svelte";
 import type { Panel } from "./panels";
-
-/** Known violations, i.e. this component's accessibility to-do list. */
-const EXCEPTIONS = {
-  closed: [] as string[],
-  switcher: [] as string[],
-  posture: [] as string[],
-  locked: [] as string[],
-  nothingSelected: [] as string[],
-};
 
 function props(openPanel: Panel | null = null) {
   const actor = fixtureActor();
@@ -40,28 +30,28 @@ function props(openPanel: Panel | null = null) {
 }
 
 describe("PortraitBlock accessibility", () => {
-  it("has no violations with every menu closed", async () => {
+  it("is accessible with every menu closed", async () => {
     const { container } = render(PortraitBlock, props());
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.closed);
+    await expect(container).toBeAccessible();
   });
 
   test("the character switcher open", async () => {
     const { container } = render(PortraitBlock, props("actor"));
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.switcher);
+    await expect(container).toBeAccessible();
   });
 
   test("the posture menu open", async () => {
     const { container } = render(PortraitBlock, props("posture"));
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.posture);
+    await expect(container).toBeAccessible();
   });
 
   test("locked to its character", async () => {
     const { container } = render(PortraitBlock, { ...props(), locked: true });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.locked);
+    await expect(container).toBeAccessible();
   });
 
   test("nothing selected", async () => {
@@ -72,6 +62,6 @@ describe("PortraitBlock accessibility", () => {
       actor: null,
     });
 
-    expect(await axeViolations(container)).toEqual(EXCEPTIONS.nothingSelected);
+    await expect(container).toBeAccessible();
   });
 });

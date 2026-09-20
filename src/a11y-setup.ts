@@ -1,7 +1,9 @@
 import { cleanup } from "@testing-library/svelte";
-import { afterEach } from "vitest";
+import axe, { type ElementContext } from "axe-core";
+import { afterEach, expect } from "vitest";
 
 import { foundryI18n } from "@/i18n/stub";
+import { compareViolations, violationLines } from "@/testing/a11y";
 
 // The real stylesheet, because axe reads computed styles: without it every colour, every
 // `truncate` and every `hidden` the rules care about is missing.
@@ -19,3 +21,25 @@ document.body.style.background = "var(--hud-color-hud-panel)";
 // Components localize through Foundry, which is not here. The stub reads the catalogue that ships,
 // so a key missing from `lang/en.json` fails the test rather than the world.
 (globalThis as { game?: unknown }).game = { i18n: foundryI18n() };
+
+/**
+ * `await expect(element).toBeAccessible()`, and `{ except: [...] }` for the violations it is known
+ * to have. `e2e/a11y.ts` extends Playwright's `expect` with the same matcher over a page.
+ */
+expect.extend({
+  async toBeAccessible(received: ElementContext, options: { except?: string[] } = {}) {
+    const { violations } = await axe.run(received);
+    const { pass, message } = compareViolations(violationLines(violations), options.except ?? []);
+
+    return { pass, message: () => message };
+  },
+});
+
+// `any` rather than `unknown` because the augmented interface has to match Vitest's own
+// declaration of it exactly.
+declare module "vitest" {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  interface Matchers<T = any> {
+    toBeAccessible(options?: { except?: string[] }): Promise<T>;
+  }
+}
