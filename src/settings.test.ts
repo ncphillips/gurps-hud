@@ -2,9 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import {
   applyHudSize,
   applyHudTheme,
+  currentHotbarMode,
+  HOTBAR_SETTING,
   hudScale,
+  HOTBAR_MODE_HOOK,
   registerSettings,
+  resolveHotbarMode,
   resolveHudTheme,
+  showsDefaultHotbar,
+  showsHudHotbar,
   SIZE_SETTING,
   THEME_SETTING,
 } from "./settings";
@@ -14,6 +20,19 @@ function stubSettings() {
   const register = vi.fn();
   (globalThis as unknown as { game: { settings: unknown } }).game.settings = { register };
   return register;
+}
+
+/** Foundry's settings store, holding the one answer the test cares about. */
+function stubStoredSetting(key: string, value: unknown) {
+  const get = vi.fn((_module: string, asked: string) => (asked === key ? value : undefined));
+  (globalThis as unknown as { game: { settings: unknown } }).game.settings = { get };
+}
+
+/** Foundry's hook bus, which is not here. Returns the spy standing in for `callAll`. */
+function stubHooks() {
+  const callAll = vi.fn();
+  vi.stubGlobal("Hooks", { callAll });
+  return callAll;
 }
 
 /** The `data` argument of the `register` call for one setting, which is where every choice lives. */
@@ -163,6 +182,75 @@ describe("applyHudTheme", () => {
   });
 });
 
+/*
+ * The strip carries a macro bar of its own, and hid Foundry's the moment it appeared. A table that
+ * has furnished the stock hotbar -- or handed it to another module -- wants it back, so the three
+ * modes are the three answers. Each is also an answer about the Game Aid's modifier bucket: the
+ * system parks that beside `#hotbar`, so wherever the stock bar is on screen the bucket is left
+ * where the system put it rather than being adopted into the strip.
+ */
+describe("resolveHotbarMode", () => {
+  it("is the HUD's own bar when the reader asked for it", () => {
+    expect(resolveHotbarMode("hud")).toBe("hud");
+  });
+
+  it("is Foundry's bar when the reader asked for it", () => {
+    expect(resolveHotbarMode("default")).toBe("default");
+  });
+
+  it("is both when the reader asked for both", () => {
+    expect(resolveHotbarMode("both")).toBe("both");
+  });
+
+  /* The strip replaced the stock bar before the setting existed, so that is what an unknown is. */
+  test("a mode the catalogue does not have", () => {
+    expect(resolveHotbarMode("neither")).toBe("hud");
+  });
+});
+
+describe("showsHudHotbar", () => {
+  it("is true when only the HUD's bar was asked for", () => {
+    expect(showsHudHotbar("hud")).toBe(true);
+  });
+
+  it("is true under both", () => {
+    expect(showsHudHotbar("both")).toBe(true);
+  });
+
+  it("is false when only Foundry's bar was asked for", () => {
+    expect(showsHudHotbar("default")).toBe(false);
+  });
+});
+
+describe("showsDefaultHotbar", () => {
+  it("is true when only Foundry's bar was asked for", () => {
+    expect(showsDefaultHotbar("default")).toBe(true);
+  });
+
+  it("is true under both", () => {
+    expect(showsDefaultHotbar("both")).toBe(true);
+  });
+
+  it("is false when only the HUD's bar was asked for", () => {
+    expect(showsDefaultHotbar("hud")).toBe(false);
+  });
+});
+
+describe("currentHotbarMode", () => {
+  it("is the mode the reader stored", () => {
+    stubStoredSetting(HOTBAR_SETTING, "both");
+
+    expect(currentHotbarMode()).toBe("both");
+  });
+
+  /* Before a world has the setting -- an upgrade, or the config never opened -- nothing changes. */
+  test("a client that has never stored one", () => {
+    stubStoredSetting(HOTBAR_SETTING, undefined);
+
+    expect(currentHotbarMode()).toBe("hud");
+  });
+});
+
 describe("registerSettings", () => {
   beforeEach(() => {
     document.documentElement.style.removeProperty("--gurps-hud-scale");
@@ -170,6 +258,7 @@ describe("registerSettings", () => {
 
   afterEach(() => {
     document.documentElement.removeAttribute("data-hud-theme");
+    vi.unstubAllGlobals();
   });
 
   it("registers the size under the module id", () => {
@@ -255,5 +344,52 @@ describe("registerSettings", () => {
     registered(register, THEME_SETTING).onChange("light");
 
     expect(themeAttribute()).toBe("light");
+  });
+
+  it("registers the hotbar under the module id", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(register).toHaveBeenCalledWith("gurps-hud", HOTBAR_SETTING, expect.anything());
+  });
+
+  it("offers the HUD's bar, Foundry's, and both", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(Object.keys(registered(register, HOTBAR_SETTING).choices)).toEqual([
+      "hud",
+      "default",
+      "both",
+    ]);
+  });
+
+  /* The strip replaced the stock bar before the setting existed, so an upgrade changes nothing. */
+  it("defaults to the HUD's own bar", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, HOTBAR_SETTING).default).toBe("hud");
+  });
+
+  /* Which bar somebody wants is a fact about how they play, not about the world. */
+  it("stores the hotbar per client", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, HOTBAR_SETTING).scope).toBe("client");
+  });
+
+  /*
+   * Foundry announces a world setting through `updateSetting` and a client one not at all, so the
+   * two things that have to follow -- the strip's footer and the modifier bucket -- are told here.
+   */
+  it("announces a hotbar change, so the strip and the bucket follow without a reload", () => {
+    const callAll = stubHooks();
+    const register = stubSettings();
+    registerSettings();
+    registered(register, HOTBAR_SETTING).onChange("both");
+
+    expect(callAll).toHaveBeenCalledWith(HOTBAR_MODE_HOOK, "both");
   });
 });

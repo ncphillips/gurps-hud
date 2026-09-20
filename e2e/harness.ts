@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import type { HudSize, HudTheme } from "../src/settings";
+import type { HotbarMode, HudSize, HudTheme } from "../src/settings";
 
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
 export type CastMember = "thor" | "goblin" | "dragon";
@@ -19,6 +19,11 @@ export interface HarnessParams {
    * the palette the mock was drawn in. `"system"` defers to `page.emulateMedia({ colorScheme })`.
    */
   hud_theme?: HudTheme;
+  /**
+   * Whose macro bar is on screen, as the `gurps-hud.hotbar` setting decides. Only the strip's own
+   * footer is here to see: the harness has no `#hotbar` of Foundry's to keep or hide.
+   */
+  hud_hotbar?: HotbarMode;
   /** Puts a stand-in modifier bucket beside the strip, as the Game Aid's is adopted in a world. */
   show_bucket?: boolean;
   /** Who the strip is showing. Omit for Thor; `""` for nobody. */

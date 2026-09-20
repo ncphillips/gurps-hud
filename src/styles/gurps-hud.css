@@ -314,7 +314,10 @@ body.gurps-hud-active #ui-left {
   }
 }
 
-/* The strip's macro footer replaces the stock macro bar while the HUD is up. */
-body.gurps-hud-active #hotbar {
+/*
+ * The strip's macro footer replaces the stock macro bar while the HUD is up -- unless the reader
+ * asked to keep it, in which case `PersistentHudApp` leaves this class off the body.
+ */
+body.gurps-hud-active.gurps-hud-owns-hotbar #hotbar {
   display: none;
 }

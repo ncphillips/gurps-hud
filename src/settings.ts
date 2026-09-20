@@ -1,11 +1,14 @@
 import { t } from "./i18n";
 
 /**
- * The HUD's own settings: how big the strip is drawn, and which palette it is drawn in.
+ * The HUD's own settings: how big the strip is drawn, which palette it is drawn in, and whose macro
+ * bar is on screen.
  *
- * Both are published to the stylesheet rather than threaded through the components, because both
- * are read in more places than the strip -- the size by the padding that lifts Foundry's player
- * list clear of it, the palette by every colour in `gurps-hud.css`.
+ * The first two are published to the stylesheet rather than threaded through the components, because
+ * both are read in more places than the strip -- the size by the padding that lifts Foundry's player
+ * list clear of it, the palette by every colour in `gurps-hud.css`. The hotbar is not: it decides
+ * what the strip renders and what the application does to Foundry's own furniture, so it is read
+ * back through `currentHotbarMode` and announced on a hook.
  */
 
 const MODULE = "gurps-hud";
@@ -15,6 +18,9 @@ export const SIZE_SETTING = "size";
 
 /** The setting key, so `game.settings.get(MODULE, THEME_SETTING)` and the registration agree. */
 export const THEME_SETTING = "theme";
+
+/** The setting key, so `game.settings.get(MODULE, HOTBAR_SETTING)` and the registration agree. */
+export const HOTBAR_SETTING = "hotbar";
 
 /** The custom property `gurps-hud.css` multiplies the UI scale by. */
 const SCALE_VAR = "--gurps-hud-scale";
@@ -132,6 +138,49 @@ function watchColorScheme(): void {
   query?.addEventListener("change", onColorSchemeChange);
 }
 
+/**
+ * Whose macro bar is on screen.
+ *
+ * The strip carries one of its own and hid Foundry's the moment it appeared, which is the wrong
+ * answer for a table that has furnished the stock hotbar or handed it to another module. `hud` is
+ * how the strip has always behaved, `default` gives the bar back and leaves the strip without a
+ * footer, and `both` keeps the two side by side.
+ *
+ * Each mode is also an answer about the Game Aid's modifier bucket. The system parks the bucket
+ * beside `#hotbar` and nudges it on every resize, so the HUD can only place it by owning the node --
+ * see `PersistentHudApp#adoptBucket`. Wherever the stock bar is on screen, the bucket belongs to the
+ * bar rather than to us, so it is left exactly where the system put it.
+ */
+export const HOTBAR_MODES = ["hud", "default", "both"] as const;
+
+export type HotbarMode = (typeof HOTBAR_MODES)[number];
+
+function isHotbarMode(mode: unknown): mode is HotbarMode {
+  return typeof mode === "string" && (HOTBAR_MODES as readonly string[]).includes(mode);
+}
+
+/** Anything the catalogue does not name reads as `hud`, which is the strip before the setting. */
+export function resolveHotbarMode(mode: unknown): HotbarMode {
+  return isHotbarMode(mode) ? mode : "hud";
+}
+
+/** Whether the strip draws its own macro footer. */
+export function showsHudHotbar(mode: HotbarMode): boolean {
+  return mode !== "default";
+}
+
+/** Whether Foundry's own hotbar is left on screen -- and with it, the modifier bucket. */
+export function showsDefaultHotbar(mode: HotbarMode): boolean {
+  return mode !== "hud";
+}
+
+/**
+ * Fired with the new mode whenever the reader changes it. Foundry announces a *world* setting
+ * through `updateSetting` and a client one not at all, so the two things that have to follow -- the
+ * strip's footer and the modifier bucket -- hear about it here.
+ */
+export const HOTBAR_MODE_HOOK = "gurps-hud.hotbarMode";
+
 export function registerSettings(): void {
   game.settings!.register(MODULE, SIZE_SETTING, {
     name: t("settings.size.name"),
@@ -162,6 +211,21 @@ export function registerSettings(): void {
     default: "dark",
     onChange: (theme) => applyHudTheme(theme),
   });
+
+  game.settings!.register(MODULE, HOTBAR_SETTING, {
+    name: t("settings.hotbar.name"),
+    hint: t("settings.hotbar.hint"),
+    scope: "client",
+    config: true,
+    type: String,
+    choices: {
+      hud: t("settings.hotbar.hud"),
+      default: t("settings.hotbar.default"),
+      both: t("settings.hotbar.both"),
+    },
+    default: "hud",
+    onChange: (mode) => Hooks.callAll(HOTBAR_MODE_HOOK, resolveHotbarMode(mode)),
+  });
 }
 
 export function currentHudSize(): HudSize {
@@ -172,4 +236,8 @@ export function currentHudSize(): HudSize {
 export function currentHudTheme(): HudTheme {
   const theme = game.settings?.get(MODULE, THEME_SETTING);
   return isHudTheme(theme) ? theme : "dark";
+}
+
+export function currentHotbarMode(): HotbarMode {
+  return resolveHotbarMode(game.settings?.get(MODULE, HOTBAR_SETTING));
 }

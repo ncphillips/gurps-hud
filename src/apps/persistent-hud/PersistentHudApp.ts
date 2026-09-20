@@ -1,8 +1,12 @@
 import { SvelteApp } from "@/apps/SvelteApp";
 import { log } from "@/log";
+import { currentHotbarMode, HOTBAR_MODE_HOOK, showsDefaultHotbar } from "@/settings";
 import PersistentHud from "./PersistentHud.svelte";
 
 const BODY_CLASS = "gurps-hud-active";
+
+/** Carried only while the strip's footer is standing in for Foundry's bar; the stylesheet hides it. */
+const OWNS_HOTBAR_CLASS = "gurps-hud-owns-hotbar";
 const HEIGHT_VAR = "--gurps-hud-height";
 const BUCKET_ID = "bucket-container";
 
@@ -28,6 +32,7 @@ export class PersistentHudApp extends SvelteApp {
   /** Where the modifier bucket lived before we adopted it, so closing the HUD can put it back. */
   #bucketHome: { parent: Node; next: Node | null } | null = null;
   #onBucketRender = () => this.#adoptBucket();
+  #onHotbarMode = () => this.#followHotbarMode();
 
   component = () => PersistentHud;
   props = () => ({});
@@ -47,22 +52,39 @@ export class PersistentHudApp extends SvelteApp {
       super._insertElement(element);
     }
 
-    // The strip carries its own macro slots, so it stands in for the stock macro bar rather than
-    // stacking on top of it. Toggling the HUD off puts the macro bar back.
     document.body.classList.add(BODY_CLASS);
     this.#watchHeight(element);
 
     // The Game Aid may render its bucket before or after us; cover both orders.
-    this.#adoptBucket();
+    this.#followHotbarMode();
     Hooks.on("renderModifierBucket", this.#onBucketRender);
+    Hooks.on(HOTBAR_MODE_HOOK, this.#onHotbarMode);
+  }
+
+  /**
+   * Both halves of the reader's hotbar choice, applied to Foundry's own furniture.
+   *
+   * The strip carries its own macro slots, so by default it stands in for the stock bar rather than
+   * stacking on top of it -- and the Game Aid's modifier bucket, which the stock bar is otherwise
+   * the anchor for, comes with it. A reader who kept the stock bar keeps both: the bar, and the
+   * bucket beside it where the system parks it.
+   */
+  #followHotbarMode(): void {
+    const keepsDefault = showsDefaultHotbar(currentHotbarMode());
+
+    document.body.classList.toggle(OWNS_HOTBAR_CLASS, !keepsDefault);
+    if (keepsDefault) this.#releaseBucket();
+    else this.#adoptBucket();
   }
 
   protected override async _onClose(options: object): Promise<void> {
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = null;
     Hooks.off("renderModifierBucket", this.#onBucketRender);
+    Hooks.off(HOTBAR_MODE_HOOK, this.#onHotbarMode);
     this.#releaseBucket();
     document.body.classList.remove(BODY_CLASS);
+    document.body.classList.remove(OWNS_HOTBAR_CLASS);
     document.body.style.removeProperty(HEIGHT_VAR);
     await super._onClose(options);
   }
@@ -74,6 +96,10 @@ export class PersistentHudApp extends SvelteApp {
    * CSS is a losing game; owning the node is not.
    */
   #adoptBucket(): void {
+    // Also the guard for `renderModifierBucket`: the Game Aid re-renders the bucket on every roll,
+    // and each of those would otherwise pull it back out of the stock bar it was left beside.
+    if (showsDefaultHotbar(currentHotbarMode())) return;
+
     const bucket = document.getElementById(BUCKET_ID);
     if (!bucket || !this.element || bucket.parentElement === this.element) return;
 

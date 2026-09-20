@@ -7,10 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
-## [Unreleased]
+## v0.5.0
 
 ### Added
 
+- **Keep Foundry's hotbar.** The strip's macro footer replaced the stock hotbar outright, which is
+  the wrong deal for a table that has furnished that bar over years of play, or handed it to another
+  module. **Hotbar** in the module settings draws the HUD's own bar, the default one, or both, and
+  takes effect the moment you pick one. Leaving the default bar up also leaves the GURPS modifier
+  bucket where the system parks it, beside that bar, rather than adopting it into the strip. It is
+  per-player, like the size and the theme, and the HUD's own bar stays the default, so nothing
+  changes for anyone who does not go looking.
 - **Light mode.** The HUD was drawn dark and could only be read dark, which is a poor deal for
   anyone playing in a bright room or running the rest of Foundry light. **HUD theme** in the module
   settings draws it dark, light, or whatever your desktop is set to, and takes effect the moment you

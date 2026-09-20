@@ -22,6 +22,8 @@
  *   ?hud_size=small|large          draws the strip at that size, as the setting does
  *   ?hud_theme=light|dark|system   draws the strip in that palette, as the setting does; `system`
  *                                  follows the desktop, so a spec asks for a palette by name
+ *   ?hud_hotbar=default|both       whose macro bar is on screen, as the setting does; only the
+ *                                  strip's own footer is here, since there is no Foundry hotbar
  *   ?show_bucket=true              puts a stand-in modifier bucket beside the strip, as the Game
  *                                  Aid's is adopted into the HUD in a world
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
@@ -157,6 +159,9 @@ Object.assign(globalThis, {
     },
   },
   game: {
+    // The HUD reads its own settings off the client, and every one of them is named `hud_<key>`
+    // here, so `?hud_hotbar=both` is the setting being set exactly as a world would set it.
+    settings: { get: (_module: string, key: string) => params.get(`hud_${key}`) },
     combats: {
       active: maneuver && selectedActor ? { combatants: [{ actor: selectedActor }] } : null,
     },

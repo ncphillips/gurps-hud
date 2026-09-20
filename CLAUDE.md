@@ -58,6 +58,12 @@ them for the specs.
   writes the attribute. Quiet text is `hud-faint`, one rung pinned to the WCAG AA floor with a
   different alpha per theme — never a new `text-hud-ink/NN` beneath it, which the contrast scan in
   `e2e/persistent-hud.a11y.test.ts` will catch.
+- Whose macro bar is on screen is the `gurps-hud.hotbar` setting, and it decides three things at
+  once: whether `PersistentHud.svelte` draws its footer, whether `PersistentHudApp` puts the
+  `gurps-hud-owns-hotbar` class on the body (which is what hides Foundry's `#hotbar`), and whether
+  that app adopts the Game Aid's modifier bucket — the system anchors the bucket to the stock bar,
+  so wherever that bar is up the bucket is left alone. Foundry fires no hook for a client setting,
+  so `registerSettings` announces the change itself on `gurps-hud.hotbarMode`.
 - Scope every CSS override to a `#gurps-hud-*` id or `.gurps-hud` class so we never leak styles
   into the rest of Foundry. Put overrides in `@layer base` — an unlayered rule outranks every
   Tailwind utility on the same element.

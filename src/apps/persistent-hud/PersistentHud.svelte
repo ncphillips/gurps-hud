@@ -40,6 +40,7 @@
   import { attackDrag } from "./attack-drag";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
+  import { currentHotbarMode, showsHudHotbar } from "@/settings";
   import type { GurpsActorLike } from "@/gurps/system-types";
   import MacroBar from "./MacroBar.svelte";
   import PortraitBlock from "./PortraitBlock.svelte";
@@ -128,6 +129,12 @@
    * we watch, so the footer bumps `revision` itself after asking for the change.
    */
   const macroPage = $derived(atRevision(revision, hotbarPage));
+
+  /**
+   * Whether the strip draws a macro footer at all. A reader who has kept Foundry's own hotbar has
+   * one already, and two bars over the same fifty slots is a bar too many.
+   */
+  const macroFooter = $derived(atRevision(revision, () => showsHudHotbar(currentHotbarMode())));
   const choices = $derived(atRevision(revision, () => actorChoices(canvasTokens())));
 
   /**
@@ -179,6 +186,7 @@
       "canvasReady",
       "createToken",
       "deleteToken",
+      "gurps-hud.hotbarMode",
     ] as const;
     for (const hook of refreshed) Hooks.on(hook, refresh);
 
@@ -328,17 +336,19 @@
       onpickall={() => actor && savePicks(allAttackPicks(actor.system))}
     />
 
-    <MacroBar
-      pages={macroPages}
-      page={macroPage}
-      onpage={(page) => {
-        changeHotbarPage(page);
-        revision++;
-      }}
-      onexecute={executeMacroSlot}
-      onassign={(slot, event) => void assignMacroSlot(slot, event)}
-      onmove={(from, to) => void moveMacroSlot(from, to)}
-      onremove={(slot) => void removeMacroSlot(slot)}
-    />
+    {#if macroFooter}
+      <MacroBar
+        pages={macroPages}
+        page={macroPage}
+        onpage={(page) => {
+          changeHotbarPage(page);
+          revision++;
+        }}
+        onexecute={executeMacroSlot}
+        onassign={(slot, event) => void assignMacroSlot(slot, event)}
+        onmove={(from, to) => void moveMacroSlot(from, to)}
+        onremove={(slot) => void removeMacroSlot(slot)}
+      />
+    {/if}
   </div>
 </div>

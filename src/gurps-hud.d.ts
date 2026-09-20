@@ -1,5 +1,5 @@
 import type { AttackPicks } from "./gurps/attack-picks";
-import type { HudSize, HudTheme } from "./settings";
+import type { HotbarMode, HudSize, HudTheme } from "./settings";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -14,6 +14,12 @@ declare module "fvtt-types/configuration" {
       updateLastActorGURPS: (actor: GurpsActorLike | null) => void;
       /** Foundry's per-class render hook for the Game Aid's `ModifierBucket` application. */
       renderModifierBucket: (app: object, html: unknown, data: object) => void;
+      /**
+       * Fired by `registerSettings` when the reader changes which macro bar they want. Foundry
+       * announces a world setting through `updateSetting` and a client one not at all, so this is
+       * how the strip's footer and the modifier bucket hear about it without a reload.
+       */
+      "gurps-hud.hotbarMode": (mode: HotbarMode) => void;
     }
   }
 
@@ -28,6 +34,11 @@ declare module "fvtt-types/configuration" {
      * one reads well is a fact about the room and the screen, not about the world.
      */
     "gurps-hud.theme": HudTheme;
+    /**
+     * Whose macro bar is on screen -- the strip's own footer, Foundry's hotbar, or both.
+     * Client-scoped: it is a fact about how one person plays, not about the world.
+     */
+    "gurps-hud.hotbar": HotbarMode;
   }
 
   interface FlagConfig {
