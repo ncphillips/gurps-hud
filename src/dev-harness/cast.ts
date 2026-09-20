@@ -4,7 +4,7 @@
  * characters in the strip works without reloading and no fixture is half an actor.
  *
  * The sheets are typed as the real `GurpsSystem`, so a stub that drifts from the shape the HUD
- * reads fails `npm run check` rather than rendering blank.
+ * reads fails `pnpm run check` rather than rendering blank.
  */
 import type {
   GurpsActorLike,

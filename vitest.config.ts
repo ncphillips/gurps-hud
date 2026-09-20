@@ -10,7 +10,7 @@ const alias = { "@": path.resolve(import.meta.dirname, "src") };
  * Two groups, split by filename: `*.test.ts` is logic and component behaviour in jsdom, and
  * `*.a11y.test.ts` is axe-core in a real headless Chromium. The a11y group needs the browser
  * because axe answers questions only a layout engine can -- computed colour, visibility,
- * focusability -- so `npm test` stays fast and `npm run test:a11y` pays for the browser.
+ * focusability -- so `pnpm test` stays fast and `pnpm run test:a11y` pays for the browser.
  */
 export default defineConfig({
   test: {

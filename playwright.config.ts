@@ -21,7 +21,7 @@ export default defineConfig({
   /*
    * Two groups, split by filename like the Vitest suites: `*.spec.ts` drives the HUD and asserts on
    * what it does, `*.a11y.test.ts` scans it with axe-core. Separate projects so a red axe scan
-   * reads as an accessibility regression rather than a broken feature, and so `npm run test:a11y`
+   * reads as an accessibility regression rather than a broken feature, and so `pnpm run test:a11y`
    * can run the accessibility group across both runners.
    */
   projects: [
@@ -37,7 +37,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run harness",
+    command: "pnpm run harness",
     url: HARNESS,
     // Locally the harness is often already up for eyeballing the design; reuse it rather than
     // fighting over the port.

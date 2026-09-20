@@ -59,14 +59,16 @@ The target box will now list _their_ hit locations.
 
 ## Development
 
+The package manager is pinned in `package.json`; `corepack enable` gets you the right pnpm.
+
 ```bash
-npm install
-npm run setup   # shallow-clones the pinned GURPS system source into .reference/ (gitignored)
-npm run dev     # Vite on :30001, proxying Foundry on :30000
-npm run build   # emits dist/
+pnpm install
+pnpm run setup   # shallow-clones the pinned GURPS system source into .reference/ (gitignored)
+pnpm run dev     # Vite on :30001, proxying Foundry on :30000
+pnpm run build   # emits dist/
 ```
 
-`npm run setup` is optional for building, but the HUD is written against the GURPS 4e Game Aid's
+`pnpm run setup` is optional for building, but the HUD is written against the GURPS 4e Game Aid's
 actor data model, so having its source on hand is how you check the real shape of `actor.system`
 instead of guessing. It is pinned in `scripts/setup-reference.sh`; override with
 `GURPS_SYSTEM_REPO` / `GURPS_SYSTEM_REF` to read a fork or a newer release.

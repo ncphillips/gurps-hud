@@ -21,18 +21,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
+          cache: pnpm
 
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
 
-      - run: npm run lint
+      - run: pnpm run lint
 
-      - run: npm run check
+      - run: pnpm run check
 
-      - run: npm test
+      - run: pnpm test
 
       - name: Derive version from tag
         id: version
@@ -49,7 +51,7 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-      - run: npm run build
+      - run: pnpm run build
 
       - name: Stamp manifest
         env:

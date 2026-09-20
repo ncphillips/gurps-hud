@@ -1,0 +1,11 @@
+# pnpm refuses to run a dependency's install scripts unless it is listed here. The three
+# native packages compile or download a platform binary; fvtt-types is a git dependency
+# whose `prepare` step is what emits the types we compile against.
+allowBuilds:
+  "@league-of-foundry-developers/foundry-vtt-types@https://codeload.github.com/League-of-Foundry-Developers/foundry-vtt-types/tar.gz/336b4ad17526d7c04bbf22364b9f9880dd8c29a1": true
+  esbuild: true
+  "@tailwindcss/oxide": true
+
+# fvtt-types pulls a git-hosted @pixi/basis transitively; pnpm blocks exotic subdependencies
+# by default, and refusing it would take the Foundry types with it.
+blockExoticSubdeps: false

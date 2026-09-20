@@ -1,6 +1,6 @@
 ---
 name: hud-a11y-tests
-description: How accessibility testing works in gurps-hud — the two *.a11y.test.ts groups, the toBeAccessible matcher, and its exact-list `except` contract. Use when writing, fixing, or debugging a11y tests or an npm run test:a11y failure.
+description: How accessibility testing works in gurps-hud — the two *.a11y.test.ts groups, the toBeAccessible matcher, and its exact-list `except` contract. Use when writing, fixing, or debugging a11y tests or a pnpm run test:a11y failure.
 ---
 
 # Accessibility tests
@@ -43,4 +43,4 @@ different alpha per theme — dark clears it at 62% where light needs 69%. Reach
 than a new `text-hud-ink/NN` below it, and if you change a surface, re-run the sweep: the pool box
 under the cursor is the lightest ground faint text lands on, and it is what the rung is sized against.
 
-Run both groups with `npm run test:a11y`.
+Run both groups with `pnpm run test:a11y`.

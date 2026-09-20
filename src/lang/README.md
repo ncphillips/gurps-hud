@@ -33,7 +33,7 @@ The strip is laid out to fixed pixel widths, and some text is measured into them
   to a fixed width. A much longer word widens the strip.
 - **`maneuvers.*.hint`** is `truncate`d to its column, so one that runs long is clipped with an
   ellipsis rather than wrapping. `e2e/maneuver-panel.spec.ts` checks this for English; run
-  `npm run test:e2e` after translating and it will tell you which hints do not fit.
+  `pnpm run test:e2e` after translating and it will tell you which hints do not fit.
 - **`condition.*.label`** is abbreviated on purpose -- it shares a cell with an icon. The matching
   `.title` is where the state gets spelled out.
 
@@ -42,4 +42,4 @@ The strip is laid out to fixed pixel widths, and some text is measured into them
 Anything the **GURPS system** names: posture labels, hit locations, and the label of a maneuver
 outside the HUD's own menu. Those ship with the GURPS 4e Game Aid and are looked up from its
 translations at runtime (`localize` in `src/gurps/game-aid.ts`), so translating them here would
-duplicate work already done in `.reference/gurps/lang/` (see `npm run setup`).
+duplicate work already done in `.reference/gurps/lang/` (see `pnpm run setup`).

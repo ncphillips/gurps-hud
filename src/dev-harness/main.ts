@@ -2,7 +2,7 @@
  * Visual harness for the HUD. Mounts the real components against stub Foundry globals so the design
  * can be looked at -- and measured, with `?measure=true` -- without launching Foundry.
  *
- *   npm run harness   ->  http://localhost:30099/modules/gurps-hud/dev-harness/index.html
+ *   pnpm run harness ->  http://localhost:30099/modules/gurps-hud/dev-harness/index.html
  *
  * The whole cast is always on the canvas (see cast.ts); every parameter names the *action* it takes
  * on that scene rather than just the thing it concerns, so a URL reads as the state it sets up:

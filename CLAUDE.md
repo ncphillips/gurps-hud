@@ -8,7 +8,7 @@ Guidance for Claude Code when working in this repository.
 heads-up display for GURPS 4e play.
 
 - **System:** [`gurps`](https://github.com/crnormand/gurps) — "GURPS 4e Game Aid (Unofficial)".
-  This module reads that system's actor data model; it is not system-agnostic. `npm run setup`
+  This module reads that system's actor data model; it is not system-agnostic. `pnpm run setup`
   clones the pinned version into `.reference/gurps` (gitignored) and `.claude/settings.json`
   grants it via `permissions.additionalDirectories` — read it to find the real shapes of
   `actor.system` (attributes, HP/FP, skills, melee/ranged) rather than guessing. The pin lives in
@@ -20,17 +20,17 @@ heads-up display for GURPS 4e play.
 
 ## Dev Workflow
 
-`npm run harness` mounts the HUD against stub Foundry globals so it can be looked at without a
+`pnpm run harness` mounts the HUD against stub Foundry globals so it can be looked at without a
 running world, at `http://localhost:30099/modules/gurps-hud/dev-harness/index.html`. Its whole cast —
 Thor, a goblin, a dragon — is always on the canvas, and each query parameter *on that URL* names the
 action it takes on that scene: `?hover_panel=attrs` opens a panel for screenshotting,
 `?selected_actor=` selects nobody, `?measure=true` dumps bounding boxes. They are URL parameters, not
-arguments to the npm script. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types
+arguments to the pnpm script. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types
 them for the specs.
 
-`npm test` runs the unit project alone. `npm run test:e2e` drives the harness through Playwright, and
-`npm run test:a11y` runs *both* halves of the accessibility suite — the Vitest `a11y` project and the
-`chromium-a11y` Playwright one — which neither of the other two commands touches. `npm run check` is
+`pnpm test` runs the unit project alone. `pnpm run test:e2e` drives the harness through Playwright, and
+`pnpm run test:a11y` runs *both* halves of the accessibility suite — the Vitest `a11y` project and the
+`chromium-a11y` Playwright one — which neither of the other two commands touches. `pnpm run check` is
 `tsc --noEmit` plus `svelte-check`.
 
 ## Conventions

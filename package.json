@@ -2,6 +2,7 @@
   "name": "gurps-hud",
   "version": "0.1.0",
   "type": "module",
+  "packageManager": "pnpm@11.9.0",
   "scripts": {
     "setup": "./scripts/setup-reference.sh",
     "dev": "vite",
