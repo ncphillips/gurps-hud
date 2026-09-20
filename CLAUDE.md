@@ -20,25 +20,31 @@ heads-up display for GURPS 4e play.
 
 ## Dev Workflow
 
-`npm run harness` mounts the HUD against stub Foundry globals so the design can be compared with the
-mock without a running world. Its whole cast — Brent, a goblin, a dragon — is always on the canvas,
-and each query parameter names the action it takes on that scene: `?hover_panel=attrs` opens a panel
-for screenshotting, `?selected_actor=` selects nobody, `?measure=true` dumps bounding boxes to
-compare against the mock. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types them
-for the specs.
+`npm run harness` mounts the HUD against stub Foundry globals so it can be looked at without a
+running world, at `http://localhost:30099/modules/gurps-hud/dev-harness/index.html`. Its whole cast —
+Brent, a goblin, a dragon — is always on the canvas, and each query parameter *on that URL* names the
+action it takes on that scene: `?hover_panel=attrs` opens a panel for screenshotting,
+`?selected_actor=` selects nobody, `?measure=true` dumps bounding boxes. They are URL parameters, not
+arguments to the npm script. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types
+them for the specs.
 
-Test world: **Dungeon Crawler World** (`gurps` system).
+`npm test` runs the unit project alone. `npm run test:e2e` drives the harness through Playwright, and
+`npm run test:a11y` runs *both* halves of the accessibility suite — the Vitest `a11y` project and the
+`chromium-a11y` Playwright one — which neither of the other two commands touches. `npm run check` is
+`tsc --noEmit` plus `svelte-check`.
 
 ## Conventions
 
 - One directory per HUD under `src/apps/`, containing its `*App.ts` (ApplicationV2 subclass
-  extending `SvelteApp`) and its `*.svelte` root component.
+  extending `SvelteApp`, which sits beside those directories) and its `*.svelte` root component.
+  Presentational pieces shared across HUDs — `Popover`, `Readout` — live in `src/ui/`.
 - Svelte components use runes (`$state`, `$props`, `$effect`). Subscribe to Foundry hooks inside
   `$effect` and return a cleanup function that calls `Hooks.off`.
 - `src/module.json` is the manifest source of truth; Vite copies it to `dist/module.json`. Its
   version is stamped by the release workflow, never hand-edited.
-- Tailwind for layout and most styling; `src/styles/gurps-hud.css` only for overriding Foundry's
-  own selectors (e.g. `.window-content` padding) which Tailwind classes can't reach.
+- Tailwind for layout and most styling. `src/styles/gurps-hud.css` is everything Tailwind classes
+  can't express: the prefixed Tailwind `@import`s, the `@theme` palette, the light-theme block, the
+  font faces, and overrides of Foundry's own selectors (e.g. `.window-content` padding).
 - Every Tailwind utility carries the `hud:` prefix — `hud:flex`, `hud:hover:bg-hud-accent`, and the
   marker class `hud:group`. Unprefixed, Tailwind's scanner turns any word in the source (including
   prose in a comment) into a global class, and `.collapse` alone hid Foundry's own sidebar toggle.
@@ -68,33 +74,9 @@ Test world: **Dungeon Crawler World** (`gurps` system).
   scan too. See the `hud-a11y-tests` skill before touching them.
 - Assertions only a browser can answer belong in `e2e/`, driving the harness rather than a live
   world — see `e2e/CLAUDE.md`.
-- The design mock was authored under `content-box`; the HUD renders under `border-box`. Its fixed
-  pixel widths therefore need padding and borders added in — the strip is pixel-matched to the mock,
-  so check `npm run harness -- ?measure=true` before changing a fixed width.
+- The HUD renders under `border-box`, so a fixed pixel width includes its own padding and borders.
+  Parts of the strip are fixed and measured: the portrait block is a 143px column at every size,
+  which is the box `e2e/hud-size.spec.ts` reads the size setting off. Open the harness with
+  `?measure=true` before changing a fixed width.
 - Hover states may only change `color`, `background-color` and `border-color`. Anything that gains a
   border on hover carries a 1px transparent border at rest, so hover can never move geometry.
-
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
-
-## Available Svelte MCP Tools:
-
-### 1. list-sections
-
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
-
-### 2. get-documentation
-
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
-
-### 3. svelte-autofixer
-
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
-
-### 4. playground-link
-
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
-

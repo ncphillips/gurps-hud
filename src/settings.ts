@@ -71,7 +71,7 @@ export function applyHudSize(size: unknown): void {
  *
  * `system` is not a palette: it is a deferral to `prefers-color-scheme`, resolved here so the
  * stylesheet only ever has the two to write. Dark is first because dark is what the strip was drawn
- * in -- `design-handoff/` is a dark mock, and every colour in `@theme` is its colour.
+ * in: the design it comes from is a dark mock, and every colour in `@theme` is its colour.
  */
 export const HUD_THEMES = ["dark", "light", "system"] as const;
 

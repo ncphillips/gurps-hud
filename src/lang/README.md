@@ -27,10 +27,10 @@ key you leave out falls back rather than breaking.
 
 ## Things that will not fit
 
-The strip is pixel-matched to `design-handoff/`, and some text is laid out to a fixed width:
+The strip is laid out to fixed pixel widths, and some text is measured into them:
 
 - **`topBar.*.label`** are set in the mono face at 8-9px with wide tracking, in a row measured
-  against the mock. A much longer word widens the strip.
+  to a fixed width. A much longer word widens the strip.
 - **`maneuvers.*.hint`** is `truncate`d to its column, so one that runs long is clipped with an
   ellipsis rather than wrapping. `e2e/maneuver-panel.spec.ts` checks this for English; run
   `npm run test:e2e` after translating and it will tell you which hints do not fit.

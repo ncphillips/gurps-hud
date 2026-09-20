@@ -1,6 +1,6 @@
 /*
  * Visual harness for the HUD. Mounts the real components against stub Foundry globals so the design
- * can be checked -- and measured against design-handoff/ -- without launching Foundry.
+ * can be looked at -- and measured, with `?measure=true` -- without launching Foundry.
  *
  *   npm run harness   ->  http://localhost:30099/modules/gurps-hud/dev-harness/index.html
  *
@@ -187,9 +187,9 @@ Object.assign(globalThis, {
 });
 
 /*
- * The mock's canvas-mode backdrop, so screenshots line up with design-handoff/. It follows the
- * theme because the strip is read against it: a light strip on the dark mock's ground says nothing
- * about whether light mode works.
+ * A stand-in for Foundry's canvas, so a screenshot shows the strip against something like the
+ * ground it is read on. It follows the theme for that reason: a light strip on a dark ground says
+ * nothing about whether light mode works.
  */
 const CANVAS = {
   dark: { ground: "#1b1c20", grid: "rgba(255,255,255,.022)" },

@@ -67,8 +67,8 @@
 }
 
 /*
- * Design tokens from design-handoff/README.md, which is a dark mock -- so dark is what `@theme`
- * holds and what the strip falls back to. The light palette is further down, hung off the attribute
+ * The design tokens. The strip was drawn as a dark mock -- so dark is what `@theme` holds and
+ * what the strip falls back to. The light palette is further down, hung off the attribute
  * `applyHudTheme` writes; it overrides these same variables, so every utility follows without a
  * `dark:` variant anywhere in a component.
  */
