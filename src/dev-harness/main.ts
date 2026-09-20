@@ -7,7 +7,7 @@
  * The whole cast is always on the canvas (see cast.ts); every parameter names the *action* it takes
  * on that scene rather than just the thing it concerns, so a URL reads as the state it sets up:
  *
- *   ?selected_actor=brent|goblin   who the strip is showing; `selected_actor=` selects nobody,
+ *   ?selected_actor=thor|goblin   who the strip is showing; `selected_actor=` selects nobody,
  *                                  which is the empty strip a GM sees before clicking a token
  *   ?target_actor=goblin           who is targeted, so the TARGET pill lists their hit locations
  *   ?set_maneuver=attack           puts the selected actor in the active combat performing it
@@ -15,7 +15,7 @@
  *   ?edit_pool=hp|fp               opens that pool's box for editing
  *   ?expand_macros=true            expands the macro footer's library of all five hotbar pages
  *   ?pick_attacks=none             leaves every attack unpicked, which is where a fresh actor starts
- *   ?open_sheet=brent|goblin       opens a stand-in character sheet whose attack rows can be
+ *   ?open_sheet=thor|goblin       opens a stand-in character sheet whose attack rows can be
  *                                  dragged onto the strip, as a real sheet's can
  *   ?set_macro_page=3              which hotbar page the number keys address
  *   ?delay_writes=true             makes writing to an actor take a round trip, as a world does
@@ -56,12 +56,12 @@ function flag(name: string): boolean {
 }
 
 /*
- * Absent means Brent, the design's character, because that is the view worth landing on. Present
+ * Absent means Thor, the design's character, because that is the view worth landing on. Present
  * but empty -- `?selected_actor=` -- means nobody, and so does a name no one in the cast answers to.
  */
 const selectedActor = params.has("selected_actor")
   ? castMember(params.get("selected_actor"))
-  : CAST.brent;
+  : CAST.thor;
 const targetActor = castMember(params.get("target_actor"));
 
 // A world reads these off the client's settings; the harness reads them off the URL. Same custom
@@ -71,7 +71,7 @@ applyHudSize(params.get("hud_size"));
 applyHudTheme(params.get("hud_theme"));
 
 /*
- * An actor starts with no attacks picked, but the design mock is drawn with Brent's weapon tables
+ * An actor starts with no attacks picked, but the design mock is drawn with Thor's weapon tables
  * full -- so the harness lands on the curated view and `?pick_attacks=none` opens the other one.
  */
 if (params.get("pick_attacks") !== "none") {

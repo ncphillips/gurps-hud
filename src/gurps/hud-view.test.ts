@@ -326,8 +326,8 @@ describe("meleeRows, given imperfect actor data", () => {
 
 describe("buildHudView", () => {
   it("names the strip after the actor", () => {
-    expect(buildHudView({ name: "Brent Mitton", system: system() }, localize).name).toBe(
-      "Brent Mitton",
+    expect(buildHudView({ name: "Thor Odinson", system: system() }, localize).name).toBe(
+      "Thor Odinson",
     );
   });
 
@@ -339,19 +339,19 @@ describe("buildHudView", () => {
 describe("buildHudView, maneuver", () => {
   it("reports the maneuver the actor is performing", () => {
     const conditions = { posture: "standing", maneuver: "aoa_determined" };
-    const actor = { name: "Brent", system: system({ conditions } as Partial<GurpsSystem>) };
+    const actor = { name: "Thor", system: system({ conditions } as Partial<GurpsSystem>) };
     expect(buildHudView(actor, localize).maneuverId).toBe("aoa_determined");
   });
 
   /* The Game Aid only stores a maneuver during combat; outside it the value is the string "undefined". */
   test("an actor that is not in combat", () => {
     const conditions = { posture: "standing", maneuver: "undefined" };
-    const actor = { name: "Brent", system: system({ conditions } as Partial<GurpsSystem>) };
+    const actor = { name: "Thor", system: system({ conditions } as Partial<GurpsSystem>) };
     expect(buildHudView(actor, localize).maneuverId).toBeNull();
   });
 
   test("an actor whose conditions have no maneuver at all", () => {
-    const actor = { name: "Brent", system: system({ conditions: { posture: "standing" } }) };
+    const actor = { name: "Thor", system: system({ conditions: { posture: "standing" } }) };
     expect(buildHudView(actor, localize).maneuverId).toBeNull();
   });
 });
@@ -559,7 +559,7 @@ describe("allAttackPicks", () => {
 
 describe("buildHudView, picked attacks", () => {
   const melee = { "00000": { name: "Spear" }, "00001": { name: "Punch" } };
-  const actor = () => ({ name: "Brent", system: system({ melee } as Partial<GurpsSystem>) });
+  const actor = () => ({ name: "Thor", system: system({ melee } as Partial<GurpsSystem>) });
 
   it("shows only the attacks that were picked, in the order they were picked", () => {
     const picks = { melee: ["system.melee.00001", "system.melee.00000"], ranged: [] };

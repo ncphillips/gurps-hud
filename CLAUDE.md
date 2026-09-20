@@ -22,7 +22,7 @@ heads-up display for GURPS 4e play.
 
 `npm run harness` mounts the HUD against stub Foundry globals so it can be looked at without a
 running world, at `http://localhost:30099/modules/gurps-hud/dev-harness/index.html`. Its whole cast —
-Brent, a goblin, a dragon — is always on the canvas, and each query parameter *on that URL* names the
+Thor, a goblin, a dragon — is always on the canvas, and each query parameter *on that URL* names the
 action it takes on that scene: `?hover_panel=attrs` opens a panel for screenshotting,
 `?selected_actor=` selects nobody, `?measure=true` dumps bounding boxes. They are URL parameters, not
 arguments to the npm script. `src/dev-harness/main.ts` lists them all, and `e2e/harness.ts` types

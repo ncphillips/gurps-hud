@@ -28,7 +28,7 @@ function props(openPanel: Panel | null = null) {
     locked: false,
     ontogglelock: vi.fn(),
     choices: [
-      { key: "t-brent", name: actor.name, img: null, actor },
+      { key: "t-thor", name: actor.name, img: null, actor },
       { key: "t-goblin", name: other.name, img: null, actor: other },
     ],
     onselectactor: vi.fn(),

@@ -21,7 +21,7 @@ function props(
   return {
     view: fixtureView(),
     enabled: true,
-    actorId: "actor-brent",
+    actorId: "actor-thor",
     drag: attackDrag(),
     onroll: vi.fn(),
     onplace: vi.fn(),

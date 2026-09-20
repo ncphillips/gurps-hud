@@ -34,7 +34,7 @@ function skills(rows: Array<[name: string, level: number]>) {
 
 /**
  * A blank sheet, fresh every call: the actors mutate their own -- a posture, a pool, a maneuver --
- * so sharing one between them would let the goblin stand up when Brent does.
+ * so sharing one between them would let the goblin stand up when Thor does.
  */
 function sheet(overrides: Partial<GurpsSystem>): GurpsSystem {
   return {
@@ -125,11 +125,11 @@ function actor(id: string, name: string, system: GurpsSystem): HarnessActor {
   return self;
 }
 
-/** Brent Mitton, the character the design mock is drawn from. */
-function brent(): HarnessActor {
+/** Thor Odinson, the character the design mock is drawn from. */
+function thor(): HarnessActor {
   return actor(
-    "actor-brent",
-    "Brent Mitton",
+    "actor-thor",
+    "Thor Odinson",
     sheet({
       attributes: {
         ST: { value: 9 },
@@ -211,7 +211,7 @@ function brent(): HarnessActor {
   );
 }
 
-/** Something for Brent to aim at, hurt and out of breath so the vitals show their warning tones. */
+/** Something for Thor to aim at, hurt and out of breath so the vitals show their warning tones. */
 function goblin(): HarnessActor {
   return actor(
     "actor-goblin",
@@ -294,7 +294,7 @@ function dragon(): HarnessActor {
   );
 }
 
-export const CAST = { brent: brent(), goblin: goblin(), dragon: dragon() };
+export const CAST = { thor: thor(), goblin: goblin(), dragon: dragon() };
 
 export type CastMember = keyof typeof CAST;
 
@@ -307,7 +307,7 @@ export function castMember(key: string | null): HarnessActor | null {
  * lists one entry per *controllable* token, and something has to prove it filters.
  */
 export const TOKENS = [
-  { id: "t-brent", name: CAST.brent.name, actor: CAST.brent, isOwner: true },
+  { id: "t-thor", name: CAST.thor.name, actor: CAST.thor, isOwner: true },
   { id: "t-goblin", name: CAST.goblin.name, actor: CAST.goblin, isOwner: true },
   { id: "t-dragon", name: CAST.dragon.name, actor: CAST.dragon, isOwner: false },
 ].map((token) => ({ ...token, document: { texture: { src: null } } }));

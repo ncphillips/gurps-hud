@@ -38,7 +38,7 @@ function withActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBlockPr
     onopensheet: vi.fn(),
     locked: false,
     ontogglelock: vi.fn(),
-    choices: [{ key: "t-brent", name: actor.name, img: null, actor }],
+    choices: [{ key: "t-thor", name: actor.name, img: null, actor }],
     onselectactor: vi.fn(),
     openPanel: null,
     onposture: vi.fn(),

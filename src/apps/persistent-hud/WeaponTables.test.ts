@@ -12,7 +12,7 @@ import WeaponTables from "./WeaponTables.svelte";
 
 type Props = ComponentProps<typeof WeaponTables>;
 
-/** Brent's rows, keyed the way the GURPS sheet keys them. */
+/** Thor's rows, keyed the way the GURPS sheet keys them. */
 const SPEAR = "system.melee.00000";
 const PUNCH = "system.melee.00001";
 const THROWN = "system.ranged.00000";
@@ -21,7 +21,7 @@ function props(overrides: Partial<Props> = {}): Props {
   return {
     view: fixtureView(),
     enabled: true,
-    actorId: "actor-brent",
+    actorId: "actor-thor",
     drag: attackDrag(),
     onroll: vi.fn(),
     onplace: vi.fn(),
@@ -54,13 +54,13 @@ function tables(): Element {
 }
 
 /** An attack dragged off a character sheet, which is where every pick comes from. */
-function draggedOffTheSheet(key: string, actorId = "actor-brent"): Gesture {
+function draggedOffTheSheet(key: string, actorId = "actor-thor"): Gesture {
   return dragging(dragPayload(actorId, key));
 }
 
 /** An attack already picked, taken by its own grip: the drag that reorders one or takes it off. */
 function draggedByItsGrip(key: string): Gesture {
-  return dragging(dragPayload("actor-brent", key), grip(key));
+  return dragging(dragPayload("actor-thor", key), grip(key));
 }
 
 /** A macro dragged out of the footer -- an attack's MIME type, and nothing to do with an attack. */

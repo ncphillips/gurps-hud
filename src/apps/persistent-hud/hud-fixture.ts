@@ -17,11 +17,11 @@ function keyed<T>(entries: T[]): Record<string, T> {
   return Object.fromEntries(entries.map((entry, index) => [String(index).padStart(5, "0"), entry]));
 }
 
-/** Brent Mitton, the character the design mock is drawn from. */
+/** Thor Odinson, the character the design mock is drawn from. */
 export function fixtureActor(): GurpsActorLike {
   return {
-    id: "actor-brent",
-    name: "Brent Mitton",
+    id: "actor-thor",
+    name: "Thor Odinson",
     img: null,
     statuses: [],
     system: {
@@ -88,7 +88,7 @@ export function fixtureActor(): GurpsActorLike {
 
 /**
  * @param picks Which attacks the strip has been told to show. Defaults to all of them, because the
- *   design mock is drawn with Brent's weapon tables full; pass `noPicks()` for the state a
+ *   design mock is drawn with Thor's weapon tables full; pass `noPicks()` for the state a
  *   character starts in, before anybody has dragged anything onto the strip.
  */
 export function fixtureView(picks?: AttackPicks): HudView {
@@ -96,7 +96,7 @@ export function fixtureView(picks?: AttackPicks): HudView {
   return buildHudView(actor, localize, picks ?? allAttackPicks(actor.system));
 }
 
-/** Something for Brent to aim at, with a body plan of its own. */
+/** Something for Thor to aim at, with a body plan of its own. */
 export function fixtureTargetView(): TargetView {
   const goblin = fixtureActor();
   goblin.name = "Goblin Grunt";

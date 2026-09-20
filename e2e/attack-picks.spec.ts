@@ -6,7 +6,7 @@ import { openHarness } from "./harness";
  * The gestures that curate the strip's attack list. All four are drag-and-drop or the layout it
  * produces, which is to say questions only a browser answers -- jsdom has no drag.
  *
- * Brent's rows, keyed as the GURPS sheet keys them.
+ * Thor's rows, keyed as the GURPS sheet keys them.
  */
 const SPEAR = "system.melee.00000";
 const PUNCH = "system.melee.00001";
@@ -56,7 +56,7 @@ test.describe("picking attacks", () => {
   });
 
   test("takes an attack dragged off its own character's sheet", async ({ page }) => {
-    await openHarness(page, { pick_attacks: "none", open_sheet: "brent" });
+    await openHarness(page, { pick_attacks: "none", open_sheet: "thor" });
     await page
       .locator(`[data-harness-sheet-attack="${PUNCH}"]`)
       .dragTo(page.locator("[data-hud-attacks]"));

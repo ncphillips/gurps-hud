@@ -9,10 +9,10 @@ function actor(name: string, img: string | null = null): GurpsActorLike {
 describe("actorChoices", () => {
   it("lists one choice per controllable token", () => {
     const choices = actorChoices([
-      { id: "t1", name: "Brent", actor: actor("Brent"), isOwner: true },
+      { id: "t1", name: "Thor", actor: actor("Thor"), isOwner: true },
       { id: "t2", name: "Goblin", actor: actor("Goblin"), isOwner: true },
     ]);
-    expect(choices.map((choice) => choice.name)).toEqual(["Brent", "Goblin"]);
+    expect(choices.map((choice) => choice.name)).toEqual(["Goblin", "Thor"]);
   });
 
   it("names a choice after its token, since that is what the canvas shows", () => {
@@ -34,9 +34,9 @@ describe("actorChoices", () => {
     const choices = actorChoices([
       {
         id: "t1",
-        name: "Brent",
+        name: "Thor",
         img: "token.png",
-        actor: actor("Brent", "actor.png"),
+        actor: actor("Thor", "actor.png"),
         isOwner: true,
       },
     ]);
@@ -45,10 +45,10 @@ describe("actorChoices", () => {
 
   test("a token the user cannot control", () => {
     const choices = actorChoices([
-      { id: "t1", name: "Brent", actor: actor("Brent"), isOwner: true },
+      { id: "t1", name: "Thor", actor: actor("Thor"), isOwner: true },
       { id: "t2", name: "Dragon", actor: actor("Dragon"), isOwner: false },
     ]);
-    expect(choices.map((choice) => choice.name)).toEqual(["Brent"]);
+    expect(choices.map((choice) => choice.name)).toEqual(["Thor"]);
   });
 
   test("a token with no actor", () => {
@@ -57,10 +57,10 @@ describe("actorChoices", () => {
   });
 
   test("two tokens sharing one linked actor", () => {
-    const brent = actor("Brent");
+    const thor = actor("Thor");
     const choices = actorChoices([
-      { id: "t1", name: "Brent", actor: brent, isOwner: true },
-      { id: "t2", name: "Brent", actor: brent, isOwner: true },
+      { id: "t1", name: "Thor", actor: thor, isOwner: true },
+      { id: "t2", name: "Thor", actor: thor, isOwner: true },
     ]);
     expect(choices).toHaveLength(1);
   });

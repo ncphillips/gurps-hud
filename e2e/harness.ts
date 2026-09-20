@@ -2,7 +2,7 @@ import { expect, type Locator, type Page } from "@playwright/test";
 import type { HudSize, HudTheme } from "../src/settings";
 
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
-export type CastMember = "brent" | "goblin" | "dragon";
+export type CastMember = "thor" | "goblin" | "dragon";
 
 export type Panel = "attrs" | "skills" | "maneuver" | "posture" | "target" | "actor";
 
@@ -21,7 +21,7 @@ export interface HarnessParams {
   hud_theme?: HudTheme;
   /** Puts a stand-in modifier bucket beside the strip, as the Game Aid's is adopted in a world. */
   show_bucket?: boolean;
-  /** Who the strip is showing. Omit for Brent; `""` for nobody. */
+  /** Who the strip is showing. Omit for Thor; `""` for nobody. */
   selected_actor?: CastMember | "";
   /** Who is targeted, so the TARGET pill lists their hit locations. */
   target_actor?: CastMember;
