@@ -7,7 +7,55 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
-## [0.3.0] - Unreleased
+## [0.4.0]
+
+The strip is drawn at the size the screen wants, and a drag on the weapon tables does what the
+gesture looks like it does.
+
+### Added
+
+- **Pick how big the HUD is.** The strip is drawn to fixed measurements taken from a design made on
+  a 1280×713 canvas, so it keeps that size whatever it is shown on: room to spare on a 2560-wide
+  screen, where its smallest labels are too small to read, and not enough on the 1024×768 Foundry
+  allows at the least. **HUD size** in the module settings draws it small, medium or large — medium
+  being the design's own size — and takes effect the moment you pick one. It is per-player, since
+  the right size is a fact about the screen you are reading it on.
+
+### Fixed
+
+- **A drag only removes an attack if the attack actually left.** Carrying a row clear of the strip
+  is how an attack is removed, but any drag that ended without a drop was being read as one — and
+  `Escape` ends a drag without a drop, so backing out of a reorder took the attack with it. The row
+  now has to have crossed out of the weapon tables, which is what tells a deletion from a change of
+  mind.
+- **The insertion marker stays put while crossing a row.** A row is mostly its own cells — the
+  grip, the name, every readout — and the browser announces crossing onto one of them as leaving
+  the row, so the marker flickered off and back on the way across.
+- **A drop the tables cannot use passes through to what is behind them.** Foundry carries every drag
+  on `text/plain`, so the tables were swallowing drops that were never attacks — including a macro
+  flicked off the HUD, which is how the hotbar is told to give up the slot.
+- **A short drag that ends on the row it started on leaves the order alone.** "Ahead of where you
+  already are" is where the attack already is, so the drop now changes nothing instead of
+  reshuffling the group.
+- **Two attacks removed in quick succession both stay removed.** In a world, a write to the actor is
+  not readable back until the server answers, so a second `Delete` pressed inside that gap was
+  computed from the list before the first one and put the first attack back. Edits now show
+  immediately and are written from what is on screen; a write the server refuses — a player
+  curating a token they do not own — snaps the list back to what the character actually carries.
+- **Attacks and skills whose names contain a quote or a `|` roll.** Quotes were escaped with a
+  backslash, which the Game Aid's roll parser does not read as an escape: a name ending in one ran
+  on past the closing quote and was parsed as roll syntax, and a `|` split a second roll off
+  entirely — a skill named `Brawling|/r [1d6]` rolled the 1d6. A name is now enclosed in whichever
+  quote it does not contain, and anything left over is replaced the same way the Game Aid's own
+  sheet replaces it.
+
+### Changed
+
+- **Right-clicking an attack's grip no longer removes it.** Nothing told you it would, and an 11px
+  target is too easy to hit by accident. Dragging the row clear of the strip, or `Delete` with the
+  grip focused, still remove it.
+
+## [0.3.0] - 2026-09-10
 
 The strip stops guessing which attacks matter and stops disappearing when nothing is selected.
 
@@ -32,12 +80,6 @@ The strip stops guessing which attacks matter and stops disappearing when nothin
     the HUD and deleting the attack.
 - **The HUD stays up with nothing selected.** Previously it required a selected actor, so it
   vanished between turns and out of combat. (#16)
-- **Pick how big the HUD is.** The strip is drawn to fixed measurements taken from a design made on
-  a 1280×713 canvas, so it keeps that size whatever it is shown on: room to spare on a 2560-wide
-  screen, where its smallest labels are too small to read, and not enough on the 1024×768 Foundry
-  allows at the least. **HUD size** in the module settings draws it small, medium or large — medium
-  being the design's own size — and takes effect the moment you pick one. It is per-player, since
-  the right size is a fact about the screen you are reading it on.
 
 ### Fixed
 
@@ -123,7 +165,8 @@ Initial prototype: a persistent bottom-left combat strip for GURPS 4e, reading t
 - CI on every push and pull request, and a release workflow that stamps the manifest from the tag
   and registers the version with the Foundry package listing.
 
-[0.3.0]: https://github.com/ncphillips/gurps-hud/compare/v0.2.1...HEAD
+[0.4.0]: https://github.com/ncphillips/gurps-hud/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/ncphillips/gurps-hud/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/ncphillips/gurps-hud/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/ncphillips/gurps-hud/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ncphillips/gurps-hud/releases/tag/v0.1.0
