@@ -5,6 +5,7 @@ import {
   buildHudView,
   buildTargetView,
   conditionVital,
+  currentMove,
   emptyHudView,
   flattenKeyed,
   flattenList,
@@ -154,6 +155,125 @@ describe("conditionVital", () => {
 
   test("reeling and exhausted at once", () => {
     expect(conditionVital({ reeling: true, exhausted: true }).label).toBe("RLNG+TIRED");
+  });
+});
+
+describe("currentMove", () => {
+  /**
+   * The Game Aid writes the posture's fraction of Move into `currentmove` rounded up, so these
+   * cases feed the strip exactly what it would find on the actor and expect GURPS's own rounding
+   * back out of it.
+   */
+  function crouching(currentmove: number, overrides: Partial<GurpsSystem> = {}) {
+    const conditions = { posture: "crouch", maneuver: "attack" };
+    return system({ currentmove, conditions, ...overrides } as Partial<GurpsSystem>);
+  }
+
+  it("rounds a crouching character's two-thirds Move down", () => {
+    // Basic Move 5: the system says ceil(3.33) = 4, GURPS says 3.
+    expect(currentMove(crouching(4))).toBe("3");
+  });
+
+  test("kneeling, a third of Move", () => {
+    const conditions = { posture: "kneel", maneuver: "attack" };
+    expect(currentMove(system({ currentmove: 2, conditions } as Partial<GurpsSystem>))).toBe("1");
+  });
+
+  test("crawling, a third of Move", () => {
+    const conditions = { posture: "crawl", maneuver: "attack" };
+    const sheet = system({
+      currentmove: 3,
+      basicmove: { value: "7" },
+      conditions,
+    } as Partial<GurpsSystem>);
+    expect(currentMove(sheet)).toBe("2");
+  });
+
+  it("leaves a posture that takes no fraction of Move alone", () => {
+    expect(currentMove(system({ currentmove: 5 }))).toBe("5");
+
+    const conditions = { posture: "prone", maneuver: "attack" };
+    expect(currentMove(system({ currentmove: 1, conditions } as Partial<GurpsSystem>))).toBe("1");
+  });
+
+  /* A world that does not let maneuvers and postures drive Move reports it in full. */
+  test("a crouching character whose Move the system has not adjusted", () => {
+    expect(currentMove(crouching(5))).toBe("5");
+  });
+
+  /* Aim holds Move to half, which is lower than crouching and is what the system reports. */
+  test("a maneuver holding Move lower than the posture does", () => {
+    expect(currentMove(crouching(3))).toBe("3");
+  });
+
+  it("halves for reeling and exhausted before taking the posture's share", () => {
+    // Basic Move 5, halved twice rounding up (B380, B426), is 2; crouching takes that to 1.
+    const sheet = crouching(2, {
+      conditions: { posture: "crouch", maneuver: "attack", reeling: true, exhausted: true },
+    });
+    expect(currentMove(sheet)).toBe("1");
+  });
+
+  it("takes the current encumbrance level's share of Move first", () => {
+    // Basic Move 6 under light encumbrance is 4; crouching makes that 2, not the system's 4.
+    const sheet = crouching(4, {
+      basicmove: { value: "6" },
+      encumbrance: {
+        "00000": { key: "enc0", level: 0, move: 6 },
+        "00001": { key: "enc1", level: 1, move: 4, current: true },
+      },
+    });
+    expect(currentMove(sheet)).toBe("2");
+  });
+
+  /**
+   * Encumbrance comes off Basic Move before the conditions halve what is left (B17), which is the
+   * opposite order to the Game Aid's. The two agree up to Basic Move 11 and part company above it:
+   * 14 under light encumbrance is 11, reeling halves that up to 6, and crouching takes 4. Halving
+   * first, as the system does, would say 3.
+   */
+  test("a fast, wounded, encumbered monster", () => {
+    const sheet = crouching(4, {
+      basicmove: { value: "14" },
+      conditions: { posture: "crouch", maneuver: "move", reeling: true },
+      encumbrance: {
+        "00000": { key: "enc0", level: 0, move: 14 },
+        "00001": { key: "enc1", level: 1, move: 11, current: true },
+      },
+    });
+    expect(currentMove(sheet)).toBe("4");
+  });
+
+  /* Sitting is Move 0, and a zero is a number worth showing rather than a blank. */
+  test("a sitting character", () => {
+    const conditions = { posture: "sit", maneuver: "attack" };
+    expect(currentMove(system({ currentmove: 0, conditions } as Partial<GurpsSystem>))).toBe("0");
+  });
+
+  /* Out of combat the Game Aid does not touch Move, so a fraction that rounds up to the character's
+     full Move is taken at face value rather than read as an adjustment it never made. */
+  test("a crouching Move 2 character out of combat", () => {
+    const conditions = { posture: "crouch", maneuver: "undefined" };
+    const sheet = system({
+      currentmove: 2,
+      basicmove: { value: "2" },
+      conditions,
+    } as Partial<GurpsSystem>);
+    expect(currentMove(sheet)).toBe("2");
+  });
+
+  it("never drops below a yard", () => {
+    const conditions = { posture: "kneel", maneuver: "attack" };
+    const sheet = system({
+      currentmove: 1,
+      basicmove: { value: "2" },
+      conditions,
+    } as Partial<GurpsSystem>);
+    expect(currentMove(sheet)).toBe("1");
+  });
+
+  it("is an em dash when the actor has no Move at all", () => {
+    expect(currentMove({} as GurpsSystem)).toBe("—");
   });
 });
 

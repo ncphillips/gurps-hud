@@ -69,6 +69,8 @@ export interface GurpsEncumbrance {
   key: string;
   level: Numeric;
   current?: boolean;
+  /** This level's Move before any posture, maneuver or condition takes its cut. */
+  move?: Numeric;
   currentmove?: Numeric;
   currentdodge?: Numeric;
 }

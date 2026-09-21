@@ -33,6 +33,35 @@ function skills(rows: Array<[name: string, level: number]>) {
 }
 
 /**
+ * What the Game Aid writes into `system.currentmove` when a posture is applied, rounding the
+ * posture's fraction *up* the way its actor's `_adjustMove` does -- the number `currentMove` in
+ * `hud-view.ts` rounds back down. Copying the quirk is the point: it is what a world hands the
+ * strip, so the harness shows the same Move a world would.
+ *
+ * The base is Basic Move, halved once per condition (B380, B426). Encumbrance is left out; no
+ * member of the cast carries any.
+ */
+function postureMove(system: GurpsSystem, posture: string): number {
+  let move = Number(system.basicmove.value);
+  if (system.conditions.reeling) move = Math.ceil(move / 2);
+  if (system.conditions.exhausted) move = Math.ceil(move / 2);
+
+  switch (posture) {
+    case "crouch":
+      return Math.max(1, Math.ceil((2 * move) / 3));
+    case "kneel":
+    case "crawl":
+      return Math.max(1, Math.ceil(move / 3));
+    case "sit":
+      return 0;
+    case "prone":
+      return 1;
+    default:
+      return move;
+  }
+}
+
+/**
  * A blank sheet, fresh every call: the actors mutate their own -- a posture, a pool, a maneuver --
  * so sharing one between them would let the goblin stand up when Thor does.
  */
@@ -113,6 +142,7 @@ function actor(id: string, name: string, system: GurpsSystem): HarnessActor {
 
     async replacePosture(posture: string) {
       self.system.conditions.posture = posture;
+      self.system.currentmove = postureMove(self.system, posture);
       fire("updateActor");
     },
 
@@ -275,6 +305,8 @@ function dragon(): HarnessActor {
       FP: { value: 13, max: 13 },
       thrust: "3d−1",
       swing: "5d+1",
+      // Sheeted to match the Move below, so standing back up returns the dragon to 8.
+      basicmove: { value: "8" },
       currentmove: 8,
       currentdodge: 9,
       melee: keyed([

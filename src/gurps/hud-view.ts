@@ -168,6 +168,112 @@ export function postureBadge(posture: string | undefined, localize: Localize): P
 }
 
 /**
+ * The maneuver the actor is performing, or `null` when they are performing none -- i.e. are not in
+ * combat, which the Game Aid records as the literal string "undefined" rather than an absent value.
+ */
+function activeManeuver(conditions: { maneuver?: string }): string | null {
+  return !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver;
+}
+
+/**
+ * The postures that take a fraction of Move (B551). The rest need no arithmetic: standing leaves
+ * Move alone, sitting sets it to none and lying prone to a flat yard.
+ *
+ * The fractions round down. B9 makes that the default -- fractions go down unless a rule explicitly
+ * says otherwise, and the posture table says nothing -- and B387 settles it, because it states the
+ * same postures as movement-point surcharges: crouching costs +1/2 MP per hex, so hexes are
+ * Move / 1.5, which is the same 2/3; kneeling and crawling cost +2 MP, which is the same third.
+ * Hexes cannot be fractional, so that half of the Basic Set floors these numbers by construction,
+ * and rounding them up here would put the two halves in contradiction. Move 5 crouching is 3 yards
+ * computed either way.
+ */
+const POSTURE_MOVE_FRACTION: Record<string, number> = {
+  crouch: 2 / 3,
+  kneel: 1 / 3,
+  crawl: 1 / 3,
+};
+
+/**
+ * The Move a posture's fraction applies to, in the order GURPS builds it: encumbrance takes its
+ * share of Basic Move first, dropping the fraction (B17), and reeling and exhaustion then halve
+ * what is left, each rounding *up* -- the explicit exceptions B380 and B426 make to B9's round-down
+ * default.
+ */
+function encumberedMove(system: GurpsSystem): number {
+  const conditions = system.conditions ?? {};
+  let move = Math.max(1, Math.floor(basicMove(system) * encumbranceFactor(system)));
+
+  if (conditions.reeling) move = Math.ceil(move / 2);
+  if (conditions.exhausted) move = Math.ceil(move / 2);
+  return move;
+}
+
+/**
+ * The same Move as the Game Aid arrives at it: halving for the conditions first and applying the
+ * encumbrance factor afterwards, unrounded. The two orders agree for every Basic Move a character
+ * is likely to have and part company on a fast, wounded, encumbered monster, so this one is kept
+ * deliberately faithful to `_calculateEncumbranceIssues` -- it exists only to recognize the number
+ * the system wrote, never to be displayed.
+ */
+function gameAidMove(system: GurpsSystem): number {
+  const conditions = system.conditions ?? {};
+  let move = basicMove(system);
+
+  if (conditions.reeling) move = Math.ceil(move / 2);
+  if (conditions.exhausted) move = Math.ceil(move / 2);
+  return move * encumbranceFactor(system);
+}
+
+/** Unencumbered Move, which the Game Aid keeps on encumbrance level 0 rather than reading back. */
+function basicMove(system: GurpsSystem): number {
+  const levels = Object.values(system.encumbrance ?? {}).filter(Boolean);
+  return num(levels.find((entry) => num(entry.level) === 0)?.move) || num(system.basicmove?.value);
+}
+
+/** Each encumbrance level takes another fifth off Move. */
+function encumbranceFactor(system: GurpsSystem): number {
+  const levels = Object.values(system.encumbrance ?? {}).filter(Boolean);
+  return (10 - 2 * num(levels.find((entry) => entry.current)?.level)) / 10;
+}
+
+/**
+ * Move as the strip shows it, with a posture's fraction rounded down (see `POSTURE_MOVE_FRACTION`)
+ * and never below a yard -- B387's "you can always move at least one hex," which is a floor on
+ * movement itself rather than anything to do with rounding.
+ *
+ * The Game Aid rounds a posture's fraction *up* -- `Math.ceil` in its actor's `_adjustMove` -- so a
+ * crouching Move 5 character is written into `system.currentmove` as 4 where GURPS makes it 3. Its
+ * own token-action bar floors the same fractions, so the number is corrected here rather than
+ * followed.
+ *
+ * Only the number the system actually produced that way is touched. A world that leaves Move alone
+ * outside combat reports full Move, and a maneuver that holds Move lower than the posture does wins
+ * over it; both are passed through as the system has them, because neither is this rounding. So is
+ * anything the system arrived at by arithmetic this does not recognize: the strip would rather show
+ * the system's number than a number neither of them can account for.
+ */
+export function currentMove(system: GurpsSystem): string {
+  const conditions = system.conditions ?? {};
+  const reported = str(system.currentmove);
+  if (!reported) return EM_DASH;
+
+  const fraction = POSTURE_MOVE_FRACTION[conditions.posture ?? ""];
+  if (fraction === undefined) return reported;
+
+  const base = gameAidMove(system);
+  const full = Math.max(1, Math.floor(base));
+  const roundedUp = Math.max(1, Math.ceil(fraction * base));
+  if (num(system.currentmove) !== roundedUp) return reported;
+
+  // A fraction that rounds up to exactly full Move cannot be told apart from Move never having been
+  // adjusted at all. The Game Aid only adjusts it in combat, so out of combat that number is taken
+  // at face value and the strip keeps agreeing with the character sheet.
+  if (roundedUp >= full && !activeManeuver(conditions)) return reported;
+
+  return String(Math.max(1, Math.floor(fraction * encumberedMove(system))));
+}
+
+/**
  * Shock lives on the actor as a `shock1`..`shock4` status rather than a field. Only one should ever
  * be applied, but take the worst if the actor somehow carries several.
  */
@@ -462,14 +568,12 @@ export function buildHudView(
     shock: shockPenalty(actor.statuses),
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
-    move: str(system.currentmove) || EM_DASH,
+    move: currentMove(system),
     attrs: attrColumns(system),
     melee: orderByPicks(melee, picks.melee),
     ranged: orderByPicks(ranged, picks.ranged),
     hasAttacks: melee.length > 0 || ranged.length > 0,
     skills: skillRows(system),
-    // Outside combat the Game Aid leaves this as the literal string "undefined".
-    maneuverId:
-      !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver,
+    maneuverId: activeManeuver(conditions),
   };
 }
