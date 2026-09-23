@@ -10,6 +10,9 @@ import {
   MAX_HUD_SCALE,
   MIN_HUD_SCALE,
   HOTBAR_MODE_HOOK,
+  currentMinimized,
+  MINIMIZED_HOOK,
+  MINIMIZED_SETTING,
   registerSettings,
   resolveHotbarMode,
   resolveHudTheme,
@@ -17,6 +20,7 @@ import {
   showsHudHotbar,
   SCALE_SETTING,
   THEME_SETTING,
+  toggleMinimized,
 } from "./settings";
 
 /** Foundry's settings registry, which is not here. Returns the spy standing in for `register`. */
@@ -30,6 +34,14 @@ function stubSettings() {
 function stubStoredSetting(key: string, value: unknown) {
   const get = vi.fn((_module: string, asked: string) => (asked === key ? value : undefined));
   (globalThis as unknown as { game: { settings: unknown } }).game.settings = { get };
+}
+
+/** Foundry's settings store, holding one stored answer and taking writes. Returns the spy for `set`. */
+function stubWritableSetting(key: string, value: unknown) {
+  const get = vi.fn((_module: string, asked: string) => (asked === key ? value : undefined));
+  const set = vi.fn().mockResolvedValue(undefined);
+  (globalThis as unknown as { game: { settings: unknown } }).game.settings = { get, set };
+  return set;
 }
 
 /** Foundry's hook bus, which is not here. Returns the spy standing in for `callAll`. */
@@ -267,6 +279,43 @@ describe("currentHotbarMode", () => {
   });
 });
 
+describe("currentMinimized", () => {
+  it("is true when the reader minimized the HUD", () => {
+    stubStoredSetting(MINIMIZED_SETTING, true);
+
+    expect(currentMinimized()).toBe(true);
+  });
+
+  /* The harness hands every setting over as the query string spells it. */
+  test("a minimized HUD spelled as a string", () => {
+    stubStoredSetting(MINIMIZED_SETTING, "true");
+
+    expect(currentMinimized()).toBe(true);
+  });
+
+  test("a client that has never stored one", () => {
+    stubStoredSetting(MINIMIZED_SETTING, undefined);
+
+    expect(currentMinimized()).toBe(false);
+  });
+});
+
+describe("toggleMinimized", () => {
+  it("minimizes an expanded HUD", () => {
+    const set = stubWritableSetting(MINIMIZED_SETTING, false);
+    void toggleMinimized();
+
+    expect(set).toHaveBeenCalledWith("gurps-hud", MINIMIZED_SETTING, true);
+  });
+
+  it("expands a minimized HUD", () => {
+    const set = stubWritableSetting(MINIMIZED_SETTING, true);
+    void toggleMinimized();
+
+    expect(set).toHaveBeenCalledWith("gurps-hud", MINIMIZED_SETTING, false);
+  });
+});
+
 describe("registerSettings", () => {
   beforeEach(() => {
     document.documentElement.style.removeProperty("--gurps-hud-scale");
@@ -407,5 +456,44 @@ describe("registerSettings", () => {
     registered(register, HOTBAR_SETTING).onChange("both");
 
     expect(callAll).toHaveBeenCalledWith(HOTBAR_MODE_HOOK, "both");
+  });
+
+  it("registers minimized under the module id", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(register).toHaveBeenCalledWith("gurps-hud", MINIMIZED_SETTING, expect.anything());
+  });
+
+  it("defaults to expanded", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, MINIMIZED_SETTING).default).toBe(false);
+  });
+
+  /* Whether the strip is in the way is a fact about the screen it is read on, not about the world. */
+  it("stores minimized per client", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, MINIMIZED_SETTING).scope).toBe("client");
+  });
+
+  /* The strip's own button and the keybinding are what change it, not the settings form. */
+  it("keeps minimized out of the settings form", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, MINIMIZED_SETTING).config).toBe(false);
+  });
+
+  it("announces minimizing, so the strip follows without a reload", () => {
+    const callAll = stubHooks();
+    const register = stubSettings();
+    registerSettings();
+    registered(register, MINIMIZED_SETTING).onChange(true);
+
+    expect(callAll).toHaveBeenCalledWith(MINIMIZED_HOOK, true);
   });
 });

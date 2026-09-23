@@ -20,6 +20,8 @@ declare module "fvtt-types/configuration" {
        * how the strip's footer and the modifier bucket hear about it without a reload.
        */
       "gurps-hud.hotbarMode": (mode: HotbarMode) => void;
+      /** Fired by this module when the strip is minimized or expanded; see `MINIMIZED_HOOK`. */
+      "gurps-hud.minimized": (minimized: boolean) => void;
     }
   }
 
@@ -39,6 +41,11 @@ declare module "fvtt-types/configuration" {
      * Client-scoped: it is a fact about how one person plays, not about the world.
      */
     "gurps-hud.hotbar": HotbarMode;
+    /**
+     * Whether the strip is folded down to its tab and macro footer. Client-scoped: whether the HUD is
+     * in the way is a fact about the screen it is read on, not about the world.
+     */
+    "gurps-hud.minimized": boolean;
   }
 
   interface FlagConfig {

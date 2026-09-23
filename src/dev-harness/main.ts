@@ -25,6 +25,7 @@
  *                                  follows the desktop, so a spec asks for a palette by name
  *   ?hud_hotbar=default|both       whose macro bar is on screen, as the setting does; only the
  *                                  strip's own footer is here, since there is no Foundry hotbar
+ *   ?hud_minimized=true            opens the strip folded down to its tab, as the setting does
  *   ?show_bucket=true              puts a stand-in modifier bucket beside the strip, as the Game
  *                                  Aid's is adopted into the HUD in a world
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes
@@ -34,7 +35,7 @@ import { mount } from "svelte";
 import PersistentHud from "@/apps/persistent-hud/PersistentHud.svelte";
 import { allAttackPicks } from "@/gurps/hud-view";
 import { foundryI18n } from "@/i18n/stub";
-import { applyHudScale, applyHudTheme, resolveHudTheme } from "@/settings";
+import { applyHudScale, applyHudTheme, registerSettings, resolveHudTheme } from "@/settings";
 import { CAST, TOKENS, castMember } from "./cast";
 import type { HarnessActor } from "./cast";
 import { fire, hooksStub } from "./hooks";
@@ -123,6 +124,9 @@ const hotbar: (string | null)[] = Array.from({ length: 50 }, (_, index) => {
   return column < 3 || column === 9 ? `Macro ${slot}` : null;
 });
 
+const registered = new Map<string, { onChange?: (value: unknown) => void }>();
+const written = new Map<string, unknown>();
+
 Object.assign(globalThis, {
   GURPS: {
     LastActor: selectedActor,
@@ -161,8 +165,20 @@ Object.assign(globalThis, {
   },
   game: {
     // The HUD reads its own settings off the client, and every one of them is named `hud_<key>`
-    // here, so `?hud_hotbar=both` is the setting being set exactly as a world would set it.
-    settings: { get: (_module: string, key: string) => params.get(`hud_${key}`) },
+    // here, so `?hud_hotbar=both` is the setting being set exactly as a world would set it. The
+    // strip writes some of them itself -- minimizing does -- so a write lands in `written` and
+    // runs the setting's `onChange`, as Foundry's client settings do.
+    settings: {
+      register: (_module: string, key: string, config: { onChange?: (value: unknown) => void }) =>
+        registered.set(key, config),
+      get: (_module: string, key: string) =>
+        written.has(key) ? written.get(key) : params.get(`hud_${key}`),
+      set: async (_module: string, key: string, value: unknown) => {
+        written.set(key, value);
+        registered.get(key)?.onChange?.(value);
+        return value;
+      },
+    },
     combats: {
       active: maneuver && selectedActor ? { combatants: [{ actor: selectedActor }] } : null,
     },
@@ -192,6 +208,8 @@ Object.assign(globalThis, {
   },
 });
 
+registerSettings();
+
 /*
  * A stand-in for Foundry's canvas, so a screenshot shows the strip against something like the
  * ground it is read on. It follows the theme for that reason: a light strip on a dark ground says
@@ -203,7 +221,7 @@ const CANVAS = {
 }[resolveHudTheme(params.get("hud_theme"))];
 
 document.body.style.cssText =
-  "margin:0;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;" +
+  "margin:0;box-sizing:border-box;min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;" +
   `background:${CANVAS.ground};background-image:linear-gradient(${CANVAS.grid} 1px,transparent 1px),` +
   `linear-gradient(90deg,${CANVAS.grid} 1px,transparent 1px);background-size:46px 46px;padding:26px 20px 20px`;
 

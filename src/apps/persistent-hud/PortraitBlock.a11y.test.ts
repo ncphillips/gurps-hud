@@ -26,6 +26,7 @@ function props(openPanel: Panel | null = null) {
     onposture: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
+    onminimize: vi.fn(),
   };
 }
 

@@ -23,6 +23,7 @@ function withoutActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBloc
     onposture: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
+    onminimize: vi.fn(),
     ...overrides,
   };
 }
@@ -44,6 +45,7 @@ function withActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBlockPr
     onposture: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
+    onminimize: vi.fn(),
     ...overrides,
   };
 }
@@ -130,5 +132,26 @@ describe("PortraitBlock with an actor", () => {
     await fireEvent.mouseEnter(trigger("actor"));
 
     expect(props.onopen).not.toHaveBeenCalled();
+  });
+});
+
+describe("PortraitBlock's minimize button", () => {
+  it("minimizes the HUD", async () => {
+    const props = withActor();
+    render(PortraitBlock, props);
+
+    await fireEvent.click(screen.getByTitle("Minimize the HUD"));
+
+    expect(props.onminimize).toHaveBeenCalled();
+  });
+
+  /* Getting the strip out of the way is not something an actor has to be selected for. */
+  test("no actor selected", async () => {
+    const props = withoutActor();
+    render(PortraitBlock, props);
+
+    await fireEvent.click(screen.getByTitle("Minimize the HUD"));
+
+    expect(props.onminimize).toHaveBeenCalled();
   });
 });

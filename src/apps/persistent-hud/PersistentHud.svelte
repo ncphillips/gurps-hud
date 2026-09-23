@@ -40,7 +40,14 @@
   import { attackDrag } from "./attack-drag";
   import { isAttackOtf } from "@/gurps/otf";
   import { maneuverById } from "@/gurps/maneuvers";
-  import { currentHotbarMode, showsHudHotbar } from "@/settings";
+  import {
+    currentHotbarMode,
+    currentMinimized,
+    MINIMIZED_HOOK,
+    showsHudHotbar,
+    toggleMinimized,
+  } from "@/settings";
+  import { tick } from "svelte";
   import type { GurpsActorLike } from "@/gurps/system-types";
   import MacroBar from "./MacroBar.svelte";
   import PortraitBlock from "./PortraitBlock.svelte";
@@ -138,6 +145,13 @@
   const choices = $derived(atRevision(revision, () => actorChoices(canvasTokens())));
 
   /**
+   * Folded down to the Expand button and the macro footer, so the strip can get out of the way
+   * without its macros going with it. Read back from the setting, like the hotbar, because the
+   * keybinding changes it too.
+   */
+  const minimized = $derived(atRevision(revision, currentMinimized));
+
+  /**
    * The maneuver comes from the actor, never from local state: whatever set it -- this menu, the
    * token HUD, the character sheet -- the pill reports what the actor is actually performing. Ids
    * outside our menu are labelled by the system so an On Target maneuver still reads correctly.
@@ -190,8 +204,17 @@
     ] as const;
     for (const hook of refreshed) Hooks.on(hook, refresh);
 
+    // A panel open when the strip folds would otherwise reappear on expanding: its trigger is
+    // unmounted rather than left, so no `mouseleave` ever arrives to close it.
+    const fold = () => {
+      openPanel = null;
+      revision++;
+    };
+    Hooks.on(MINIMIZED_HOOK, fold);
+
     return () => {
       for (const hook of refreshed) Hooks.off(hook, refresh);
+      Hooks.off(MINIMIZED_HOOK, fold);
       if (closeTimer) clearTimeout(closeTimer);
     };
   });
@@ -277,6 +300,19 @@
     savePicks(placePick(picks, dropped.key, before));
   }
 
+  /**
+   * The button that was clicked is unmounted by the click, so focus follows to the one that undoes
+   * it. Only from the strip's own buttons: the keybinding can fire with focus anywhere, and pulling
+   * it into the HUD from a chat box would be worse than leaving it.
+   */
+  async function toggleFromStrip(): Promise<void> {
+    await toggleMinimized();
+    await tick();
+    document
+      .querySelector<HTMLElement>(minimized ? "[data-hud-expand]" : "[data-hud-minimize]")
+      ?.focus();
+  }
+
   function toggleLock(): void {
     locked = !locked;
     // Unlocking hands control back to whichever token is selected right now.
@@ -284,71 +320,103 @@
   }
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-  data-hud-strip
-  class="gurps-hud-strip hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-hud-veil/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
-  ondragover={(event) => {
-    if (drag.from !== null) event.preventDefault();
-  }}
-  ondrop={() => (drag.landed = true)}
->
-  <PortraitBlock
-    {view}
-    {enabled}
-    {actor}
-    onpool={(pool, value) => void updatePool(actor, pool, value)}
-    onopensheet={() => openSheet(actor)}
-    {locked}
-    ontogglelock={toggleLock}
-    {choices}
-    onselectactor={selectActor}
-    {openPanel}
-    onposture={selectPosture}
-    onopen={open}
-    onclose={close}
+{#snippet macroBar(folded: boolean)}
+  <MacroBar
+    pages={macroPages}
+    page={macroPage}
+    onpage={(page) => {
+      changeHotbarPage(page);
+      revision++;
+    }}
+    onexecute={executeMacroSlot}
+    onassign={(slot, event) => void assignMacroSlot(slot, event)}
+    onmove={(from, to) => void moveMacroSlot(from, to)}
+    onremove={(slot) => void removeMacroSlot(slot)}
+    {folded}
   />
+{/snippet}
 
-  <div class="hud:flex hud:min-h-0 hud:min-w-0 hud:flex-col">
-    <TopBar
-      {view}
-      {enabled}
-      {maneuver}
-      {maneuverEnabled}
-      {openPanel}
-      onopen={open}
-      onclose={close}
-      onselect={selectManeuver}
-      {targetView}
-      {target}
-      onselecttarget={selectTarget}
-      onroll={roll}
-    />
-    <WeaponTables
-      {view}
-      {enabled}
-      actorId={actor?.id ?? null}
-      bind:drag
-      onroll={roll}
-      onplace={placeAttack}
-      onremove={(key) => savePicks(removePick(picks, key))}
-      onnudge={(key, step) => savePicks(nudgePick(picks, key, step))}
-      onpickall={() => actor && savePicks(allAttackPicks(actor.system))}
-    />
+{#if minimized}
+  <div
+    data-hud-strip
+    class="gurps-hud-strip hud:flex hud:w-fit hud:rounded-hud hud:border hud:border-hud-veil/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
+  >
+    <div class="hud:flex hud:items-center hud:p-[6px]">
+      <button
+        type="button"
+        data-hud-expand
+        title={t("strip.expand")}
+        class="hud:flex hud:h-[22px] hud:w-[22px] hud:flex-none hud:cursor-pointer hud:items-center hud:justify-center hud:rounded-hud-sm hud:border hud:border-transparent hud:bg-hud-veil/[.05] hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.1] hud:hover:text-hud-ink"
+        onclick={toggleFromStrip}
+      >
+        <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
+          <path d="M1.5 1.5h4V3H4.06L6 4.94 4.94 6 3 4.06V5.5H1.5z" />
+          <path d="M10.5 10.5h-4V9h1.44L6 7.06 7.06 6 9 7.94V6.5h1.5z" />
+        </svg>
+      </button>
+    </div>
 
     {#if macroFooter}
-      <MacroBar
-        pages={macroPages}
-        page={macroPage}
-        onpage={(page) => {
-          changeHotbarPage(page);
-          revision++;
-        }}
-        onexecute={executeMacroSlot}
-        onassign={(slot, event) => void assignMacroSlot(slot, event)}
-        onmove={(from, to) => void moveMacroSlot(from, to)}
-        onremove={(slot) => void removeMacroSlot(slot)}
-      />
+      {@render macroBar(true)}
     {/if}
   </div>
-</div>
+{:else}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    data-hud-strip
+    class="gurps-hud-strip hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-hud-veil/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
+    ondragover={(event) => {
+      if (drag.from !== null) event.preventDefault();
+    }}
+    ondrop={() => (drag.landed = true)}
+  >
+    <PortraitBlock
+      {view}
+      {enabled}
+      {actor}
+      onpool={(pool, value) => void updatePool(actor, pool, value)}
+      onopensheet={() => openSheet(actor)}
+      {locked}
+      ontogglelock={toggleLock}
+      {choices}
+      onselectactor={selectActor}
+      {openPanel}
+      onposture={selectPosture}
+      onopen={open}
+      onclose={close}
+      onminimize={toggleFromStrip}
+    />
+
+    <div class="hud:flex hud:min-h-0 hud:min-w-0 hud:flex-col">
+      <TopBar
+        {view}
+        {enabled}
+        {maneuver}
+        {maneuverEnabled}
+        {openPanel}
+        onopen={open}
+        onclose={close}
+        onselect={selectManeuver}
+        {targetView}
+        {target}
+        onselecttarget={selectTarget}
+        onroll={roll}
+      />
+      <WeaponTables
+        {view}
+        {enabled}
+        actorId={actor?.id ?? null}
+        bind:drag
+        onroll={roll}
+        onplace={placeAttack}
+        onremove={(key) => savePicks(removePick(picks, key))}
+        onnudge={(key, step) => savePicks(nudgePick(picks, key, step))}
+        onpickall={() => actor && savePicks(allAttackPicks(actor.system))}
+      />
+
+      {#if macroFooter}
+        {@render macroBar(false)}
+      {/if}
+    </div>
+  </div>
+{/if}

@@ -15,6 +15,7 @@
     onmove,
     onremove,
     onpage,
+    folded = false,
   }: {
     pages: MacroPage[];
     /** The page the bar shows; the number-key hotkeys address the same one. */
@@ -24,6 +25,11 @@
     onmove: (from: number, to: number) => void;
     onremove: (slot: number) => void;
     onpage: (page: number) => void;
+    /**
+     * Beside the minimized strip's Expand button rather than under the weapon tables, so the hairline
+     * that divides it from the rest of the strip runs down its left edge instead of along its top.
+     */
+    folded?: boolean;
   } = $props();
 
   const slots = $derived(pages.find((entry) => entry.page === page)?.slots ?? []);
@@ -104,7 +110,10 @@
 
 <div
   bind:this={footer}
-  class="hud:relative hud:flex hud:items-center hud:gap-[6px] hud:rounded-br-hud hud:border-t hud:border-hud-veil/[.08] hud:bg-hud-deep hud:px-[11px] hud:py-[6px]"
+  class={[
+    "hud:relative hud:flex hud:items-center hud:gap-[6px] hud:border-hud-veil/[.08] hud:bg-hud-deep hud:px-[11px] hud:py-[6px]",
+    folded ? "hud:rounded-r-hud hud:border-l" : "hud:rounded-br-hud hud:border-t",
+  ]}
 >
   <span
     class="hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"

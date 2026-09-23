@@ -112,6 +112,18 @@ test.describe("persistent HUD accessibility", () => {
     await expect(page).toBeAccessible();
   });
 
+  test("the strip minimized", async ({ page }) => {
+    await openHarness(page, { hud_minimized: true });
+
+    await expect(page).toBeAccessible();
+  });
+
+  test("the strip minimized under the default hotbar", async ({ page }) => {
+    await openHarness(page, { hud_minimized: true, hud_hotbar: "default" });
+
+    await expect(page).toBeAccessible();
+  });
+
   /*
    * Contrast, once per palette: a palette nobody measures is one that quietly reads worse than the
    * other. The sweep unions every state, because a dim ink is one decision about the palette
@@ -130,6 +142,8 @@ test.describe("persistent HUD accessibility", () => {
     { expand_macros: true },
     { pick_attacks: "none" },
     { selected_actor: "" },
+    { hud_minimized: true },
+    { hud_minimized: true, hud_hotbar: "default" },
   ];
 
   for (const theme of ["dark", "light"] as const) {

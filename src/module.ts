@@ -8,6 +8,7 @@ import {
   currentHudScale,
   currentHudTheme,
   registerSettings,
+  toggleMinimized,
 } from "./settings";
 
 const { MODIFIER_KEYS } = foundry.helpers.interaction.KeyboardManager;
@@ -26,6 +27,16 @@ Hooks.once("init", () => {
     editable: [{ key: "KeyH", modifiers: [MODIFIER_KEYS.CONTROL, MODIFIER_KEYS.SHIFT] }],
     onDown: () => {
       persistentHud?.toggle();
+      return true;
+    },
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,
+  });
+
+  game.keybindings!.register("gurps-hud", "toggleMinimized", {
+    name: t("keybindings.toggleMinimized"),
+    editable: [{ key: "KeyH", modifiers: [MODIFIER_KEYS.SHIFT] }],
+    onDown: () => {
+      void toggleMinimized();
       return true;
     },
     precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL,

@@ -22,6 +22,9 @@ export const THEME_SETTING = "theme";
 /** The setting key, so `game.settings.get(MODULE, HOTBAR_SETTING)` and the registration agree. */
 export const HOTBAR_SETTING = "hotbar";
 
+/** The setting key, so `game.settings.get(MODULE, MINIMIZED_SETTING)` and the registration agree. */
+export const MINIMIZED_SETTING = "minimized";
+
 /** The custom property `gurps-hud.css` multiplies the UI scale by. */
 const SCALE_VAR = "--gurps-hud-scale";
 
@@ -199,6 +202,13 @@ export function showsDefaultHotbar(mode: HotbarMode): boolean {
  */
 export const HOTBAR_MODE_HOOK = "gurps-hud.hotbarMode";
 
+/**
+ * Fired with the new state whenever the strip is minimized or expanded. A client setting is
+ * announced nowhere, and the strip is not the only writer -- the keybinding is another -- so the
+ * strip hears about it here rather than trusting its own click.
+ */
+export const MINIMIZED_HOOK = "gurps-hud.minimized";
+
 export function registerSettings(): void {
   game.settings!.register(MODULE, SCALE_SETTING, {
     name: t("settings.scale.name"),
@@ -240,6 +250,19 @@ export function registerSettings(): void {
     default: "hud",
     onChange: (mode) => Hooks.callAll(HOTBAR_MODE_HOOK, resolveHotbarMode(mode)),
   });
+
+  game.settings!.register(MODULE, MINIMIZED_SETTING, {
+    scope: "client",
+    config: false,
+    type: Boolean,
+    default: false,
+    onChange: (minimized) => Hooks.callAll(MINIMIZED_HOOK, isMinimized(minimized)),
+  });
+}
+
+/** The harness hands settings over as the query string spells them, so `"true"` counts too. */
+function isMinimized(minimized: unknown): boolean {
+  return minimized === true || minimized === "true";
 }
 
 export function currentHudScale(): number {
@@ -254,4 +277,12 @@ export function currentHudTheme(): HudTheme {
 
 export function currentHotbarMode(): HotbarMode {
   return resolveHotbarMode(game.settings?.get(MODULE, HOTBAR_SETTING));
+}
+
+export function currentMinimized(): boolean {
+  return isMinimized(game.settings?.get(MODULE, MINIMIZED_SETTING));
+}
+
+export function toggleMinimized(): Promise<unknown> {
+  return game.settings!.set(MODULE, MINIMIZED_SETTING, !currentMinimized());
 }

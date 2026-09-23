@@ -14,6 +14,8 @@ export function fire(hook: string): void {
 export const hooksStub = {
   on: (hook: string, fn: () => void) =>
     subscribers.set(hook, [...(subscribers.get(hook) ?? []), fn]),
+  // What the HUD's own settings announce themselves on; nothing subscribed here reads the arguments.
+  callAll: (hook: string) => fire(hook),
   // The harness never unmounts the strip, so nothing ever needs unsubscribing.
   off: () => undefined,
 };

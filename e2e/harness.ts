@@ -27,6 +27,8 @@ export interface HarnessParams {
    * footer is here to see: the harness has no `#hotbar` of Foundry's to keep or hide.
    */
   hud_hotbar?: HotbarMode;
+  /** Opens the strip minimized, as the `gurps-hud.minimized` setting does. */
+  hud_minimized?: boolean;
   /** Puts a stand-in modifier bucket beside the strip, as the Game Aid's is adopted in a world. */
   show_bucket?: boolean;
   /** Who the strip is showing. Omit for Thor; `""` for nobody. */

@@ -24,6 +24,7 @@
     onposture,
     onopen,
     onclose,
+    onminimize,
   }: {
     view: HudView;
     /** False with nothing selected: the block still renders, but nothing in it acts on an actor. */
@@ -42,6 +43,7 @@
     onposture: (id: string) => void;
     onopen: (panel: Panel) => void;
     onclose: () => void;
+    onminimize: () => void;
   } = $props();
 
   /*
@@ -72,28 +74,16 @@
   data-hud-portrait-block
   class="hud:flex hud:w-[143px] hud:flex-none hud:flex-col hud:rounded-l-hud hud:border-r hud:border-hud-veil/[.08] hud:bg-hud-deep"
 >
-  <div class="hud:flex hud:items-center hud:gap-[2px] hud:pr-[7px] hud:pl-[3px] hud:py-[2px]">
+  <div class="hud:flex hud:items-center hud:gap-[2px] hud:px-[3px] hud:py-[2px]">
     <button
       type="button"
-      class="hud:flex hud:h-[14px] hud:w-[14px] hud:flex-none hud:items-center hud:justify-center hud:rounded-hud-xs hud:border hud:border-transparent hud:transition-colors hud:duration-75 {enabled
-        ? 'hud:cursor-pointer hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.08]'
-        : 'hud:text-hud-ink/20'} {locked
-        ? 'hud:text-hud-accent'
-        : enabled
-          ? 'hud:text-hud-faint hud:hover:text-hud-ink/70'
-          : ''}"
-      title={locked ? t("portrait.lock.locked") : t("portrait.lock.unlocked")}
-      aria-pressed={locked}
-      disabled={!enabled}
-      onclick={ontogglelock}
+      data-hud-minimize
+      class="hud:flex hud:h-[14px] hud:w-[14px] hud:flex-none hud:cursor-pointer hud:items-center hud:justify-center hud:rounded-hud-xs hud:border hud:border-transparent hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.08] hud:hover:text-hud-ink/70"
+      title={t("strip.minimize")}
+      onclick={onminimize}
     >
       <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
-        <rect x="2" y="5.5" width="8" height="6" rx="1" />
-        {#if locked}
-          <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5h-1.2V4a.8.8 0 0 0-1.6 0v1.5Z" />
-        {:else}
-          <path d="M4 5.5V3.5a2 2 0 0 1 4 0V4H6.8v-.5a.8.8 0 0 0-1.6 0v2Z" />
-        {/if}
+        <path d="M2 9h8v1.5H2z" />
       </svg>
     </button>
 
@@ -152,6 +142,30 @@
         </Popover>
       {/if}
     </div>
+
+    <button
+      type="button"
+      class="hud:flex hud:h-[14px] hud:w-[14px] hud:flex-none hud:items-center hud:justify-center hud:rounded-hud-xs hud:border hud:border-transparent hud:transition-colors hud:duration-75 {enabled
+        ? 'hud:cursor-pointer hud:hover:border-hud-veil/[.18] hud:hover:bg-hud-veil/[.08]'
+        : 'hud:text-hud-ink/20'} {locked
+        ? 'hud:text-hud-accent'
+        : enabled
+          ? 'hud:text-hud-faint hud:hover:text-hud-ink/70'
+          : ''}"
+      title={locked ? t("portrait.lock.locked") : t("portrait.lock.unlocked")}
+      aria-pressed={locked}
+      disabled={!enabled}
+      onclick={ontogglelock}
+    >
+      <svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor" aria-hidden="true">
+        <rect x="2" y="5.5" width="8" height="6" rx="1" />
+        {#if locked}
+          <path d="M4 5.5V4a2 2 0 0 1 4 0v1.5h-1.2V4a.8.8 0 0 0-1.6 0v1.5Z" />
+        {:else}
+          <path d="M4 5.5V3.5a2 2 0 0 1 4 0V4H6.8v-.5a.8.8 0 0 0-1.6 0v2Z" />
+        {/if}
+      </svg>
+    </button>
   </div>
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
