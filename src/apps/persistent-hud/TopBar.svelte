@@ -10,7 +10,7 @@
 
   /**
    * One row across the top of the strip: attributes, skills, Dodge, the maneuver and the target hit
-   * location. Every popover anchors here so it opens upward, clear of the strip.
+   * location. Every popover hangs off one of these.
    */
   let {
     view,
@@ -83,12 +83,6 @@
   const CARET_HOVER = "hud:group-hover:text-hud-on-accent/80";
 
   /*
-   * Panels sit 10px above their trigger: the trigger's top is 4px inside the strip (1px border,
-   * 3px padding), so this puts each one 6px clear of the strip's top edge.
-   */
-  const OFFSET = 10;
-
-  /*
    * The skills list is the one panel that can outgrow its cap, so it -- not a box inside it --
    * carries the width, the cap and the scrolling. 400px is the mock's width under border-box.
    */
@@ -115,7 +109,7 @@
   >
     {@render trigger(t("topBar.attrs.label"), t("topBar.attrs.title"), enabled)}
     {#if openPanel === "attrs" && enabled}
-      <Popover offset={OFFSET}>
+      <Popover>
         <AttrsPanel basic={view.attrs.basic} secondary={view.attrs.secondary} {onroll} />
       </Popover>
     {/if}
@@ -130,7 +124,7 @@
   >
     {@render trigger(t("topBar.skills.label"), t("topBar.skills.title"), enabled)}
     {#if openPanel === "skills" && enabled}
-      <Popover offset={OFFSET} class={SKILLS_PANEL}>
+      <Popover class={SKILLS_PANEL}>
         <SkillsPanel skills={view.skills} {onroll} />
       </Popover>
     {/if}
@@ -187,7 +181,6 @@
 
     {#if openPanel === "maneuver" && maneuverEnabled}
       <Popover
-        offset={OFFSET}
         name="maneuver"
         class="hud:grid hud:w-[464px] hud:grid-cols-2 hud:gap-[2px] hud:p-[5px]"
       >
@@ -262,11 +255,7 @@
     </div>
 
     {#if openPanel === "target" && targetView}
-      <Popover
-        offset={OFFSET}
-        align="right"
-        class="hud:flex hud:w-[236px] hud:flex-col hud:p-[5px]"
-      >
+      <Popover align="right" class="hud:flex hud:w-[236px] hud:flex-col hud:p-[5px]">
         <div
           class="hud:flex hud:gap-[6px] hud:px-[7px] hud:pb-[2px] hud:font-hud-mono hud:text-[8px] hud:font-bold hud:tracking-[.13em] hud:text-hud-faint"
         >

@@ -24,6 +24,16 @@ from that tag.
   Foundry's player list only makes room for the strip while it is docked beneath it. Where it sits
   is per-player and survives a reload.
 
+### Changed
+
+- **Panels open where there is room.** Every panel opened upward, which was right while the strip
+  could only sit at the bottom of the screen and wrong the moment it could be moved: near the top,
+  panels ran off the window. Now a panel opens just above the button that opened it, or just below
+  it when there is no room above, slides sideways rather than run off either side, and a long skills
+  list shrinks to fit a short window. Panels hang off their own button rather than clearing the
+  whole strip, so the posture menu lies over the name row instead of floating away above it — the
+  controls in that gap looked pressable but weren't.
+
 ### Fixed
 
 - **A firearm's range fits its column.** The range column was drawn at the width a thrown spear's

@@ -111,9 +111,7 @@
       </div>
 
       {#if openPanel === "actor" && switchable}
-        <!-- The name row sits 1px inside the strip, so 7px lifts the menu 6px clear of its top edge. -->
         <Popover
-          offset={7}
           class="hud:flex hud:max-h-[320px] hud:w-[180px] hud:flex-col hud:gap-px hud:overflow-y-auto hud:p-[4px]"
         >
           {#each choices as choice (choice.key)}
@@ -205,11 +203,7 @@
       </span>
 
       {#if openPanel === "posture" && enabled}
-        <!--
-          The badge sits 24px inside the strip (name row, border, offset), so 30px lifts the menu
-          6px clear of the strip's top edge like the top bar's panels.
-        -->
-        <Popover offset={30} class="hud:flex hud:w-[124px] hud:flex-col hud:gap-px hud:p-[4px]">
+        <Popover class="hud:flex hud:w-[124px] hud:flex-col hud:gap-px hud:p-[4px]">
           {#each view.postures as option (option.id)}
             {@const isSelected = option.id === view.posture.id}
             <button
