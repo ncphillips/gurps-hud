@@ -1,19 +1,28 @@
 import { SvelteApp } from "@/apps/SvelteApp";
 import { log } from "@/log";
-import { currentHotbarMode, HOTBAR_MODE_HOOK, showsDefaultHotbar } from "@/settings";
+import {
+  currentHotbarMode,
+  currentHudPosition,
+  HOTBAR_MODE_HOOK,
+  POSITION_HOOK,
+  showsDefaultHotbar,
+} from "@/settings";
 import PersistentHud from "./PersistentHud.svelte";
 
 const BODY_CLASS = "gurps-hud-active";
 
 /** Carried only while the strip's footer is standing in for Foundry's bar; the stylesheet hides it. */
 const OWNS_HOTBAR_CLASS = "gurps-hud-owns-hotbar";
+
+/** Carried while the reader has dragged the strip off its dock; the player list stops making room. */
+const FLOATING_CLASS = "gurps-hud-floating";
 const HEIGHT_VAR = "--gurps-hud-height";
 const BUCKET_ID = "bucket-container";
 
 /**
  * PersistentHUD
  *
- * The always-mounted strip, docked to the bottom-left of the canvas.
+ * The always-mounted strip, docked to the bottom-left of the canvas until the reader drags it off.
  */
 export class PersistentHudApp extends SvelteApp {
   static override DEFAULT_OPTIONS = {
@@ -33,6 +42,7 @@ export class PersistentHudApp extends SvelteApp {
   #bucketHome: { parent: Node; next: Node | null } | null = null;
   #onBucketRender = () => this.#adoptBucket();
   #onHotbarMode = () => this.#followHotbarMode();
+  #onPosition = () => this.#followPosition();
 
   component = () => PersistentHud;
   props = () => ({});
@@ -57,8 +67,15 @@ export class PersistentHudApp extends SvelteApp {
 
     // The Game Aid may render its bucket before or after us; cover both orders.
     this.#followHotbarMode();
+    this.#followPosition();
     Hooks.on("renderModifierBucket", this.#onBucketRender);
     Hooks.on(HOTBAR_MODE_HOOK, this.#onHotbarMode);
+    Hooks.on(POSITION_HOOK, this.#onPosition);
+  }
+
+  /** The strip places itself; what is left here is Foundry's player list, which it no longer covers. */
+  #followPosition(): void {
+    document.body.classList.toggle(FLOATING_CLASS, currentHudPosition() !== null);
   }
 
   /**
@@ -82,9 +99,11 @@ export class PersistentHudApp extends SvelteApp {
     this.#resizeObserver = null;
     Hooks.off("renderModifierBucket", this.#onBucketRender);
     Hooks.off(HOTBAR_MODE_HOOK, this.#onHotbarMode);
+    Hooks.off(POSITION_HOOK, this.#onPosition);
     this.#releaseBucket();
     document.body.classList.remove(BODY_CLASS);
     document.body.classList.remove(OWNS_HOTBAR_CLASS);
+    document.body.classList.remove(FLOATING_CLASS);
     document.body.style.removeProperty(HEIGHT_VAR);
     await super._onClose(options);
   }

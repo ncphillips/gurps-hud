@@ -26,6 +26,8 @@
  *   ?hud_hotbar=default|both       whose macro bar is on screen, as the setting does; only the
  *                                  strip's own footer is here, since there is no Foundry hotbar
  *   ?hud_minimized=true            opens the strip folded down to its tab, as the setting does
+ *   ?hud_position=120,300          opens the strip that far from the bottom-left of the window, as
+ *                                  the setting does after a drag
  *   ?show_bucket=true              puts a stand-in modifier bucket beside the strip, as the Game
  *                                  Aid's is adopted into the HUD in a world
  *   ?measure=true                  appends a <pre id="measurements"> of key bounding boxes

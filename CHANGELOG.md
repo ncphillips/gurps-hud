@@ -7,7 +7,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
-## v0.5.1 (unreleased)
+## v0.6.0 (unreleased)
+
+### Added
+
+- **Minimize the HUD.** The strip sits over the canvas, and closing it outright takes the macros
+  with it whenever the HUD owns the hotbar. The button left of the character's name — or
+  **Shift+H**, rebindable under Configure Controls — folds the strip down to a single Expand button,
+  with the macro footer still beside it if the HUD's own bar is on screen, so the canvas comes back
+  without losing your macros. The lock moves to the other side of the name to make room. Whether it
+  is minimized is per-player and survives a reload.
+- **Move the HUD anywhere.** The strip was bolted to the bottom-left of the canvas, which is exactly
+  where the fight is on some maps. Drag the dotted rail down its left edge to put it wherever it is
+  out of the way — minimized or not, with the modifier bucket coming along. It stays on screen when
+  the window shrinks or the strip grows, and double-clicking the rail puts it back where it docks.
+  Foundry's player list only makes room for the strip while it is docked beneath it. Where it sits
+  is per-player and survives a reload.
 
 ### Fixed
 

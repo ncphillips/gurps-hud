@@ -240,9 +240,10 @@
  * Make room for the strip. `#ui-left` is inside a `scale(var(--ui-scale))` transform and so is laid
  * out in pre-scale pixels, which is exactly what `offsetHeight` reports -- no conversion. The
  * reader's size needs none either: it is zoom on a *child* of the measured element, so the height
- * that comes back already counts it.
+ * that comes back already counts it. A strip dragged off its dock is out from under the list, so the
+ * list goes back to where Foundry keeps it.
  */
-body.gurps-hud-active #ui-left {
+body.gurps-hud-active:not(.gurps-hud-floating) #ui-left {
   padding-bottom: calc(16px + var(--gurps-hud-height, 0px));
 }
 

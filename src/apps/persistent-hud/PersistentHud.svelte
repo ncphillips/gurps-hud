@@ -42,11 +42,15 @@
   import { maneuverById } from "@/gurps/maneuvers";
   import {
     currentHotbarMode,
+    currentHudPosition,
     currentMinimized,
     MINIMIZED_HOOK,
+    POSITION_HOOK,
+    saveHudPosition,
     showsHudHotbar,
     toggleMinimized,
   } from "@/settings";
+  import type { HudPosition } from "@/settings";
   import { tick } from "svelte";
   import type { GurpsActorLike } from "@/gurps/system-types";
   import MacroBar from "./MacroBar.svelte";
@@ -54,6 +58,7 @@
   import TopBar from "./TopBar.svelte";
   import type { Panel } from "./panels";
   import WeaponTables from "./WeaponTables.svelte";
+  import { placeHud } from "./hud-position";
 
   // Raw, not proxied: these are Foundry documents mutated in place, and the switcher marks the
   // current choice by identity.
@@ -151,6 +156,23 @@
    */
   const minimized = $derived(atRevision(revision, currentMinimized));
 
+  /** Where the reader dropped the strip, or `null` while it is docked. */
+  const position = $derived(atRevision(revision, currentHudPosition));
+
+  let strip = $state<HTMLElement | null>(null);
+
+  /**
+   * The drag in progress: where the pointer went down, where the HUD was then, and where it has
+   * been put since. Plain rather than reactive -- it only ever moves the element by hand -- and
+   * what stops the setting being re-applied underneath a drag whenever some other hook fires.
+   */
+  let move = null as {
+    x: number;
+    y: number;
+    from: HudPosition;
+    to: HudPosition | null;
+  } | null;
+
   /**
    * The maneuver comes from the actor, never from local state: whatever set it -- this menu, the
    * token HUD, the character sheet -- the pill reports what the actor is actually performing. Ids
@@ -211,13 +233,72 @@
       revision++;
     };
     Hooks.on(MINIMIZED_HOOK, fold);
+    Hooks.on(POSITION_HOOK, refresh);
 
     return () => {
       for (const hook of refreshed) Hooks.off(hook, refresh);
       Hooks.off(MINIMIZED_HOOK, fold);
+      Hooks.off(POSITION_HOOK, refresh);
       if (closeTimer) clearTimeout(closeTimer);
     };
   });
+
+  /*
+   * The element is the HUD's -- the strip's parent, which the modifier bucket is adopted into -- so
+   * the bucket moves with it. Re-placed whenever it or the window changes size, because a strip that
+   * fitted where it was dropped can outgrow the spot: expanding it, or selecting a longer actor.
+   */
+  $effect(() => {
+    const host = strip?.parentElement;
+    if (!host) return;
+
+    const place = () => {
+      if (!move) placeHud(host, position);
+    };
+    place();
+
+    const observer = new ResizeObserver(place);
+    observer.observe(host);
+    addEventListener("resize", place);
+    return () => {
+      observer.disconnect();
+      removeEventListener("resize", place);
+    };
+  });
+
+  function grab(event: PointerEvent): void {
+    const host = strip?.parentElement;
+    if (event.button !== 0 || !host) return;
+
+    // Kept from starting a text selection, which a drag across the tables otherwise would.
+    event.preventDefault();
+    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+
+    const box = host.getBoundingClientRect();
+    move = {
+      x: event.clientX,
+      y: event.clientY,
+      from: { left: box.left, bottom: innerHeight - box.bottom },
+      to: null,
+    };
+  }
+
+  function haul(event: PointerEvent): void {
+    const host = strip?.parentElement;
+    if (!move || !host) return;
+
+    move.to = placeHud(host, {
+      left: move.from.left + event.clientX - move.x,
+      bottom: move.from.bottom - (event.clientY - move.y),
+    });
+  }
+
+  function drop(): void {
+    const to = move?.to;
+    move = null;
+    // A press with no movement is half of a double-click, not a move to wherever the HUD already is.
+    if (to) void saveHudPosition(to);
+  }
 
   function open(panel: Panel): void {
     if (closeTimer) clearTimeout(closeTimer);
@@ -336,11 +417,34 @@
   />
 {/snippet}
 
+{#snippet grip()}
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    data-hud-grip
+    title={t("strip.move")}
+    class="hud:flex hud:w-[8px] hud:flex-none hud:cursor-grab hud:touch-none hud:items-center hud:justify-center hud:rounded-l-hud hud:border-r hud:border-hud-veil/[.11] hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:bg-hud-veil/[.05] hud:hover:text-hud-ink hud:active:cursor-grabbing"
+    onpointerdown={grab}
+    onpointermove={haul}
+    onpointerup={drop}
+    onpointercancel={drop}
+    ondblclick={() => void saveHudPosition(null)}
+  >
+    <svg viewBox="0 0 2 14" width="2" height="14" fill="currentColor" aria-hidden="true">
+      <circle cx="1" cy="1" r="1" />
+      <circle cx="1" cy="5" r="1" />
+      <circle cx="1" cy="9" r="1" />
+      <circle cx="1" cy="13" r="1" />
+    </svg>
+  </div>
+{/snippet}
+
 {#if minimized}
   <div
+    bind:this={strip}
     data-hud-strip
     class="gurps-hud-strip hud:flex hud:w-fit hud:rounded-hud hud:border hud:border-hud-veil/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
   >
+    {@render grip()}
     <div class="hud:flex hud:items-center hud:p-[6px]">
       <button
         type="button"
@@ -363,6 +467,7 @@
 {:else}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
+    bind:this={strip}
     data-hud-strip
     class="gurps-hud-strip hud:flex hud:max-h-hud-max hud:w-fit hud:rounded-hud hud:border hud:border-hud-veil/[.11] hud:bg-hud-panel hud:font-hud hud:text-hud-ink"
     ondragover={(event) => {
@@ -370,6 +475,7 @@
     }}
     ondrop={() => (drag.landed = true)}
   >
+    {@render grip()}
     <PortraitBlock
       {view}
       {enabled}

@@ -10,12 +10,16 @@ import {
   MAX_HUD_SCALE,
   MIN_HUD_SCALE,
   HOTBAR_MODE_HOOK,
+  currentHudPosition,
   currentMinimized,
   MINIMIZED_HOOK,
   MINIMIZED_SETTING,
+  POSITION_HOOK,
+  POSITION_SETTING,
   registerSettings,
   resolveHotbarMode,
   resolveHudTheme,
+  saveHudPosition,
   showsDefaultHotbar,
   showsHudHotbar,
   SCALE_SETTING,
@@ -316,6 +320,43 @@ describe("toggleMinimized", () => {
   });
 });
 
+describe("currentHudPosition", () => {
+  it("is where the reader left the HUD", () => {
+    stubStoredSetting(POSITION_SETTING, "120,300");
+
+    expect(currentHudPosition()).toEqual({ left: 120, bottom: 300 });
+  });
+
+  test("a client that has never moved the HUD", () => {
+    stubStoredSetting(POSITION_SETTING, "");
+
+    expect(currentHudPosition()).toBeNull();
+  });
+
+  /* A client setting is reachable from the console, so what comes back is not always one of ours. */
+  test("a position missing a coordinate", () => {
+    stubStoredSetting(POSITION_SETTING, "120,");
+
+    expect(currentHudPosition()).toBeNull();
+  });
+});
+
+describe("saveHudPosition", () => {
+  it("stores where the HUD was dropped", () => {
+    const set = stubWritableSetting(POSITION_SETTING, "");
+    void saveHudPosition({ left: 120, bottom: 300 });
+
+    expect(set).toHaveBeenCalledWith("gurps-hud", POSITION_SETTING, "120,300");
+  });
+
+  test("putting the HUD back", () => {
+    const set = stubWritableSetting(POSITION_SETTING, "120,300");
+    void saveHudPosition(null);
+
+    expect(set).toHaveBeenCalledWith("gurps-hud", POSITION_SETTING, "");
+  });
+});
+
 describe("registerSettings", () => {
   beforeEach(() => {
     document.documentElement.style.removeProperty("--gurps-hud-scale");
@@ -495,5 +536,45 @@ describe("registerSettings", () => {
     registered(register, MINIMIZED_SETTING).onChange(true);
 
     expect(callAll).toHaveBeenCalledWith(MINIMIZED_HOOK, true);
+  });
+
+  it("registers the position under the module id", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(register).toHaveBeenCalledWith("gurps-hud", POSITION_SETTING, expect.anything());
+  });
+
+  /* Nothing stored is the HUD docked where it has always been. */
+  it("defaults to docked", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, POSITION_SETTING).default).toBe("");
+  });
+
+  /* Where the HUD is out of the way is a fact about the screen it is read on, not about the world. */
+  it("stores the position per client", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, POSITION_SETTING).scope).toBe("client");
+  });
+
+  /* The grip is what changes it, not the settings form. */
+  it("keeps the position out of the settings form", () => {
+    const register = stubSettings();
+    registerSettings();
+
+    expect(registered(register, POSITION_SETTING).config).toBe(false);
+  });
+
+  it("announces a move, so the strip and the player list follow", () => {
+    const callAll = stubHooks();
+    const register = stubSettings();
+    registerSettings();
+    registered(register, POSITION_SETTING).onChange("120,300");
+
+    expect(callAll).toHaveBeenCalledWith(POSITION_HOOK, { left: 120, bottom: 300 });
   });
 });

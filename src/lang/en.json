@@ -3,6 +3,7 @@
   "gurps-hud.keybindings.toggleMinimized": "GURPS HUD: Minimize or expand the persistent HUD",
   "gurps-hud.strip.minimize": "Minimize the HUD",
   "gurps-hud.strip.expand": "Expand the HUD",
+  "gurps-hud.strip.move": "Drag to move the HUD; double-click to put it back",
   "gurps-hud.settings.scale.name": "HUD scale",
   "gurps-hud.settings.scale.hint": "How large the strip is drawn, as a multiple of the size it was designed at. 1 is that size; go higher on a big screen and lower on a cramped one.",
   "gurps-hud.settings.theme.name": "HUD theme",

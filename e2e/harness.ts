@@ -29,6 +29,11 @@ export interface HarnessParams {
   hud_hotbar?: HotbarMode;
   /** Opens the strip minimized, as the `gurps-hud.minimized` setting does. */
   hud_minimized?: boolean;
+  /**
+   * Opens the strip where the reader left it, as the `gurps-hud.position` setting does: `left,bottom`
+   * in pixels from the bottom-left of the window. Omit for docked.
+   */
+  hud_position?: `${number},${number}`;
   /** Puts a stand-in modifier bucket beside the strip, as the Game Aid's is adopted in a world. */
   show_bucket?: boolean;
   /** Who the strip is showing. Omit for Thor; `""` for nobody. */

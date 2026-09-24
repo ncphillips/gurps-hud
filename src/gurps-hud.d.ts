@@ -1,5 +1,5 @@
 import type { AttackPicks } from "./gurps/attack-picks";
-import type { HotbarMode, HudTheme } from "./settings";
+import type { HotbarMode, HudPosition, HudTheme } from "./settings";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -22,6 +22,8 @@ declare module "fvtt-types/configuration" {
       "gurps-hud.hotbarMode": (mode: HotbarMode) => void;
       /** Fired by this module when the strip is minimized or expanded; see `MINIMIZED_HOOK`. */
       "gurps-hud.minimized": (minimized: boolean) => void;
+      /** Fired by this module when the strip is moved or put back; see `POSITION_HOOK`. */
+      "gurps-hud.position": (position: HudPosition | null) => void;
     }
   }
 
@@ -46,6 +48,11 @@ declare module "fvtt-types/configuration" {
      * in the way is a fact about the screen it is read on, not about the world.
      */
     "gurps-hud.minimized": boolean;
+    /**
+     * Where the reader dropped the strip, as `left,bottom`, or `""` while it is docked. Client-scoped:
+     * where the HUD is out of the way is a fact about the screen it is read on, not about the world.
+     */
+    "gurps-hud.position": string;
   }
 
   interface FlagConfig {

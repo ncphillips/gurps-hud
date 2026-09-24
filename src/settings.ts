@@ -25,6 +25,9 @@ export const HOTBAR_SETTING = "hotbar";
 /** The setting key, so `game.settings.get(MODULE, MINIMIZED_SETTING)` and the registration agree. */
 export const MINIMIZED_SETTING = "minimized";
 
+/** The setting key, so `game.settings.get(MODULE, POSITION_SETTING)` and the registration agree. */
+export const POSITION_SETTING = "position";
+
 /** The custom property `gurps-hud.css` multiplies the UI scale by. */
 const SCALE_VAR = "--gurps-hud-scale";
 
@@ -209,6 +212,23 @@ export const HOTBAR_MODE_HOOK = "gurps-hud.hotbarMode";
  */
 export const MINIMIZED_HOOK = "gurps-hud.minimized";
 
+/**
+ * Fired with the new spot -- `null` for docked -- whenever the strip is dropped somewhere or put
+ * back. The strip is not the only thing that follows it: the application only lifts Foundry's
+ * player list clear of the strip while the strip is docked beneath it.
+ */
+export const POSITION_HOOK = "gurps-hud.position";
+
+/**
+ * Where the reader dropped the strip, measured from the bottom-left of the screen to the bottom-left
+ * of the HUD. The bottom rather than the top because that is the corner the strip grows away from: a
+ * longer weapon table, or expanding a minimized strip, pushes the top up and leaves the rest put.
+ */
+export interface HudPosition {
+  left: number;
+  bottom: number;
+}
+
 export function registerSettings(): void {
   game.settings!.register(MODULE, SCALE_SETTING, {
     name: t("settings.scale.name"),
@@ -258,11 +278,36 @@ export function registerSettings(): void {
     default: false,
     onChange: (minimized) => Hooks.callAll(MINIMIZED_HOOK, isMinimized(minimized)),
   });
+
+  game.settings!.register(MODULE, POSITION_SETTING, {
+    scope: "client",
+    config: false,
+    type: String,
+    default: "",
+    onChange: (position) => Hooks.callAll(POSITION_HOOK, hudPosition(position)),
+  });
 }
 
 /** The harness hands settings over as the query string spells them, so `"true"` counts too. */
 function isMinimized(minimized: unknown): boolean {
   return minimized === true || minimized === "true";
+}
+
+/**
+ * The spot a stored setting amounts to, or `null` -- docked -- when it amounts to none. Stored as
+ * `left,bottom` rather than as an object, because a setting's type cannot be `null` and docked is
+ * the empty string. A client setting is reachable from the console, so a value missing a coordinate
+ * reads as never having been moved rather than as a strip at `NaN`.
+ */
+function hudPosition(position: unknown): HudPosition | null {
+  if (typeof position !== "string") return null;
+
+  const [left, bottom] = position
+    .split(",")
+    .map((part) => (part.trim() === "" ? NaN : Number(part)));
+  return Number.isFinite(left) && Number.isFinite(bottom)
+    ? { left: left as number, bottom: bottom as number }
+    : null;
 }
 
 export function currentHudScale(): number {
@@ -285,4 +330,17 @@ export function currentMinimized(): boolean {
 
 export function toggleMinimized(): Promise<unknown> {
   return game.settings!.set(MODULE, MINIMIZED_SETTING, !currentMinimized());
+}
+
+export function currentHudPosition(): HudPosition | null {
+  return hudPosition(game.settings?.get(MODULE, POSITION_SETTING));
+}
+
+/** `null` puts the strip back where it docks. */
+export function saveHudPosition(position: HudPosition | null): Promise<unknown> {
+  return game.settings!.set(
+    MODULE,
+    POSITION_SETTING,
+    position ? `${position.left},${position.bottom}` : "",
+  );
 }
