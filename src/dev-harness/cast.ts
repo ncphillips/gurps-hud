@@ -11,6 +11,7 @@ import type {
   GurpsHitLocation,
   GurpsList,
   GurpsSkill,
+  GurpsSpell,
   GurpsSystem,
 } from "@/gurps/system-types";
 import { fire } from "./hooks";
@@ -30,6 +31,29 @@ function hitLocations(rows: Array<[where: string, penalty: string, dr: string, r
 
 function skills(rows: Array<[name: string, level: number]>) {
   return keyed<GurpsSkill>(rows.map(([name, level]) => ({ name, level })));
+}
+
+type SpellColumns = [name: string, level: number, cost: string, time: string, duration: string];
+
+/** A college, as GCS files one: a container with no level of its own, holding its spells. */
+function college(
+  name: string,
+  rows: SpellColumns[],
+): GurpsSpell & { contains: GurpsList<GurpsSpell> } {
+  return {
+    name,
+    level: "",
+    contains: keyed<GurpsSpell>(
+      rows.map(([name, level, cost, casttime, duration]) => ({
+        name,
+        level,
+        cost,
+        maintain: duration === "Instant" ? "" : cost,
+        casttime,
+        duration,
+      })),
+    ),
+  };
 }
 
 /**
@@ -66,6 +90,7 @@ function sheet(overrides: Partial<GurpsSystem>): GurpsSystem {
     melee: {},
     ranged: {},
     skills: {},
+    spells: {},
     hitlocations: {},
     ...overrides,
   };
@@ -191,6 +216,14 @@ function thor(): HarnessActor {
         ["Scrounging", 12],
         ["Swimming", 11],
         ["Throwing", 6],
+      ]),
+      spells: keyed([
+        college("Air", [
+          ["Purify Air", 13, "1", "1 sec", "Instant"],
+          ["Shape Air", 13, "1 to 10", "1 sec", "1 min"],
+          ["Lightning", 14, "1 to 3", "1-3 sec", "Instant"],
+        ]),
+        college("Weather", [["Rain", 12, "1/10 yd", "1 min", "1 hr"]]),
       ]),
       hitlocations: hitLocations([
         ["Eye", "-9", "0", "-"],

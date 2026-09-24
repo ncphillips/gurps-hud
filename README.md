@@ -25,6 +25,12 @@ on their name to switch.
 #### Skills
 
 ![GURPS HUD: SKills Access](./assets/4-skills.png)### 
+#### Spells
+
+Every spell the character knows, grouped by college, with its cost to cast and maintain, casting
+time and duration beside the level. Click a spell to cast it. The button only appears for
+characters who have spells.
+
 #### Posture
 
 ![GURPS HUD: Posture Switcher](./assets/7-posture.png)

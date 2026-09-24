@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import type { ComponentProps } from "svelte";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 import { emptyHudView } from "@/gurps/hud-view";
 import { fixtureView } from "./hud-fixture";
 import TopBar from "./TopBar.svelte";
@@ -80,6 +80,12 @@ describe("TopBar with no actor", () => {
 
     expect(props.onopen).not.toHaveBeenCalled();
   });
+
+  it("has no spells button", () => {
+    render(TopBar, { props: withoutActor() });
+
+    expect(document.querySelector('[data-hud-trigger="spells"]')).toBeNull();
+  });
 });
 
 describe("TopBar with an actor", () => {
@@ -90,6 +96,21 @@ describe("TopBar with an actor", () => {
     await fireEvent.mouseEnter(trigger("attrs"));
 
     expect(props.onopen).toHaveBeenCalledWith("attrs");
+  });
+
+  it("opens the spells panel", async () => {
+    const props = withActor();
+    render(TopBar, { props });
+
+    await fireEvent.mouseEnter(trigger("spells"));
+
+    expect(props.onopen).toHaveBeenCalledWith("spells");
+  });
+
+  test("an actor with no spells", () => {
+    render(TopBar, { props: withActor({ view: { ...fixtureView(), spells: [] } }) });
+
+    expect(document.querySelector('[data-hud-trigger="spells"]')).toBeNull();
   });
 
   it("rolls Dodge", async () => {

@@ -42,6 +42,12 @@ describe("TopBar accessibility", () => {
     await expect(container).toBeAccessible();
   });
 
+  test("the spells panel open", async () => {
+    const { container } = render(TopBar, { props: props("spells") });
+
+    await expect(container).toBeAccessible();
+  });
+
   test("the maneuver panel open", async () => {
     const { container } = render(TopBar, { props: props("maneuver") });
 

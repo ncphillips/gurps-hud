@@ -6,10 +6,11 @@
   import Popover from "@/ui/Popover.svelte";
   import AttrsPanel from "./AttrsPanel.svelte";
   import SkillsPanel from "./SkillsPanel.svelte";
+  import SpellsPanel from "./SpellsPanel.svelte";
   import type { Panel } from "./panels";
 
   /**
-   * One row across the top of the strip: attributes, skills, Dodge, the maneuver and the target hit
+   * One row across the top of the strip: attributes, skills, spells, Dodge, the maneuver and the target hit
    * location. Every popover hangs off one of these.
    */
   let {
@@ -83,11 +84,15 @@
   const CARET_HOVER = "hud:group-hover:text-hud-on-accent/80";
 
   /*
-   * The skills list is the one panel that can outgrow its cap, so it -- not a box inside it --
-   * carries the width, the cap and the scrolling. 400px is the mock's width under border-box.
+   * The skills and spells lists are the panels that can outgrow their cap, so each -- not a box
+   * inside it -- carries the width, the cap and the scrolling. 400px is the mock's skills width
+   * under border-box.
    */
-  const SKILLS_PANEL =
-    "hud:max-h-[280px] hud:w-[400px] hud:overflow-y-auto hud:[scrollbar-color:var(--hud-color-hud-scroll)_transparent] hud:[scrollbar-width:thin]";
+  const SCROLLS =
+    "hud:max-h-[280px] hud:overflow-y-auto hud:[scrollbar-color:var(--hud-color-hud-scroll)_transparent] hud:[scrollbar-width:thin]";
+  const SKILLS_PANEL = `${SCROLLS} hud:w-[400px]`;
+  /** A spellbook runs as long as a skill list, and its rows carry four details beside the level. */
+  const SPELLS_PANEL = `${SCROLLS} hud:w-[440px]`;
 </script>
 
 {#snippet trigger(label: string, title: string, active: boolean)}
@@ -129,6 +134,24 @@
       </Popover>
     {/if}
   </div>
+
+  <!-- Most actors cast nothing, and a button that only ever opens an empty list is bar space wasted. -->
+  {#if view.spells.length > 0}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="hud:relative"
+      data-hud-trigger="spells"
+      onmouseenter={enabled ? () => onopen("spells") : undefined}
+      onmouseleave={enabled ? onclose : undefined}
+    >
+      {@render trigger(t("topBar.spells.label"), t("topBar.spells.title"), enabled)}
+      {#if openPanel === "spells" && enabled}
+        <Popover class={SPELLS_PANEL}>
+          <SpellsPanel spells={view.spells} {onroll} />
+        </Popover>
+      {/if}
+    </div>
+  {/if}
 
   <div class="hud:mx-[2px] hud:h-[18px] hud:w-px hud:bg-hud-veil/[.09]"></div>
 

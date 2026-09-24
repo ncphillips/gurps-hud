@@ -7,6 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.7.0 (unreleased)
+
+### Added
+
+- **Spells.** A caster had to go back to the character sheet for every spell, because the HUD only
+  knew about skills. A **Spells** button now sits beside Skills and opens the actor's spellbook,
+  filed under its colleges. It only appears for an actor who has spells, so a fighter's bar is no
+  wider than before. A spell is weighed before it is cast, so each row carries what it costs
+  to cast and to maintain, how long it takes, and how long it lasts, beside the level; click the row
+  to cast it, exactly as the sheet would.
+
 ## v0.6.0 
 
 ### Added

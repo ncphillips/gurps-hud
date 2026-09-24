@@ -4,7 +4,7 @@ import type { HotbarMode, HudTheme } from "../src/settings";
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
 export type CastMember = "thor" | "goblin" | "dragon" | "gunner";
 
-export type Panel = "attrs" | "skills" | "maneuver" | "posture" | "target" | "actor";
+export type Panel = "attrs" | "skills" | "spells" | "maneuver" | "posture" | "target" | "actor";
 
 /**
  * The harness's query parameters, as a spec spells them. Each names the action it takes on the
@@ -68,6 +68,7 @@ export interface HarnessParams {
 const PANEL_READY: Partial<Record<Panel, (page: Page) => Locator>> = {
   attrs: (page) => page.getByText("BASIC ATTRIBUTES"),
   skills: (page) => page.getByRole("button", { name: /Survival \(Woodlands\)/ }),
+  spells: (page) => page.getByRole("button", { name: /Lightning/ }),
   target: (page) => page.getByRole("button", { name: /Vitals/ }),
   posture: (page) => page.getByRole("button", { name: "Crouching" }),
   actor: (page) => page.getByRole("button", { name: "Goblin Grunt" }),

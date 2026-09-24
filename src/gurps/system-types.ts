@@ -49,6 +49,16 @@ export interface GurpsSkill {
   level?: Numeric;
 }
 
+export interface GurpsSpell {
+  name?: string;
+  level?: Numeric;
+  /** Energy to cast, as text: "3", "1 to 3", "2/yd". */
+  cost?: string;
+  maintain?: string;
+  casttime?: string;
+  duration?: string;
+}
+
 export interface GurpsHitLocation {
   where?: string;
   /** To-hit penalty as text, e.g. "-5"; blank for the torso. */
@@ -101,6 +111,7 @@ export interface GurpsSystem {
   melee: GurpsList<GurpsMelee>;
   ranged: GurpsList<GurpsRanged>;
   skills: GurpsList<GurpsSkill>;
+  spells: GurpsList<GurpsSpell>;
   hitlocations: GurpsList<GurpsHitLocation>;
 }
 

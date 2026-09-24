@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { attackOtf, isAttackOtf, quotedAttackName, skillOtf } from "./otf";
+import { attackOtf, isAttackOtf, quotedAttackName, skillOtf, spellOtf } from "./otf";
 
 describe("quotedAttackName", () => {
   it("wraps a bare name in double quotes", () => {
@@ -78,5 +78,15 @@ describe("isAttackOtf", () => {
 
   test("a skill roll", () => {
     expect(isAttackOtf('Sk:"Brawling"')).toBe(false);
+  });
+});
+
+describe("spellOtf", () => {
+  it("casts the spell by name", () => {
+    expect(spellOtf("Lightning")).toBe('Sp:"Lightning"');
+  });
+
+  test("a name with a double quote in it", () => {
+    expect(spellOtf('Hide "Thoughts"')).toBe(`Sp:'Hide "Thoughts"'`);
   });
 });

@@ -62,6 +62,12 @@ test.describe("persistent HUD accessibility", () => {
     await expect(page).toBeAccessible();
   });
 
+  test("the spells panel open", async ({ page }) => {
+    await openHarness(page, { hover_panel: "spells" });
+
+    await expect(page).toBeAccessible();
+  });
+
   test("the maneuver panel open", async ({ page }) => {
     await openHarness(page, { set_maneuver: "attack", hover_panel: "maneuver" });
 
@@ -134,6 +140,7 @@ test.describe("persistent HUD accessibility", () => {
     {},
     { hover_panel: "attrs" },
     { hover_panel: "skills" },
+    { hover_panel: "spells" },
     { set_maneuver: "attack", hover_panel: "maneuver" },
     { target_actor: "goblin", hover_panel: "target" },
     { hover_panel: "posture" },

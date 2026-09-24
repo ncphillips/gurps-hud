@@ -58,6 +58,11 @@ export function skillOtf(name: string): string {
   return `Sk:${quotedName(name)}`;
 }
 
+/** `Sp:"Lightning"` -- what the Game Aid's own sheet emits for casting a spell. */
+export function spellOtf(name: string): string {
+  return `Sp:${quotedName(name)}`;
+}
+
 export function attackOtf(prefix: AttackOtfPrefix, attack: AttackRef): string {
   return `${prefix}:${quotedAttackName(attack)}`;
 }

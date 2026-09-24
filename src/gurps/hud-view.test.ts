@@ -17,6 +17,7 @@ import {
   rangedRows,
   shockPenalty,
   skillRows,
+  spellRows,
 } from "./hud-view";
 import type { AttrColumn } from "./hud-view";
 import type { GurpsSystem } from "./system-types";
@@ -53,6 +54,7 @@ function system(overrides: Partial<GurpsSystem> = {}): GurpsSystem {
     melee: {},
     ranged: {},
     skills: {},
+    spells: {},
     hitlocations: {},
     ...overrides,
   } as GurpsSystem;
@@ -437,6 +439,62 @@ describe("skillRows", () => {
   });
 });
 
+describe("spellRows", () => {
+  it("builds a rollable row per spell", () => {
+    const spells = { "00000": { name: "Lightning", level: 14 } };
+    expect(spellRows(system({ spells }))[0].level).toEqual({ text: "14", otf: 'Sp:"Lightning"' });
+  });
+
+  it("keys each row by its path on the actor", () => {
+    const spells = { "00000": { name: "Lightning", level: 14 } };
+    expect(spellRows(system({ spells }))[0].key).toBe("system.spells.00000");
+  });
+
+  it("carries what casting it costs", () => {
+    const spells = {
+      "00000": {
+        name: "Lightning",
+        level: 14,
+        cost: "1 to 3",
+        maintain: "",
+        casttime: "1-3 sec",
+        duration: "Instant",
+      },
+    };
+    expect(spellRows(system({ spells }))[0]).toMatchObject({
+      cost: "1 to 3",
+      maintain: "—",
+      time: "1-3 sec",
+      duration: "Instant",
+    });
+  });
+
+  it("follows spells nested under a college", () => {
+    const spells = {
+      "00000": {
+        name: "Air",
+        level: "",
+        contains: { "00000": { name: "Shape Air", level: 13 } },
+      },
+    };
+    expect(spellRows(system({ spells })).map((row) => row.name)).toEqual(["Air", "Shape Air"]);
+  });
+
+  test("a college with no level", () => {
+    const spells = { "00000": { name: "Air", level: "" } };
+    expect(spellRows(system({ spells }))[0].level).toEqual({ text: "—", otf: null });
+  });
+
+  test("a spell with no name", () => {
+    const spells = { "00000": { name: "", level: 10 } };
+    expect(spellRows(system({ spells }))).toEqual([]);
+  });
+
+  test("an actor whose sheet has no spell list", () => {
+    expect(spellRows(system({ spells: undefined }))).toEqual([]);
+  });
+});
+
 describe("postureOptions", () => {
   it("lists every posture the Game Aid tracks, standing first", () => {
     expect(postureOptions(localize).map((option) => option.id)).toEqual([
@@ -549,6 +607,10 @@ describe("emptyHudView", () => {
 
   it("lists no skills", () => {
     expect(emptyHudView().skills).toEqual([]);
+  });
+
+  it("lists no spells", () => {
+    expect(emptyHudView().spells).toEqual([]);
   });
 
   it("has no maneuver", () => {

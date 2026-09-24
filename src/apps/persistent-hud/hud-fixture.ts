@@ -7,8 +7,8 @@ import type { GurpsActorLike } from "@/gurps/system-types";
  * A view model for the components that take a whole `HudView`. It is built by `buildHudView` from an
  * actor rather than written out as a literal, so a fixture can never drift into a shape the real
  * Game Aid would never produce. Every row the strip renders differently appears once: an equipped
- * attack and an unequipped one, a cell with nothing to roll (Punch has no block), a skill and an
- * attribute.
+ * attack and an unequipped one, a cell with nothing to roll (Punch has no block), a skill, a spell
+ * and the college it is filed under, and an attribute.
  */
 
 const localize = (key: string) => key.split(".").pop() ?? key;
@@ -76,6 +76,22 @@ export function fixtureActor(): GurpsActorLike {
       skills: keyed([
         { name: "Spear", level: 5 },
         { name: "Survival (Woodlands)", level: 11 },
+      ]),
+      spells: keyed([
+        {
+          name: "Air",
+          level: "",
+          contains: keyed([
+            {
+              name: "Lightning",
+              level: 14,
+              cost: "1 to 3",
+              maintain: "",
+              casttime: "1-3 sec",
+              duration: "Instant",
+            },
+          ]),
+        },
       ]),
       hitlocations: keyed([
         { where: "Skull", penalty: "-7", dr: "2", roll: "3-4" },

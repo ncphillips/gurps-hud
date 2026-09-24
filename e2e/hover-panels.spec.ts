@@ -15,14 +15,29 @@ test.describe("hover panels", () => {
     expect((await panel.boundingBox())!.width).toBe(400);
   });
 
+  test("the spells panel is 440px, borders included", async ({ page }) => {
+    await openHarness(page, { hover_panel: "spells" });
+    const panel = page.locator('[data-hud-trigger="spells"] [data-hud-popover]');
+
+    expect((await panel.boundingBox())!.width).toBe(440);
+  });
+
+  test("a spell's name, costs and level fit on one line", async ({ page }) => {
+    await openHarness(page, { hover_panel: "spells" });
+    const row = page.getByRole("button", { name: /Shape Air/ });
+
+    expect((await row.boundingBox())!.height).toBeLessThan(20);
+  });
+
   /*
    * Every panel the strip has, with whatever the harness needs to open it. Each floats a different
    * distance clear of a trigger in a different corner, and a gap left open anywhere is the same
-   * bug -- so the claim is about all six rather than about whichever one it was first found on.
+   * bug -- so the claim is about all seven rather than about whichever one it was first found on.
    */
   const BRIDGED: Array<[Panel, HarnessParams]> = [
     ["attrs", { hover_panel: "attrs" }],
     ["skills", { hover_panel: "skills" }],
+    ["spells", { hover_panel: "spells" }],
     ["maneuver", { set_maneuver: "attack", hover_panel: "maneuver" }],
     ["posture", { hover_panel: "posture" }],
     ["target", { target_actor: "goblin", hover_panel: "target" }],

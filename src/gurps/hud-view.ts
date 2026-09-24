@@ -1,7 +1,7 @@
 import { t } from "@/i18n";
 import { noPicks, orderByPicks } from "./attack-picks";
 import type { AttackPicks } from "./attack-picks";
-import { attackOtf, skillOtf } from "./otf";
+import { attackOtf, skillOtf, spellOtf } from "./otf";
 import type {
   GurpsActorLike,
   GurpsEquipment,
@@ -10,6 +10,7 @@ import type {
   GurpsMelee,
   GurpsRanged,
   GurpsSkill,
+  GurpsSpell,
   GurpsSystem,
   Numeric,
 } from "./system-types";
@@ -56,6 +57,16 @@ export interface RangedRow {
 export interface SkillRow {
   key: string;
   name: string;
+  level: RollableCell;
+}
+
+export interface SpellRow {
+  key: string;
+  name: string;
+  cost: string;
+  maintain: string;
+  time: string;
+  duration: string;
   level: RollableCell;
 }
 
@@ -115,6 +126,7 @@ export interface HudView {
    */
   hasAttacks: boolean;
   skills: SkillRow[];
+  spells: SpellRow[];
   /** The Game Aid's maneuver id, or `null` when the actor has none -- i.e. is not in combat. */
   maneuverId: string | null;
 }
@@ -335,6 +347,28 @@ export function skillRows(system: GurpsSystem): SkillRow[] {
     });
 }
 
+/**
+ * Colleges are containers, like skill folders, and stay as unrollable rows. Keyed by the Game Aid's
+ * path, which is what its sheet drags, so a spell row can be named the way an attack pick is.
+ */
+export function spellRows(system: GurpsSystem): SpellRow[] {
+  return flattenKeyed<GurpsSpell>(system?.spells, "system.spells.")
+    .filter(([, spell]) => str(spell.name).trim() !== "")
+    .map(([key, spell]) => {
+      const name = str(spell.name);
+      const level = str(spell.level).trim();
+      return {
+        key,
+        name,
+        cost: str(spell.cost).trim() || EM_DASH,
+        maintain: str(spell.maintain).trim() || EM_DASH,
+        time: str(spell.casttime).trim() || EM_DASH,
+        duration: str(spell.duration).trim() || EM_DASH,
+        level: level ? { text: level, otf: spellOtf(name) } : { text: EM_DASH, otf: null },
+      };
+    });
+}
+
 /** What the strip shows about the token the user is targeting: whose body, and its parts. */
 export interface TargetView {
   name: string;
@@ -438,6 +472,7 @@ export function emptyHudView(): HudView {
     ranged: [],
     hasAttacks: false,
     skills: [],
+    spells: [],
     maneuverId: null,
   };
 }
@@ -468,6 +503,7 @@ export function buildHudView(
     ranged: orderByPicks(ranged, picks.ranged),
     hasAttacks: melee.length > 0 || ranged.length > 0,
     skills: skillRows(system),
+    spells: spellRows(system),
     // Outside combat the Game Aid leaves this as the literal string "undefined".
     maneuverId:
       !conditions.maneuver || conditions.maneuver === "undefined" ? null : conditions.maneuver,
