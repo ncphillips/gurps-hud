@@ -17,6 +17,11 @@ from that tag.
   wider than before. A spell is weighed before it is cast, so each row carries what it costs
   to cast and to maintain, how long it takes, and how long it lasts, beside the level; click the row
   to cast it, exactly as the sheet would.
+- **Change shock from the HUD.** The shock cell only reported the penalty, so it looked like a field
+  you could type into and wasn't ([#33](https://github.com/ncphillips/gurps-hud/issues/33)), and
+  shock lasts a single turn, so it needs setting and clearing more often than anything else on the
+  strip. Hover the cell to pick a penalty from none to the −4 cap. It sets the same `shock1`–`shock4`
+  status the Game Aid's damage dialog does, so the token's icon and the sheet agree with it.
 
 ## v0.6.0 
 

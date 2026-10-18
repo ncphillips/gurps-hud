@@ -102,6 +102,25 @@ export async function setPosture(actor: GurpsActorLike | null, id: string): Prom
   await actor.replacePosture(id);
 }
 
+/**
+ * Shock is one of four statuses, `shock1`..`shock4`, so changing it means switching the new one on
+ * and whichever the actor already carries off. Only the statuses that actually change are touched,
+ * so the token icon doesn't flicker and an unchanged pick writes nothing.
+ */
+export async function setShock(actor: GurpsActorLike | null, penalty: number): Promise<void> {
+  if (!actor?.toggleStatusEffect) return;
+
+  const wanted = penalty < 0 ? `shock${-penalty}` : null;
+  const carried = [...(actor.statuses ?? [])].filter((status) => /^shock[1-4]$/.test(status));
+
+  for (const status of carried) {
+    if (status !== wanted) await actor.toggleStatusEffect(status, { active: false });
+  }
+  if (wanted && !carried.includes(wanted)) {
+    await actor.toggleStatusEffect(wanted, { active: true });
+  }
+}
+
 export function openSheet(actor: GurpsActorLike | null): void {
   actor?.sheet?.render(true);
 }

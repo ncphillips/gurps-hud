@@ -21,6 +21,7 @@ function withoutActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBloc
     onselectactor: vi.fn(),
     openPanel: null,
     onposture: vi.fn(),
+    onshock: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
     onminimize: vi.fn(),
@@ -43,6 +44,7 @@ function withActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBlockPr
     onselectactor: vi.fn(),
     openPanel: null,
     onposture: vi.fn(),
+    onshock: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
     onminimize: vi.fn(),
@@ -102,6 +104,15 @@ describe("PortraitBlock with no actor", () => {
     expect(props.onopen).not.toHaveBeenCalled();
   });
 
+  it("does not open the shock menu", async () => {
+    const props = withoutActor();
+    render(PortraitBlock, props);
+
+    await fireEvent.mouseEnter(trigger("shock"));
+
+    expect(props.onopen).not.toHaveBeenCalled();
+  });
+
   test("a token on the canvas to switch to", async () => {
     const other = { ...fixtureActor(), id: "actor-goblin", name: "Goblin Grunt" };
     const props = withoutActor({
@@ -123,6 +134,24 @@ describe("PortraitBlock with an actor", () => {
     await fireEvent.mouseEnter(trigger("posture"));
 
     expect(props.onopen).toHaveBeenCalledWith("posture");
+  });
+
+  it("opens the shock menu", async () => {
+    const props = withActor();
+    render(PortraitBlock, props);
+
+    await fireEvent.mouseEnter(trigger("shock"));
+
+    expect(props.onopen).toHaveBeenCalledWith("shock");
+  });
+
+  test("choosing a shock penalty", async () => {
+    const props = withActor({ openPanel: "shock" });
+    render(PortraitBlock, props);
+
+    await fireEvent.click(screen.getByRole("button", { name: "-3" }));
+
+    expect(props.onshock).toHaveBeenCalledWith(-3);
   });
 
   test("a single owned token on the canvas", async () => {

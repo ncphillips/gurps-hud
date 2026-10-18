@@ -4,7 +4,8 @@ import type { HotbarMode, HudTheme } from "../src/settings";
 /** Who the harness has on its canvas; the parameters only hand out the roles. */
 export type CastMember = "thor" | "goblin" | "dragon" | "gunner";
 
-export type Panel = "attrs" | "skills" | "spells" | "maneuver" | "posture" | "target" | "actor";
+export type Panel =
+  "attrs" | "skills" | "spells" | "maneuver" | "posture" | "shock" | "target" | "actor";
 
 /**
  * The harness's query parameters, as a spec spells them. Each names the action it takes on the

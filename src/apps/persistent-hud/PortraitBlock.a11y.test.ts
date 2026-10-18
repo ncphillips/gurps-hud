@@ -24,6 +24,7 @@ function props(openPanel: Panel | null = null) {
     onselectactor: vi.fn(),
     openPanel,
     onposture: vi.fn(),
+    onshock: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
     onminimize: vi.fn(),
@@ -45,6 +46,12 @@ describe("PortraitBlock accessibility", () => {
 
   test("the posture menu open", async () => {
     const { container } = render(PortraitBlock, props("posture"));
+
+    await expect(container).toBeAccessible();
+  });
+
+  test("the shock menu open", async () => {
+    const { container } = render(PortraitBlock, props("shock"));
 
     await expect(container).toBeAccessible();
   });

@@ -190,6 +190,7 @@
       onselectactor={hud.selectActor}
       openPanel={hud.openPanel}
       onposture={hud.selectPosture}
+      onshock={hud.selectShock}
       onopen={hud.open}
       onclose={hud.close}
       onminimize={toggleFromStrip}

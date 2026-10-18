@@ -24,7 +24,8 @@ on their name to switch.
 
 #### Skills
 
-![GURPS HUD: SKills Access](./assets/4-skills.png)### 
+![GURPS HUD: SKills Access](./assets/4-skills.png)
+
 #### Spells
 
 Every spell the character knows, grouped by college, with its cost to cast and maintain, casting
@@ -34,6 +35,11 @@ characters who have spells.
 #### Posture
 
 ![GURPS HUD: Posture Switcher](./assets/7-posture.png)
+
+#### Shock
+
+Hover the shock cell under the HP pool to set the shock penalty, from none to −4, or clear it once
+the turn it applies to is over.
 
 ### Combat
 

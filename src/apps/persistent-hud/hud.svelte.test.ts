@@ -255,3 +255,14 @@ test("minimizing the strip with a panel open", () => {
 
   expect(hud.openPanel).toBeNull();
 });
+
+test("choosing a shock penalty", () => {
+  stubHooks();
+  stubGameAid({ actor: fixtureActor() });
+  const hud = mountHud();
+
+  hud.open("shock");
+  hud.selectShock(-2);
+
+  expect(hud.openPanel).toBeNull();
+});

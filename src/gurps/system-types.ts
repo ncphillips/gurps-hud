@@ -134,6 +134,8 @@ export interface GurpsActorLike {
   setFlag?: (scope: string, key: string, value: unknown) => Promise<unknown>;
   /** The Game Aid's posture setter, taking one of its posture status ids. */
   replacePosture?: (id: string) => Promise<unknown>;
+  /** Foundry's `Actor#toggleStatusEffect`, which is how shock is applied and cleared. */
+  toggleStatusEffect?: (id: string, options: { active: boolean }) => Promise<unknown>;
   /** Foundry's `Document#sheet`; optional for the same reason. */
   sheet?: { render(force?: boolean): unknown } | null;
 }

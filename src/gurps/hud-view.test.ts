@@ -385,6 +385,14 @@ describe("buildHudView", () => {
   });
 });
 
+describe("buildHudView, shock", () => {
+  it("offers every shock penalty, none first", () => {
+    expect(buildHudView({ name: "Thor", system: system({}) }, localize).shocks).toEqual([
+      0, -1, -2, -3, -4,
+    ]);
+  });
+});
+
 describe("buildHudView, maneuver", () => {
   it("reports the maneuver the actor is performing", () => {
     const conditions = { posture: "standing", maneuver: "aoa_determined" };
@@ -580,6 +588,10 @@ describe("emptyHudView", () => {
 
   it("has no shock penalty to report", () => {
     expect(emptyHudView().shock).toBeNull();
+  });
+
+  it("offers no shock penalty to change to", () => {
+    expect(emptyHudView().shocks).toEqual([]);
   });
 
   it("blanks the condition cell", () => {

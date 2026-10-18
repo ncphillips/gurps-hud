@@ -12,6 +12,7 @@ import {
   setCurrentActor,
   setManeuver,
   setPosture,
+  setShock,
   targetedActor,
 } from "@/gurps/game-aid";
 import { t } from "@/i18n";
@@ -210,6 +211,11 @@ export class Hud {
   selectPosture = (id: string): void => {
     this.openPanel = null;
     void setPosture(this.actor, id);
+  };
+
+  selectShock = (penalty: number): void => {
+    this.openPanel = null;
+    void setShock(this.actor, penalty);
   };
 
   /**

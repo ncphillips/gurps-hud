@@ -22,6 +22,7 @@
     onselectactor,
     openPanel,
     onposture,
+    onshock,
     onopen,
     onclose,
     onminimize,
@@ -41,6 +42,7 @@
     onselectactor: (choice: ActorChoice) => void;
     openPanel: Panel | null;
     onposture: (id: string) => void;
+    onshock: (penalty: number) => void;
     onopen: (panel: Panel) => void;
     onclose: () => void;
     onminimize: () => void;
@@ -255,9 +257,15 @@
       />
     </div>
 
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="hud:flex hud:items-center hud:gap-[4px]"
+      class="hud:relative hud:flex hud:items-center hud:gap-[4px] hud:rounded-hud-xs hud:border hud:border-transparent hud:transition-colors hud:duration-75 {enabled
+        ? 'hud:hover:border-hud-veil/[.18]'
+        : ''}"
       title={enabled ? t("portrait.shock") : undefined}
+      data-hud-trigger="shock"
+      onmouseenter={enabled ? () => onopen("shock") : undefined}
+      onmouseleave={enabled ? onclose : undefined}
     >
       <VitalIcon kind="shock" class={ICON.shock} />
       <Readout
@@ -269,6 +277,23 @@
       >
         {view.shock ?? "—"}
       </Readout>
+
+      {#if openPanel === "shock" && enabled}
+        <Popover class="hud:flex hud:gap-px hud:p-[4px]">
+          {#each view.shocks as penalty (penalty)}
+            <button
+              type="button"
+              class="hud:min-w-[24px] hud:cursor-pointer hud:rounded-hud-sm hud:px-[5px] hud:py-[3px] hud:font-hud-mono hud:text-[12px]/[1.2] hud:font-semibold hud:transition-colors hud:duration-75 {penalty ===
+              view.shock
+                ? 'hud:bg-hud-accent hud:text-hud-on-accent'
+                : 'hud:bg-hud-veil/[.045] hud:text-hud-ink/85 hud:hover:bg-hud-veil/[.09]'}"
+              onclick={() => onshock(penalty)}
+            >
+              {penalty}
+            </button>
+          {/each}
+        </Popover>
+      {/if}
     </div>
 
     <div class="hud:flex hud:items-center hud:gap-[4px]" title={view.condition.title || undefined}>

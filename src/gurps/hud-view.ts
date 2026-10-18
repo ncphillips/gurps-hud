@@ -112,6 +112,8 @@ export interface HudView {
   fp: PoolVital;
   /** `null` when there is no actor to have taken a wound. */
   shock: number | null;
+  /** The penalties the shock cell offers to change to; empty when there is no actor to change. */
+  shocks: number[];
   condition: ConditionVital;
   dodge: string;
   move: string;
@@ -183,6 +185,9 @@ export function postureBadge(posture: string | undefined, localize: Localize): P
  * Shock lives on the actor as a `shock1`..`shock4` status rather than a field. Only one should ever
  * be applied, but take the worst if the actor somehow carries several.
  */
+/** Shock runs from none to the -4 cap, one status per step. */
+export const SHOCK_PENALTIES = [0, -1, -2, -3, -4] as const;
+
 export function shockPenalty(statuses: Iterable<string> | undefined): number {
   let worst = 0;
   for (const status of statuses ?? []) {
@@ -464,6 +469,7 @@ export function emptyHudView(): HudView {
     hp: blankPool,
     fp: { ...blankPool },
     shock: null,
+    shocks: [],
     condition: { label: EM_DASH, tone: "ok", title: "" },
     dodge: EM_DASH,
     move: EM_DASH,
@@ -495,6 +501,7 @@ export function buildHudView(
     hp: poolVital(system.HP),
     fp: poolVital(system.FP),
     shock: shockPenalty(actor.statuses),
+    shocks: [...SHOCK_PENALTIES],
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,
