@@ -303,6 +303,19 @@ export async function removeMacroSlot(slot: number): Promise<void> {
   await game.user?.assignHotbarMacro(null, slot);
 }
 
+/**
+ * The stock hotbar's own right-click menu -- Edit, Remove, Delete -- so a macro in the HUD offers
+ * exactly what it would on Foundry's bar. Each entry finds its macro through the `data-slot` of the
+ * element the menu opened on, the attribute the stock bar's slots carry, so ours carry it too.
+ */
+export function macroContextOptions(): foundry.applications.ux.ContextMenu.Entry<HTMLElement>[] {
+  // Protected on Hotbar; there is no public way to read the entries it builds.
+  const hotbar = ui.hotbar as unknown as {
+    _getContextMenuOptions(): foundry.applications.ux.ContextMenu.Entry<HTMLElement>[];
+  } | null;
+  return hotbar?._getContextMenuOptions() ?? [];
+}
+
 interface DroppableDocumentClass {
   fromDropData(data: object): Promise<foundry.abstract.Document.Any | null | undefined>;
   create(data: object): Promise<foundry.abstract.Document.Any | undefined>;

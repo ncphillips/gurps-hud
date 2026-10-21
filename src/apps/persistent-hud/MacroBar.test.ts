@@ -93,25 +93,30 @@ function props(overrides: Partial<MacroBarProps> = {}): MacroBarProps {
   };
 }
 
-describe("MacroBar removing", () => {
-  it("takes a macro off the bar when it is right-clicked", async () => {
+describe("MacroBar context menu", () => {
+  it("leaves a right-clicked macro on the bar", async () => {
     const onremove = vi.fn();
     render(MacroBar, props({ onremove }));
 
     await fireEvent.contextMenu(screen.getByTitle("Attack"));
 
-    expect(onremove).toHaveBeenCalledWith(1);
-  });
-
-  test("right-clicking an empty slot", async () => {
-    const onremove = vi.fn();
-    render(MacroBar, props({ onremove }));
-
-    await fireEvent.contextMenu(slotAt(3));
-
     expect(onremove).not.toHaveBeenCalled();
   });
 
+  it("names a filled slot the way Foundry's macro menu reads it", () => {
+    render(MacroBar, props());
+
+    expect(screen.getByTitle("Dodge").getAttribute("data-slot")).toBe("2");
+  });
+
+  it("names no slot for Foundry's macro menu on an empty one", () => {
+    render(MacroBar, props());
+
+    expect(slotAt(3).hasAttribute("data-slot")).toBe(false);
+  });
+});
+
+describe("MacroBar removing", () => {
   it("takes a macro off the bar on Delete", async () => {
     const onremove = vi.fn();
     render(MacroBar, props({ onremove }));

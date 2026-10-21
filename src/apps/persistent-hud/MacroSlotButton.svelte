@@ -121,6 +121,7 @@
     title={slot.name}
     draggable="true"
     data-hud-macro-slot={slot.slot}
+    data-slot={slot.slot}
     ondragstart={dragStart}
     ondragend={dragEnd}
     ondragover={(event) => event.preventDefault()}
@@ -128,10 +129,6 @@
     ondragleave={dragLeave}
     ondrop={drop}
     onkeydown={keydown}
-    oncontextmenu={(event) => {
-      event.preventDefault();
-      onremove(slot.slot);
-    }}
     class={[
       SIZE,
       "hud:cursor-pointer hud:overflow-hidden hud:rounded-hud-sm hud:text-center hud:font-hud-mono hud:text-[12px]/[32px] hud:font-semibold hud:text-hud-faint hud:transition-colors hud:duration-75 hud:hover:bg-hud-accent hud:hover:text-hud-on-accent",

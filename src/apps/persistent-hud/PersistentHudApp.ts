@@ -1,4 +1,5 @@
 import { SvelteApp } from "@/apps/SvelteApp";
+import { macroContextOptions } from "@/gurps/game-aid";
 import { log } from "@/log";
 import {
   currentHotbarMode,
@@ -46,6 +47,24 @@ export class PersistentHudApp extends SvelteApp {
 
   component = () => PersistentHud;
   props = () => ({});
+
+  /**
+   * Bound to the app's element rather than to a slot, because the menu delegates: it survives every
+   * remount of the Svelte tree beneath it and covers the slots in the library popover as well as
+   * the bar. Fired under the stock hotbar's hook name so a module that adds to Foundry's macro menu
+   * adds to this one too.
+   */
+  protected override async _onFirstRender(
+    ...args: Parameters<SvelteApp["_onFirstRender"]>
+  ): Promise<void> {
+    await super._onFirstRender(...args);
+    this._createContextMenu(macroContextOptions, "[data-hud-macro-slot][data-slot]", {
+      fixed: true,
+      jQuery: false,
+      hookName: "getMacroContextOptions",
+      parentClassHooks: false,
+    });
+  }
 
   protected override _insertElement(element: HTMLElement): void {
     /*

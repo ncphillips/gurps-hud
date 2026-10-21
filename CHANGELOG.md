@@ -7,7 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
-## v0.7.1
+## v0.8.0
+
+### Added
+
+- **Foundry's macro menu on a right-clicked macro.** Right-clicking a macro in the HUD took it off
+  the bar on the spot, with no warning and nothing else on offer, so anyone reaching for the stock
+  hotbar's menu lost the macro instead ([#34](https://github.com/ncphillips/gurps-hud/issues/34)).
+  Right-click now opens that same menu — edit, remove, delete — on the footer and in the macro
+  library alike, and anything another module adds to Foundry's macro menu shows up here too.
+  `Delete` still takes a macro off the bar from the keyboard.
 
 ### Fixed
 
