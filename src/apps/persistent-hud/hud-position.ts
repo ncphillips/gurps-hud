@@ -21,6 +21,18 @@ export function keepOnScreen(position: HudPosition, hud: Size, screen: Size): Hu
   };
 }
 
+/** How close to the corner a drop has to land to count as putting the strip back. */
+const DOCK_REACH = 24;
+
+/**
+ * `null` -- docked -- for a spot dropped close enough to the corner the strip docks in. Docked is
+ * not just that corner: it is what lifts Foundry's player list clear of the strip, and a strip
+ * parked a few pixels off it would sit on top of the list instead.
+ */
+export function dockedNear(position: HudPosition): HudPosition | null {
+  return position.left <= DOCK_REACH && position.bottom <= DOCK_REACH ? null : position;
+}
+
 /**
  * Pins the HUD's element to `position`, kept on screen, and returns the spot it landed on; `null`
  * hands it back to the stylesheet, which docks it. `fixed` rather than the stylesheet's `absolute`

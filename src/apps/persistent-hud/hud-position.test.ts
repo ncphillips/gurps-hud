@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { keepOnScreen } from "./hud-position";
+import { dockedNear, keepOnScreen } from "./hud-position";
 
 const HUD = { width: 600, height: 200 };
 const SCREEN = { width: 1280, height: 720 };
@@ -44,5 +44,27 @@ describe("keepOnScreen", () => {
       left: 101,
       bottom: 50,
     });
+  });
+});
+
+describe("dockedNear", () => {
+  it("leaves a position clear of the corner where it is", () => {
+    expect(dockedNear({ left: 100, bottom: 50 })).toEqual({ left: 100, bottom: 50 });
+  });
+
+  test("dropped in the corner", () => {
+    expect(dockedNear({ left: 0, bottom: 0 })).toBeNull();
+  });
+
+  test("dropped a few pixels off the corner", () => {
+    expect(dockedNear({ left: 20, bottom: 20 })).toBeNull();
+  });
+
+  test("dropped against the bottom edge, clear of the corner", () => {
+    expect(dockedNear({ left: 100, bottom: 0 })).toEqual({ left: 100, bottom: 0 });
+  });
+
+  test("dropped against the left edge, clear of the corner", () => {
+    expect(dockedNear({ left: 0, bottom: 100 })).toEqual({ left: 0, bottom: 100 });
   });
 });

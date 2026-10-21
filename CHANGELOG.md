@@ -7,6 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.7.1
+
+### Fixed
+
+- **Dragging the HUD back to its corner docks it.** Foundry's player list only moves up out of the
+  strip's way while the strip is docked, and a strip dragged back to the corner by hand lands a few
+  pixels short of the dock, so it stayed loose and sat on top of the list
+  ([#37](https://github.com/ncphillips/gurps-hud/issues/37)). Dropping it within a short reach of the
+  bottom-left corner now docks it, exactly as double-clicking the rail does, and the player list
+  moves back up above it.
+
 ## v0.7.0
 
 ### Added

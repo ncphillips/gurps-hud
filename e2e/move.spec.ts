@@ -99,4 +99,14 @@ test.describe("moving the HUD", () => {
 
     expect((await stripBox(page)).x).toBeCloseTo(docked.x, 0);
   });
+
+  test("dragged into the bottom-left corner, docks again", async ({ page }) => {
+    await openHarness(page);
+    const docked = await stripBox(page);
+    await dragGrip(page, 200, -150);
+
+    await dragGrip(page, -5000, 5000);
+
+    expect((await stripBox(page)).x).toBeCloseTo(docked.x, 0);
+  });
 });

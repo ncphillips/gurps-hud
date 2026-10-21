@@ -10,7 +10,7 @@
   import PortraitBlock from "./PortraitBlock.svelte";
   import TopBar from "./TopBar.svelte";
   import WeaponTables from "./WeaponTables.svelte";
-  import { placeHud } from "./hud-position";
+  import { dockedNear, placeHud } from "./hud-position";
   import { Hud } from "./hud.svelte";
 
   const hud = new Hud();
@@ -91,7 +91,7 @@
     const to = move?.to;
     move = null;
     // A press with no movement is half of a double-click, not a move to wherever the HUD already is.
-    if (to) void saveHudPosition(to);
+    if (to) void saveHudPosition(dockedNear(to));
   }
 
   /**
