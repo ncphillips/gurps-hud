@@ -33,6 +33,18 @@ them for the specs.
 `chromium-a11y` Playwright one — which neither of the other two commands touches. `pnpm run check` is
 `tsc --noEmit` plus `svelte-check`.
 
+## Changelog
+
+Every `feat` and `fix` adds its entry to `CHANGELOG.md` in the same change — a feature under
+**Added**, a fix under **Fixed** — written like the entries already there: a bold one-line summary,
+why it mattered to the reader, then what it does now, linking the issue it closes.
+
+Entries go in the top section while its version is unreleased (no GitHub Release yet: `gh release
+list`; local tags may not have been fetched). Otherwise open a new section above it named for the
+next version: a patch bump for fixes alone, a minor bump once a feature is in it. A section opened as
+a patch is renamed to the minor bump when a feature joins it — after v0.7.0, a fix opens v0.7.1, and
+a feature added after it turns that section into v0.8.0.
+
 ## Conventions
 
 - One directory per HUD under `src/apps/`, containing its `*App.ts` (ApplicationV2 subclass
