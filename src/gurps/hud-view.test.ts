@@ -341,6 +341,26 @@ describe("attrColumns", () => {
     ]);
   });
 
+  it("rolls Quintessence against the QN attribute", () => {
+    expect(rowIn(attrColumns(system(), { quintessence: true }).basic, "Quintessence (QN)")).toEqual(
+      { label: "Quintessence (QN)", value: "10", otf: "QN" },
+    );
+  });
+
+  it("lists Quintessence after Health when the Game Aid uses it", () => {
+    const labels = attrColumns(system(), { quintessence: true }).basic.groups[0].map(
+      (row) => row.label,
+    );
+
+    expect(labels).toEqual([
+      "Strength (ST)",
+      "Dexterity (DX)",
+      "Intelligence (IQ)",
+      "Health (HT)",
+      "Quintessence (QN)",
+    ]);
+  });
+
   it("separates Will and Fright Check from the senses", () => {
     const labels = attrColumns(system()).secondary.groups.map((group) =>
       group.map((row) => row.label),
@@ -378,6 +398,24 @@ describe("buildHudView", () => {
     expect(buildHudView({ name: "Thor Odinson", system: system() }, localize).name).toBe(
       "Thor Odinson",
     );
+  });
+
+  it("shows Quintessence when the Game Aid uses it", () => {
+    const actor = { name: "Thor", system: system(), usingQuintessence: true };
+    const labels = buildHudView(actor, localize)
+      .attrs.basic.groups.flat()
+      .map((row) => row.label);
+
+    expect(labels).toContain("Quintessence (QN)");
+  });
+
+  it("leaves Quintessence out when the Game Aid does not use it", () => {
+    const actor = { name: "Thor", system: system(), usingQuintessence: false };
+    const labels = buildHudView(actor, localize)
+      .attrs.basic.groups.flat()
+      .map((row) => row.label);
+
+    expect(labels).not.toContain("Quintessence (QN)");
   });
 
   test("an actor whose system data is missing the pieces the HUD reads", () => {

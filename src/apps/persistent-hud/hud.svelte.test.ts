@@ -125,6 +125,22 @@ describe("which actor the strip shows", () => {
   });
 });
 
+describe("Hud#view", () => {
+  test("turning on the Game Aid's Use Quintessence setting", () => {
+    const fire = stubHooks();
+    const thor = { ...actorNamed("actor-thor", "Thor"), usingQuintessence: false };
+    stubGameAid({ actor: thor });
+    const hud = mountHud();
+    // Read once, so the assertion is about a view that has to recompute rather than a first read.
+    void hud.view;
+
+    thor.usingQuintessence = true;
+    fire("updateSetting");
+
+    expect(hud.view.attrs.basic.groups[0].map((row) => row.label)).toContain("Quintessence (QN)");
+  });
+});
+
 describe("the hit location aimed at", () => {
   test("targeting another token", () => {
     const fire = stubHooks();

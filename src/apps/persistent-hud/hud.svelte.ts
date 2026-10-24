@@ -154,6 +154,8 @@ export class Hud {
         "canvasReady",
         "createToken",
         "deleteToken",
+        // World settings are documents, so this is how the Game Aid's Use Quintessence arrives.
+        "updateSetting",
         "gurps-hud.hotbarMode",
       ] as const;
       for (const hook of refreshed) Hooks.on(hook, refresh);

@@ -402,7 +402,15 @@ export function hitLocationRows(system: GurpsSystem): HitLocationRow[] {
     }));
 }
 
-export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary: AttrColumn } {
+/**
+ * Quintessence is the Game Aid's optional fifth attribute, behind its "Use Quintessence" world
+ * setting. Every actor carries a QN value either way, so the setting is what says whether it means
+ * anything at this table.
+ */
+export function attrColumns(
+  system: GurpsSystem,
+  { quintessence = false }: { quintessence?: boolean } = {},
+): { basic: AttrColumn; secondary: AttrColumn } {
   const attributes = system?.attributes ?? ({} as GurpsSystem["attributes"]);
 
   return {
@@ -414,6 +422,9 @@ export function attrColumns(system: GurpsSystem): { basic: AttrColumn; secondary
           { label: t("attributes.dx"), value: str(attributes.DX?.value), otf: "DX" },
           { label: t("attributes.iq"), value: str(attributes.IQ?.value), otf: "IQ" },
           { label: t("attributes.ht"), value: str(attributes.HT?.value), otf: "HT" },
+          ...(quintessence
+            ? [{ label: t("attributes.qn"), value: str(attributes.QN?.value), otf: "QN" }]
+            : []),
         ],
         [
           { label: t("attributes.thrust"), value: str(system.thrust), otf: null },
@@ -505,7 +516,7 @@ export function buildHudView(
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,
-    attrs: attrColumns(system),
+    attrs: attrColumns(system, { quintessence: actor.usingQuintessence === true }),
     melee: orderByPicks(melee, picks.melee),
     ranged: orderByPicks(ranged, picks.ranged),
     hasAttacks: melee.length > 0 || ranged.length > 0,

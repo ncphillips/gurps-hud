@@ -30,6 +30,7 @@
   "gurps-hud.attributes.dx": "Dexterity (DX)",
   "gurps-hud.attributes.iq": "Intelligence (IQ)",
   "gurps-hud.attributes.ht": "Health (HT)",
+  "gurps-hud.attributes.qn": "Quintessence (QN)",
   "gurps-hud.attributes.thrust": "Basic Thrust",
   "gurps-hud.attributes.swing": "Basic Swing",
   "gurps-hud.attributes.basicSpeed": "Basic Speed",

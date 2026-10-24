@@ -7,6 +7,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.9.0
+
+### Added
+
+- **Quintessence in the attributes panel.** Tables that turn on the Game Aid's _Use Quintessence_
+  setting play with a fifth basic attribute, QN, and the HUD left it out, so rolling it meant
+  opening the character sheet. When that setting is on, Quintessence (QN) now sits under Health
+  in the panel's basic attributes and rolls like the other four. Changing the setting updates the
+  panel immediately.
+
 ## v0.8.0
 
 ### Added

@@ -125,6 +125,8 @@ export interface GurpsActorLike {
   img?: string | null;
   system: GurpsSystem;
   statuses?: Iterable<string>;
+  /** The Game Aid's read of its world-wide "Use Quintessence" setting. */
+  usingQuintessence?: boolean;
   /** Whether this user may write to the actor -- picking attacks stores a flag on it. */
   isOwner?: boolean;
   /** Foundry's `Document#update`; optional so a bare fixture can stand in for an actor. */
