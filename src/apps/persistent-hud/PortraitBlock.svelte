@@ -63,11 +63,14 @@
   };
 
   const idle = $derived(view.condition.label === "—");
+  /* Both at once is the one label too wide to share the cell with its icon. */
+  const crowded = $derived(view.condition.label === t("condition.reelingAndExhausted.label"));
 
   /** With no actor the vitals icons stay in place, dimmed, so the cells read as blank not zeroed. */
   const ICON = $derived({
     hp: enabled ? "hud:text-hud-hp" : "hud:text-hud-hp/40",
     fp: enabled ? "hud:text-hud-fp" : "hud:text-hud-fp/40",
+    qp: enabled ? "hud:text-hud-qp" : "hud:text-hud-qp/40",
     shock: enabled ? "hud:text-hud-accent" : "hud:text-hud-accent/40",
   });
 </script>
@@ -234,6 +237,24 @@
         >{view.move}</span
       >
     </span>
+    <!--
+      Quintessence Points take the condition's cell, so the condition moves over the portrait and
+      only shows when it has something to say.
+    -->
+    {#if view.qp && !idle}
+      <div class="hud:absolute hud:inset-x-0 hud:bottom-[4px] hud:flex hud:justify-center">
+        <span
+          data-hud-condition-chip
+          class="hud:flex hud:items-center hud:gap-[4px] hud:rounded-hud-xs hud:bg-hud-deep/80 hud:px-[5px] hud:py-px hud:font-hud-mono hud:text-[9px] hud:font-semibold hud:uppercase {TONE_TEXT[
+            view.condition.tone
+          ]}"
+          title={view.condition.title}
+        >
+          <VitalIcon kind="condition" />
+          {view.condition.label}
+        </span>
+      </div>
+    {/if}
   </div>
 
   <div class="hud:grid hud:grid-cols-2 hud:gap-[3px] hud:px-[5px] hud:pt-[4px] hud:pb-[5px]">
@@ -296,21 +317,40 @@
       {/if}
     </div>
 
-    <div class="hud:flex hud:items-center hud:gap-[4px]" title={view.condition.title || undefined}>
-      <VitalIcon
-        kind="condition"
-        class={idle
-          ? enabled
-            ? "hud:text-hud-faint"
-            : "hud:text-hud-ink/20"
-          : TONE_TEXT[view.condition.tone]}
-      />
-      <Readout
-        size={idle ? "md" : "sm"}
-        class={idle ? "hud:text-hud-ink/28" : TONE_TEXT[view.condition.tone]}
+    {#if view.qp}
+      <div class="hud:flex hud:items-center hud:gap-[4px]">
+        <VitalIcon kind="qp" class={ICON.qp} />
+        <!-- An actor never given a pool has nothing to spend, so it reads blank like no actor at all. -->
+        <PoolField
+          pool={view.qp}
+          enabled={enabled && view.qp.max !== "—"}
+          title={t("portrait.qp")}
+          onchange={(value) => onpool("QP", value)}
+        />
+      </div>
+    {:else}
+      <div
+        data-hud-condition-cell
+        class="hud:flex hud:items-center hud:gap-[4px]"
+        title={view.condition.title || undefined}
       >
-        {view.condition.label}
-      </Readout>
-    </div>
+        {#if !crowded}
+          <VitalIcon
+            kind="condition"
+            class={idle
+              ? enabled
+                ? "hud:text-hud-faint"
+                : "hud:text-hud-ink/20"
+              : TONE_TEXT[view.condition.tone]}
+          />
+        {/if}
+        <Readout
+          size={idle ? "md" : "sm"}
+          class={idle ? "hud:text-hud-ink/28" : TONE_TEXT[view.condition.tone]}
+        >
+          {view.condition.label}
+        </Readout>
+      </div>
+    {/if}
   </div>
 </div>

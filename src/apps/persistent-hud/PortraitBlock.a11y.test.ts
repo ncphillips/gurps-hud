@@ -62,6 +62,42 @@ describe("PortraitBlock accessibility", () => {
     await expect(container).toBeAccessible();
   });
 
+  test("reeling and exhausted", async () => {
+    const condition = {
+      label: "RLNG+TIRED",
+      tone: "danger" as const,
+      title: "Reeling and Exhausted",
+    };
+    const { container } = render(PortraitBlock, {
+      ...props(),
+      view: { ...fixtureView(), condition },
+    });
+
+    await expect(container).toBeAccessible();
+  });
+
+  test("reeling and exhausted with Quintessence Points", async () => {
+    const condition = {
+      label: "RLNG+TIRED",
+      tone: "danger" as const,
+      title: "Reeling and Exhausted",
+    };
+    const qp = { value: "7", max: "10", tone: "ok" as const };
+    const { container } = render(PortraitBlock, {
+      ...props(),
+      view: { ...fixtureView(), condition, qp },
+    });
+
+    await expect(container).toBeAccessible();
+  });
+
+  test("with Quintessence Points", async () => {
+    const qp = { value: "7", max: "10", tone: "ok" as const };
+    const { container } = render(PortraitBlock, { ...props(), view: { ...fixtureView(), qp } });
+
+    await expect(container).toBeAccessible();
+  });
+
   test("nothing selected", async () => {
     const { container } = render(PortraitBlock, {
       ...props(),

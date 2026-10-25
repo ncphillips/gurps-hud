@@ -47,6 +47,8 @@ export interface HarnessParams {
   hover_panel?: Panel;
   /** Opens that pool's box for editing. */
   edit_pool?: "hp" | "fp";
+  /** Turns on the Game Aid's Use Quintessence setting, adding QN and QP to the strip. */
+  use_quintessence?: boolean;
   /** Expands the macro footer's library of all five hotbar pages. */
   expand_macros?: boolean;
   /** `"none"` leaves every attack unpicked, which is the state a fresh actor starts in. */

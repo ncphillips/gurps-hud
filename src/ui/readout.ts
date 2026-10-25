@@ -12,7 +12,8 @@ export const READOUT =
  */
 export const READOUT_TEXT = {
   md: "hud:text-[12px]/[1.35]",
-  sm: "hud:text-[9px]",
+  // The `md` line box (12px x 1.35), so a smaller label never makes a shorter box.
+  sm: "hud:text-[9px]/[16.2px]",
 } as const;
 
 export type ReadoutSize = keyof typeof READOUT_TEXT;

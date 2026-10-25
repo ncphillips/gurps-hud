@@ -110,6 +110,8 @@ export interface HudView {
   postures: PostureOption[];
   hp: PoolVital;
   fp: PoolVital;
+  /** Quintessence Points; `null` unless the Game Aid's Use Quintessence setting is on. */
+  qp: PoolVital | null;
   /** `null` when there is no actor to have taken a wound. */
   shock: number | null;
   /** The penalties the shock cell offers to change to; empty when there is no actor to change. */
@@ -457,6 +459,15 @@ export function attrColumns(
   };
 }
 
+/**
+ * The Game Aid only fills QP in from a GCS import, so a hand-made NPC sits at 0/0 -- which as a
+ * pool would read as spent, in red, rather than as a pool it never had.
+ */
+function quintessencePool(pool: { value: Numeric; max: Numeric } | undefined): PoolVital {
+  if (num(pool?.max) <= 0) return { value: EM_DASH, max: EM_DASH, tone: "ok" };
+  return poolVital(pool);
+}
+
 function poolVital(pool: { value: Numeric; max: Numeric } | undefined): PoolVital {
   const value = num(pool?.value);
   const max = num(pool?.max);
@@ -479,6 +490,7 @@ export function emptyHudView(): HudView {
     postures: [],
     hp: blankPool,
     fp: { ...blankPool },
+    qp: null,
     shock: null,
     shocks: [],
     condition: { label: EM_DASH, tone: "ok", title: "" },
@@ -502,6 +514,7 @@ export function buildHudView(
   const system = actor.system ?? ({} as GurpsSystem);
   const conditions = system.conditions ?? {};
   const melee = meleeRows(system);
+  const quintessence = actor.usingQuintessence === true;
   const ranged = rangedRows(system);
 
   return {
@@ -511,12 +524,13 @@ export function buildHudView(
     postures: postureOptions(localize),
     hp: poolVital(system.HP),
     fp: poolVital(system.FP),
+    qp: quintessence ? quintessencePool(system.QP) : null,
     shock: shockPenalty(actor.statuses),
     shocks: [...SHOCK_PENALTIES],
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,
-    attrs: attrColumns(system, { quintessence: actor.usingQuintessence === true }),
+    attrs: attrColumns(system, { quintessence }),
     melee: orderByPicks(melee, picks.melee),
     ranged: orderByPicks(ranged, picks.ranged),
     hasAttacks: melee.length > 0 || ranged.length > 0,

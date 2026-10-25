@@ -13,6 +13,8 @@
  *   ?set_maneuver=attack           puts the selected actor in the active combat performing it
  *   ?hover_panel=attrs             opens that hover panel on load, so it can be screenshotted
  *   ?edit_pool=hp|fp               opens that pool's box for editing
+ *   ?use_quintessence=true         turns on the Game Aid's Use Quintessence setting, which adds
+ *                                  QN to the attributes and QP to the vitals
  *   ?expand_macros=true            expands the macro footer's library of all five hotbar pages
  *   ?pick_attacks=none             leaves every attack unpicked, which is where a fresh actor starts
  *   ?open_sheet=thor|goblin       opens a stand-in character sheet whose attack rows can be
@@ -113,6 +115,10 @@ if (flag("delay_writes")) {
  * token that is in it, and the HUD's pill mirrors that, so a maneuver without a combat is a state
  * no world can be in.
  */
+if (flag("use_quintessence")) {
+  for (const member of Object.values(CAST)) member.usingQuintessence = true;
+}
+
 const maneuver = params.get("set_maneuver");
 if (maneuver && selectedActor) selectedActor.system.conditions.maneuver = maneuver;
 

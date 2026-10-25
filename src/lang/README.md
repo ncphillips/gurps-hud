@@ -34,8 +34,9 @@ The strip is laid out to fixed pixel widths, and some text is measured into them
 - **`maneuvers.*.hint`** is `truncate`d to its column, so one that runs long is clipped with an
   ellipsis rather than wrapping. `e2e/maneuver-panel.spec.ts` checks this for English; run
   `pnpm run test:e2e` after translating and it will tell you which hints do not fit.
-- **`condition.*.label`** is abbreviated on purpose -- it shares a cell with an icon. The matching
-  `.title` is where the state gets spelled out.
+- **`condition.*.label`** is abbreviated on purpose -- it shares a cell with an icon, or with
+  Quintessence on, a chip over the 143px-wide portrait. The matching `.title` is where the state
+  gets spelled out.
 
 ## What does not belong here
 

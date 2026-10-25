@@ -146,6 +146,8 @@ test.describe("persistent HUD accessibility", () => {
     { hover_panel: "posture" },
     { hover_panel: "actor" },
     { edit_pool: "hp" },
+    { use_quintessence: true },
+    { selected_actor: "goblin" },
     { expand_macros: true },
     { pick_attacks: "none" },
     { selected_actor: "" },

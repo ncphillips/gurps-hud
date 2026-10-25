@@ -16,6 +16,21 @@ from that tag.
   opening the character sheet. When that setting is on, Quintessence (QN) now sits under Health
   in the panel's basic attributes and rolls like the other four. Changing the setting updates the
   panel immediately.
+- **Quintessence Points beside the other vitals.** With _Use Quintessence_ on, QP is a pool the
+  Game Aid tracks like HP and FP, but the HUD had nowhere to show or spend it. It now takes the
+  cell beside Shock, and is edited the same way as HP and FP: click it, then type a value or a
+  change like `-2`. Reeling and Exhausted, which held that cell, move to a chip along the bottom of
+  the portrait that only appears while one of them applies. With the setting off, the vitals are
+  unchanged. An actor the Game Aid never gave any QP, like a hand-made NPC, shows a dash there
+  rather than a red 0/0.
+
+### Fixed
+
+- **The Reeling and Exhausted cell fits the vitals grid.** A character both reeling and exhausted
+  had a label too wide for its cell, so it ran off the edge of the portrait column and was cut
+  off, and any condition drew a box shorter than the pool beside it. The combined label now drops
+  its icon to fit, and the box is the same height as the others. The light theme's red is a shade
+  darker too, so that label reads clearly on its box.
 
 ## v0.8.0
 

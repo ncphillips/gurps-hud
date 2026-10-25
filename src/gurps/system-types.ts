@@ -94,6 +94,8 @@ export interface GurpsSystem {
   attributes: Record<"ST" | "DX" | "IQ" | "HT" | "WILL" | "PER" | "QN", GurpsAttribute>;
   HP: GurpsPool;
   FP: GurpsPool;
+  /** Quintessence Points; the Game Aid only adds them to an actor imported from GCS. */
+  QP?: GurpsPool;
   thrust: string;
   swing: string;
   basicspeed: { value: Numeric };

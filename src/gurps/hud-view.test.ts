@@ -418,6 +418,27 @@ describe("buildHudView", () => {
     expect(labels).not.toContain("Quintessence (QN)");
   });
 
+  it("reads Quintessence Points as a pool when the Game Aid uses Quintessence", () => {
+    const qp = { value: 3, max: 10 };
+    const actor = { name: "Thor", system: system({ QP: qp }), usingQuintessence: true };
+
+    expect(buildHudView(actor, localize).qp).toEqual({ value: "3", max: "10", tone: "warn" });
+  });
+
+  test("Quintessence Points on an actor that was never given any", () => {
+    const qp = { value: 0, max: 0 };
+    const actor = { name: "Goblin", system: system({ QP: qp }), usingQuintessence: true };
+
+    expect(buildHudView(actor, localize).qp).toEqual({ value: "—", max: "—", tone: "ok" });
+  });
+
+  it("has no Quintessence Points when the Game Aid does not use Quintessence", () => {
+    const qp = { value: 3, max: 10 };
+    const actor = { name: "Thor", system: system({ QP: qp }), usingQuintessence: false };
+
+    expect(buildHudView(actor, localize).qp).toBeNull();
+  });
+
   test("an actor whose system data is missing the pieces the HUD reads", () => {
     expect(buildHudView({ name: "Mook", system: {} as GurpsSystem }, localize).melee).toEqual([]);
   });
@@ -634,6 +655,10 @@ describe("emptyHudView", () => {
 
   it("blanks the condition cell", () => {
     expect(emptyHudView().condition.label).toBe("—");
+  });
+
+  it("has no Quintessence Points", () => {
+    expect(emptyHudView().qp).toBeNull();
   });
 
   it("blanks Dodge", () => {

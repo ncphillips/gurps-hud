@@ -1,12 +1,12 @@
 <script lang="ts">
   /**
-   * Inline glyphs for the four vitals cells. Inline rather than Font Awesome so the harness, which
-   * has no Foundry stylesheet, renders the same as the real thing.
+   * Inline glyphs for the vitals cells and the condition chip. Inline rather than Font Awesome so
+   * the harness, which has no Foundry stylesheet, renders the same as the real thing.
    */
   let {
     kind,
     class: className = "",
-  }: { kind: "hp" | "fp" | "shock" | "condition"; class?: string } = $props();
+  }: { kind: "hp" | "fp" | "qp" | "shock" | "condition"; class?: string } = $props();
 </script>
 
 <svg
@@ -25,6 +25,12 @@
     <path
       fill="currentColor"
       d="M11 3h2v7.2l2.8-1.8V3.5c0-.3.2-.5.5-.5s.5.2.5.5v5.5l-3.8 2.4v1.4l4.2-2.6c2.4 1.2 4.3 5 4.3 8.7 0 1.7-1 2.6-2.4 2.6-2.6 0-5.4-2-6.1-5.5V3zm-2 0v13.5c-.7 3.5-3.5 5.5-6.1 5.5C1.5 22 .5 21.1.5 19.4c0-3.7 1.9-7.5 4.3-8.7l4.2 2.6v-1.4L5.2 9.5V4c0-.3.2-.5.5-.5s.5.2.5.5v4.9L9 10.2V3z"
+    />
+  {:else if kind === "qp"}
+    <!-- four-pointed sparkle -->
+    <path
+      fill="currentColor"
+      d="M12 1.5 14.6 9.4 22.5 12l-7.9 2.6L12 22.5l-2.6-7.9L1.5 12l7.9-2.6z"
     />
   {:else if kind === "shock"}
     <!-- bolt -->

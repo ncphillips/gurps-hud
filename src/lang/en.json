@@ -116,6 +116,7 @@
   "gurps-hud.portrait.move.title": "Current Move",
   "gurps-hud.portrait.hp": "Hit Points -- click to edit",
   "gurps-hud.portrait.fp": "Fatigue Points -- click to edit",
+  "gurps-hud.portrait.qp": "Quintessence Points -- click to edit",
   "gurps-hud.portrait.shock": "Shock penalty to DX and IQ -- hover to change",
   "gurps-hud.weapons.melee": "MELEE",
   "gurps-hud.weapons.ranged": "RANGED",

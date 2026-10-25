@@ -164,10 +164,10 @@ export function notifyWarning(message: string): void {
   else warn(message);
 }
 
-export type Pool = "HP" | "FP";
+export type Pool = "HP" | "FP" | "QP";
 
 /**
- * Writes a new current value for HP or FP through the actor, so the Game Aid's own hooks -- reeling
+ * Writes a new current value for HP, FP or QP through the actor, so the Game Aid's own hooks -- reeling
  * and exhausted flags, the sheet, token bars -- all see the change as if the sheet had made it.
  */
 export async function updatePool(

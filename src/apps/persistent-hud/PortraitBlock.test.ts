@@ -164,6 +164,63 @@ describe("PortraitBlock with an actor", () => {
   });
 });
 
+describe("PortraitBlock's condition", () => {
+  const reeling = { label: "REELING", tone: "danger" as const, title: "" };
+  const qp = { value: "7", max: "10", tone: "ok" as const };
+
+  it("keeps its vitals cell when the Game Aid does not use Quintessence", () => {
+    render(PortraitBlock, withActor({ view: { ...fixtureView(), condition: reeling, qp: null } }));
+
+    expect(document.querySelector("[data-hud-condition-chip]")).toBeNull();
+  });
+
+  it("moves over the portrait when Quintessence Points take its cell", () => {
+    render(PortraitBlock, withActor({ view: { ...fixtureView(), condition: reeling, qp } }));
+
+    expect(document.querySelector("[data-hud-condition-chip]")?.textContent).toContain("REELING");
+  });
+
+  it("leaves out its icon in the vitals cell when reeling and exhausted at once", () => {
+    const condition = { label: "RLNG+TIRED", tone: "danger" as const, title: "" };
+    render(PortraitBlock, withActor({ view: { ...fixtureView(), condition, qp: null } }));
+
+    expect(document.querySelector("[data-hud-condition-cell] svg")).toBeNull();
+  });
+
+  test("over the portrait while neither reeling nor exhausted", () => {
+    render(PortraitBlock, withActor({ view: { ...fixtureView(), qp } }));
+
+    expect(document.querySelector("[data-hud-condition-chip]")).toBeNull();
+  });
+});
+
+describe("PortraitBlock's Quintessence Points", () => {
+  test("editing them", async () => {
+    const view = { ...fixtureView(), qp: { value: "7", max: "10", tone: "ok" as const } };
+    const props = withActor({ view });
+    render(PortraitBlock, props);
+
+    await fireEvent.click(screen.getByTitle("Quintessence Points -- click to edit"));
+    await fireEvent.input(document.querySelector("input")!, { target: { value: "-2" } });
+    await fireEvent.keyDown(document.querySelector("input")!, { key: "Enter" });
+
+    expect(props.onpool).toHaveBeenCalledWith("QP", 5);
+  });
+
+  test("an actor that was never given any", () => {
+    const view = { ...fixtureView(), qp: { value: "—", max: "—", tone: "ok" as const } };
+    render(PortraitBlock, withActor({ view }));
+
+    expect(screen.queryByTitle("Quintessence Points -- click to edit")).toBeNull();
+  });
+
+  it("are not shown when the Game Aid does not use Quintessence", () => {
+    render(PortraitBlock, withActor({ view: { ...fixtureView(), qp: null } }));
+
+    expect(screen.queryByTitle("Quintessence Points -- click to edit")).toBeNull();
+  });
+});
+
 describe("PortraitBlock's minimize button", () => {
   it("minimizes the HUD", async () => {
     const props = withActor();

@@ -115,6 +115,7 @@
   /* Lifted off the mock's #cf5c4a: at 4.3:1 on a hover-lifted row it was the one ink short of AA. */
   --color-hud-hp: #dd6f5d;
   --color-hud-fp: #5f9ea8;
+  --color-hud-qp: #b294d6;
   --color-hud-ok: #7fb08a;
 
   --font-hud: "Barlow Semi Condensed", system-ui, sans-serif;
@@ -170,8 +171,10 @@
     --hud-color-hud-defence: #2a5675;
     --hud-color-hud-defence-bg: #dde6ef;
 
-    --hud-color-hud-hp: #b03a26;
+    /* Darkened from #b03a26, which read 4.07:1 as a red label on a vitals box. */
+    --hud-color-hud-hp: #9e3320;
     --hud-color-hud-fp: #2f6a72;
+    --hud-color-hud-qp: #6b4a9a;
     --hud-color-hud-ok: #35694a;
 
     --gurps-hud-hatch: repeating-linear-gradient(135deg, #dbd8d0 0 6px, #e4e1da 6px 12px);
