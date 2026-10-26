@@ -5,41 +5,75 @@ Foundry VTT, inspired by [pf2e-hud](https://github.com/reonZ/pf2e-hud).
 
 ![GURPS HUD](./assets/0-hud.png)
 
+One strip holds what a turn needs: the character's vitals, posture and Move, the attacks they fight
+with, their maneuver, the hit location they are aiming at, and their macros. Everything else on the
+sheet — attributes, skills, spells — is one hover away. It is written GM-first, so it works for any
+token on the canvas, NPCs included, and every roll goes through the Game Aid exactly as the
+character sheet's would.
+
+## Installation
+
+In Foundry's **Add-on Modules → Install Module**, paste the manifest URL:
+
+```
+https://github.com/ncphillips/gurps-hud/releases/latest/download/module.json
+```
+
+then enable **GURPS HUD** in a world running the GURPS 4e Game Aid.
+
 ## Features
 
 ### Switching Characters
 
-By default, selecting a token you can control switches it to that 
-actor. Disable this behaviour by clicking the "lock" icon.
+By default, selecting a token you can control switches the HUD to that actor. Click the lock beside
+the name to keep the HUD on the current actor whatever you select.
 
-Hover the character name to reveal all the selectable actors. Click
-on their name to switch.
+Hover the character name to list every actor on the canvas you can control, and click one to
+switch to it.
 
 ![GURPS HUD: Character switcher](./assets/2-character.png)
 
+### Vitals
+
+Click HP or FP to edit it: type a new value, or a change like `-3`. The cell beside shock shows
+whether the character is reeling or exhausted.
+
+Hover the shock cell under HP to switch shock levels on and off. The cell shows the total penalty the
+Game Aid applies to your rolls; `0` clears it.
+
+![GURPS HUD: Shock](./assets/8-shock.png)
+
+When the Game Aid's _Use Quintessence_ setting is on, Quintessence Points take the cell beside shock
+and are edited like HP and FP, and reeling and exhausted move to a chip along the bottom of the
+portrait.
+
+### Posture
+
+Hover the posture badge to change posture. The Game Aid's status effect, token icon and Move
+penalty all follow.
+
+![GURPS HUD: Posture Switcher](./assets/7-posture.png)
+
 ### Always Available
+
 #### Attributes
+
+The basic and secondary attributes, laid out like the sheet. Click one to roll it. With _Use
+Quintessence_ on, QN sits under Health.
 
 ![GURPS HUD: Attributes Access](./assets/3-attributes.png)
 
 #### Skills
 
-![GURPS HUD: SKills Access](./assets/4-skills.png)
+Every skill on the actor. Click a row to roll it.
+
+![GURPS HUD: Skills Access](./assets/4-skills.png)
 
 #### Spells
 
 Every spell the character knows, grouped by college, with its cost to cast and maintain, casting
 time and duration beside the level. Click a spell to cast it. The button only appears for
 characters who have spells.
-
-#### Posture
-
-![GURPS HUD: Posture Switcher](./assets/7-posture.png)
-
-#### Shock
-
-Hover the shock cell under the HP pool to set the shock penalty, from none to −4, or clear it once
-the turn it applies to is over.
 
 ### Combat
 
@@ -58,16 +92,43 @@ strip's own character's attacks can be dropped on it.
 The choice is stored on the actor, so it comes back for everyone at the table the next time that
 character is selected.
 
+Click an attack's level to roll it, its damage to roll damage, and its parry or block to roll the
+defence. In the ranged table, click a weapon's Acc to add it to the modifier bucket when aiming.
+
 #### Select your Maneuver
+
+Every maneuver, with All-Out Attack and All-Out Defence broken out into the variants the rules ask
+you to choose between.
+
 ![GURPS HUD: Maneuver Selection](./assets/5-maneuvers.png)
 
 #### Target a Hit Location
 
-Select an enemy and press `t` to target them. 
-
-The target box will now list _their_ hit locations.
+Select an enemy and press `t` to target them. The target box now lists _their_ hit locations, with
+the roll, penalty and DR of each. The location you pick has its penalty added to every attack roll
+until you change it.
 
 ![GURPS HUD: Target Hit Locations](./assets/6-hit-locations.png)
+
+### Macros
+
+The footer is a full macro hotbar. Step through its five pages with the arrows, or expand it to see
+all fifty at once. Drag macros, or rows off the character sheet, onto it; drag to reorder; right-click
+for Foundry's own macro menu.
+
+**Hotbar** in the module settings picks whether you get the HUD's bar, Foundry's own, or both.
+
+### Make It Yours
+
+- **Move it.** Drag the dotted rail down the HUD's left edge to put it anywhere. Double-click the
+  rail, or drop it near the bottom-left corner, to dock it again.
+- **Minimize it.** The button left of the character's name, or `Shift`+`H`, folds the strip down so
+  the canvas comes back. `Ctrl`+`Shift`+`H` hides it altogether. Both are rebindable under
+  **Configure Controls**.
+- **Scale and theme.** **HUD scale** draws the strip anywhere from 0.9× to 2×, and **HUD theme**
+  picks dark, light, or whatever your desktop uses.
+
+All of these are per-player and survive a reload.
 
 ## Development
 
@@ -78,6 +139,17 @@ pnpm install
 pnpm run setup   # shallow-clones the pinned GURPS system source into .reference/ (gitignored)
 pnpm run dev     # Vite on :30001, proxying Foundry on :30000
 pnpm run build   # emits dist/
+pnpm run harness # the HUD against stub Foundry globals, no world needed
+```
+
+The harness serves `http://localhost:30099/modules/gurps-hud/dev-harness/index.html`; its query
+parameters (`?hover_panel=attrs` and the like) are listed in `src/dev-harness/main.ts`.
+
+```bash
+pnpm test           # unit tests
+pnpm run test:e2e   # Playwright against the harness
+pnpm run test:a11y  # both halves of the accessibility suite
+pnpm run check      # tsc and svelte-check
 ```
 
 `pnpm run setup` is optional for building, but the HUD is written against the GURPS 4e Game Aid's
@@ -94,8 +166,8 @@ ln -s "$(pwd)/dist" "$HOME/Library/Application Support/FoundryVTT/Data/modules/g
 ## Roadmap to v1
 
 - [ ] Accessibility Review
-- [ ] Translatable Text
-- [ ] UI Tests
+- [x] Translatable Text
+- [x] UI Tests
 
 ## Releasing
 
