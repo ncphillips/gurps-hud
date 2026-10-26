@@ -218,6 +218,7 @@
         actorId={hud.actor?.id ?? null}
         bind:drag
         onroll={hud.roll}
+        onacc={hud.addAcc}
         onplace={placeAttack}
         onremove={hud.removeAttack}
         onnudge={hud.nudgeAttack}

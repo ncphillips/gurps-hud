@@ -5,6 +5,7 @@ import {
   canvasTokens,
   currentActor,
   executeOtf,
+  formatLocalized,
   localize,
   maneuverLabel,
   notifyWarning,
@@ -25,6 +26,7 @@ import { isFromActor, nudgePick, placePick, removePick } from "@/gurps/attack-pi
 import type { AttackPicks, DroppedAttack } from "@/gurps/attack-picks";
 import { isAttackOtf } from "@/gurps/otf";
 import { maneuverById } from "@/gurps/maneuvers";
+import type { AccCell } from "@/gurps/hud-view";
 import type { GurpsActorLike } from "@/gurps/system-types";
 import { currentHudPosition, currentMinimized, MINIMIZED_HOOK, POSITION_HOOK } from "@/settings";
 import { MacroBarState } from "./macro-bar.svelte";
@@ -199,6 +201,11 @@ export class Hud {
       addBucketModifier(location.penalty, t("rolls.toHit", { location: location.where }));
     }
     executeOtf(otf, this.actor, event);
+  };
+
+  addAcc = (acc: AccCell): void => {
+    if (acc.mod === null) return;
+    addBucketModifier(acc.mod, formatLocalized("GURPS.accForWeapon", { weapon: acc.weapon }));
   };
 
   selectTarget = (where: string): void => {

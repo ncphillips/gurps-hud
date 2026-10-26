@@ -24,6 +24,7 @@ function props(overrides: Partial<Props> = {}): Props {
     actorId: "actor-thor",
     drag: attackDrag(),
     onroll: vi.fn(),
+    onacc: vi.fn(),
     onplace: vi.fn(),
     onremove: vi.fn(),
     onnudge: vi.fn(),
@@ -123,6 +124,25 @@ describe("WeaponTables, with nothing picked", () => {
     render(WeaponTables, props({ view: emptyHudView(), enabled: false, actorId: null }));
 
     expect(screen.queryByRole("button", { name: "Add every attack" })).toBeNull();
+  });
+});
+
+describe("WeaponTables, a ranged weapon's Acc", () => {
+  it("adds the Acc to the bucket when clicked", async () => {
+    const onacc = vi.fn();
+    render(WeaponTables, props({ onacc }));
+
+    await fireEvent.click(screen.getByTitle("Add Acc to the modifier bucket"));
+
+    expect(onacc).toHaveBeenCalledWith({ text: "2", mod: 2, weapon: "Spear" });
+  });
+
+  test("an Acc with nothing to add", () => {
+    const view = fixtureView();
+    view.ranged[0].acc = { text: "0", mod: null, weapon: "Spear" };
+    render(WeaponTables, props({ view }));
+
+    expect(screen.queryByTitle("Add Acc to the modifier bucket")).toBeNull();
   });
 });
 

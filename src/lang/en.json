@@ -132,6 +132,7 @@
   "gurps-hud.weapons.rollLevel": "Roll against this level",
   "gurps-hud.weapons.rollDamage": "Roll damage",
   "gurps-hud.weapons.rollDefence": "Roll this defence",
+  "gurps-hud.weapons.addAcc": "Add Acc to the modifier bucket",
   "gurps-hud.weapons.empty": "No attacks on this actor.",
   "gurps-hud.weapons.noActor": "Select a token or a character to see their attacks.",
   "gurps-hud.weapons.unpicked": "No attacks picked yet. Drag them here from the character sheet, or:",

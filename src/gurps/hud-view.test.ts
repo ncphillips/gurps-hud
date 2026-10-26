@@ -309,6 +309,39 @@ describe("rangedRows", () => {
       rangedRows(system({ ranged: { "00000": thrown } } as Partial<GurpsSystem>))[0].damage.otf,
     ).toBe('D:"Spear (Thrown)"');
   });
+
+  it("adds the Acc to the bucket as a number", () => {
+    expect(
+      rangedRows(system({ ranged: { "00000": thrown } } as Partial<GurpsSystem>))[0].acc.mod,
+    ).toBe(2);
+  });
+
+  it("names the Acc's weapon without its mode, as the sheet does", () => {
+    expect(
+      rangedRows(system({ ranged: { "00000": thrown } } as Partial<GurpsSystem>))[0].acc.weapon,
+    ).toBe("Spear");
+  });
+
+  test("an Acc with a scope bonus", () => {
+    const rifle = { ...thrown, acc: "5+2" };
+    expect(
+      rangedRows(system({ ranged: { "00000": rifle } } as Partial<GurpsSystem>))[0].acc.mod,
+    ).toBe(5);
+  });
+
+  test("an Acc of 0", () => {
+    const pistol = { ...thrown, acc: "0" };
+    expect(
+      rangedRows(system({ ranged: { "00000": pistol } } as Partial<GurpsSystem>))[0].acc.mod,
+    ).toBeNull();
+  });
+
+  test("no Acc", () => {
+    const sling = { ...thrown, acc: "" };
+    expect(
+      rangedRows(system({ ranged: { "00000": sling } } as Partial<GurpsSystem>))[0].acc.mod,
+    ).toBeNull();
+  });
 });
 
 describe("attrColumns", () => {

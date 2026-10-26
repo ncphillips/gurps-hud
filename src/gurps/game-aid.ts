@@ -42,6 +42,11 @@ export function localize(key: string): string {
   return game.i18n?.localize(key) ?? key;
 }
 
+/** `localize` for a system string with `{placeholders}` in it, such as `GURPS.accForWeapon`. */
+export function formatLocalized(key: string, data: Record<string, string>): string {
+  return game.i18n?.format(key, data) ?? key;
+}
+
 /** The actor the Game Aid considers "current" -- it follows token selection and sheet focus. */
 export function currentActor(): GurpsActorLike | null {
   const lastActor = gameAid()?.LastActor;

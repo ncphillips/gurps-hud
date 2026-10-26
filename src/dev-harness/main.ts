@@ -54,6 +54,7 @@ const LABELS: Record<string, string> = {
   "GURPS.status.Crawling": "Crawling",
   "GURPS.status.Prone": "Prone",
   "GURPS.maneuverCommittedAttack": "Committed Attack",
+  "GURPS.accForWeapon": "Acc for {weapon}",
 };
 
 const params = new URLSearchParams(location.search);

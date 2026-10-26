@@ -1,7 +1,8 @@
 <script lang="ts">
   import { droppedAttack } from "@/gurps/attack-picks";
-  import type { HudView } from "@/gurps/hud-view";
+  import type { AccCell, HudView } from "@/gurps/hud-view";
   import { t } from "@/i18n";
+  import AccValue from "./AccValue.svelte";
   import AttackHandle from "./AttackHandle.svelte";
   import RollValue from "./RollValue.svelte";
   import type { AttackDrag } from "./attack-drag";
@@ -13,6 +14,7 @@
     actorId,
     drag = $bindable(),
     onroll,
+    onacc,
     onplace,
     onremove,
     onnudge,
@@ -26,6 +28,7 @@
     /** Owned by the strip, because an attack dragged out of the tables can be dropped off it. */
     drag: AttackDrag;
     onroll: (otf: string, event: MouseEvent) => void;
+    onacc: (acc: AccCell) => void;
     /**
      * A drop the tables accepted: the raw event, because the payload may have come from a character
      * sheet and only the strip can say whether it is the right character's.
@@ -258,7 +261,7 @@
           class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
           >{row.name}</span
         >
-        <span class="hud:w-[38px] hud:text-center {READOUT}">{row.acc}</span>
+        <AccValue acc={row.acc} class="hud:w-[38px] hud:text-center {READOUT}" {onacc} />
         <RollValue
           cell={row.level}
           variant="accent"

@@ -32,6 +32,15 @@ export interface RollableCell {
   otf: string | null;
 }
 
+/** A ranged weapon's Acc, which goes into the modifier bucket rather than being rolled. */
+export interface AccCell {
+  text: string;
+  /** `null` when there is nothing to add -- no Acc, or an Acc of 0. */
+  mod: number | null;
+  /** The weapon's name without its mode, which is how the Game Aid's sheet names the modifier. */
+  weapon: string;
+}
+
 export interface MeleeRow {
   key: string;
   name: string;
@@ -46,7 +55,7 @@ export interface MeleeRow {
 export interface RangedRow {
   key: string;
   name: string;
-  acc: string;
+  acc: AccCell;
   range: string;
   rof: string;
   level: RollableCell;
@@ -307,6 +316,17 @@ function damageCell(attack: GurpsMelee | GurpsRanged): RollableCell {
   return { text: damage, otf: attackOtf("D", attack) };
 }
 
+/** Read the way the sheet reads it, so a scoped "5+2" adds only its base 5. */
+function accCell(attack: GurpsRanged): AccCell {
+  const text = str(attack.acc).trim();
+  const mod = parseInt(text, 10);
+  return {
+    text: text || EM_DASH,
+    mod: Number.isNaN(mod) || mod === 0 ? null : mod,
+    weapon: str(attack.name),
+  };
+}
+
 /** Parry and block are text -- "5", "9F", "No", "" -- and only a numeric one is a defence you can roll. */
 function defenceCell(
   value: string | undefined,
@@ -337,7 +357,7 @@ export function rangedRows(system: GurpsSystem): RangedRow[] {
   return flattenKeyed<GurpsRanged>(system?.ranged, "system.ranged.").map(([key, ranged]) => ({
     key,
     name: attackName(ranged),
-    acc: str(ranged.acc) || EM_DASH,
+    acc: accCell(ranged),
     range: str(ranged.range) || EM_DASH,
     rof: str(ranged.rof) || EM_DASH,
     level: levelCell(ranged, "R"),

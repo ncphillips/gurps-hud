@@ -4,6 +4,7 @@ import {
   addBucketModifier,
   attackPicks,
   currentActor,
+  formatLocalized,
   localize,
   notifyWarning,
   saveAttackPicks,
@@ -46,6 +47,7 @@ function stubGameAid({
   vi.mocked(targetedActor).mockReturnValue(target);
   vi.mocked(attackPicks).mockReturnValue(picks);
   vi.mocked(localize).mockImplementation((key) => key);
+  vi.mocked(formatLocalized).mockImplementation((key, data) => `${key} ${Object.values(data)}`);
   vi.mocked(saveAttackPicks).mockResolvedValue(undefined);
 }
 
@@ -163,6 +165,18 @@ describe("the hit location aimed at", () => {
     fire("updateActor");
 
     expect(hud.target).toBe("Vitals");
+  });
+});
+
+describe("Hud#addAcc", () => {
+  it("adds the weapon's Acc to the bucket under the Game Aid's own reason", () => {
+    stubHooks();
+    stubGameAid({ actor: fixtureActor() });
+    const hud = mountHud();
+
+    hud.addAcc({ text: "2", mod: 2, weapon: "Spear" });
+
+    expect(addBucketModifier).toHaveBeenCalledWith(2, "GURPS.accForWeapon Spear");
   });
 });
 

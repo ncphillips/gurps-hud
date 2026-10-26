@@ -7,6 +7,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.10.0
+
+### Added
+
+- **Click a ranged weapon's Acc to add it to the bucket.** Aiming adds a weapon's Accuracy to the
+  shot, and the HUD showed Acc only as a number to read, so adding it meant typing the modifier in
+  or opening the character sheet ([#42](https://github.com/ncphillips/gurps-hud/issues/42)). Acc in
+  the ranged table is now clickable, like it is on the Game Aid's sheet, and adds the modifier under
+  the sheet's own "Acc for _weapon_" label. A scoped Acc such as `5+2` adds its base 5, as the sheet
+  does, and an Acc of 0 has nothing to add.
+
 ## v0.9.1
 
 ### Fixed
