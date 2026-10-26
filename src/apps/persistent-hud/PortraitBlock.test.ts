@@ -22,6 +22,7 @@ function withoutActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBloc
     openPanel: null,
     onposture: vi.fn(),
     onshock: vi.fn(),
+    onclearshock: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
     onminimize: vi.fn(),
@@ -45,6 +46,7 @@ function withActor(overrides: Partial<PortraitBlockProps> = {}): PortraitBlockPr
     openPanel: null,
     onposture: vi.fn(),
     onshock: vi.fn(),
+    onclearshock: vi.fn(),
     onopen: vi.fn(),
     onclose: vi.fn(),
     onminimize: vi.fn(),
@@ -145,13 +147,36 @@ describe("PortraitBlock with an actor", () => {
     expect(props.onopen).toHaveBeenCalledWith("shock");
   });
 
-  test("choosing a shock penalty", async () => {
+  test("toggling a shock level", async () => {
     const props = withActor({ openPanel: "shock" });
     render(PortraitBlock, props);
 
     await fireEvent.click(screen.getByRole("button", { name: "-3" }));
 
     expect(props.onshock).toHaveBeenCalledWith(-3);
+  });
+
+  test("clearing shock", async () => {
+    const props = withActor({ openPanel: "shock" });
+    render(PortraitBlock, props);
+
+    await fireEvent.click(screen.getByRole("button", { name: "0" }));
+
+    expect(props.onclearshock).toHaveBeenCalled();
+  });
+
+  it("marks the shock levels that are on as pressed", () => {
+    const view = fixtureView();
+    view.shocks = [
+      { penalty: -1, on: false },
+      { penalty: -2, on: false },
+      { penalty: -3, on: true },
+      { penalty: -4, on: true },
+    ];
+    render(PortraitBlock, withActor({ view, openPanel: "shock" }));
+
+    const pressed = screen.getAllByRole("button", { pressed: true }).map((button) => button.textContent?.trim());
+    expect(pressed).toEqual(["-3", "-4"]);
   });
 
   test("a single owned token on the canvas", async () => {

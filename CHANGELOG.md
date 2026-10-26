@@ -7,6 +7,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.9.1
+
+### Fixed
+
+- **Shock shows what your rolls take.** The Game Aid lets more than one shock level be on at once
+  and adds them all to a roll, which is how tables reach -8 for a groin hit or Low Pain Threshold.
+  The HUD showed only the worst level, so a token with Shock 4 and Shock 3 read -4 while its rolls
+  took -7, and picking a level from the HUD switched off any other
+  ([#40](https://github.com/ncphillips/gurps-hud/issues/40)). The shock cell now shows the total the
+  Game Aid applies, and the menu switches each level on and off on its own, the way the Game Aid's
+  token HUD does, with the ones that are on lit up. `0` still clears shock in one click.
+
 ## v0.9.0
 
 ### Added

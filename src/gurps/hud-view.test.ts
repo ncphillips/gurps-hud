@@ -122,22 +122,34 @@ describe("postureBadge", () => {
   });
 });
 
+/** The Game Aid's localizer, as far as its shock statuses go: the penalty is only in the translation. */
+const gameAidLocalize = (key: string) =>
+  ({
+    "GURPS.modifierStatusShock3": "-3 to IQ/DX checks (Shock 3)",
+    "GURPS.modifierStatusShock4": "-4 to IQ/DX checks (Shock 4)",
+    "GURPS.modifierStatusStunned": "-4 to active defenses (Stunned)",
+  })[key] ?? key;
+
+const SHOCK3 = "GURPS.modifierStatusShock3 #shock3 #dx #iq #hit #spell #skill @combatmod";
+const SHOCK4 = "GURPS.modifierStatusShock4 #shock4 #dx #iq #hit #spell #skill @combatmod";
+const STUNNED = "GURPS.modifierStatusStunned #stun #defense @combatmod";
+
 describe("shockPenalty", () => {
-  it("is zero when the actor carries no shock status", () => {
-    expect(shockPenalty(["reeling", "grapple"])).toBe(0);
+  it("is zero when the actor has no shock modifier", () => {
+    expect(shockPenalty([STUNNED], gameAidLocalize)).toBe(0);
   });
 
-  test("the shock2 status", () => {
-    expect(shockPenalty(["shock2"])).toBe(-2);
+  test("an actor with no self modifiers at all", () => {
+    expect(shockPenalty(undefined, gameAidLocalize)).toBe(0);
   });
 
-  it("takes the worst of several shock statuses", () => {
-    expect(shockPenalty(["shock1", "shock4"])).toBe(-4);
+  test("one shock level", () => {
+    expect(shockPenalty([SHOCK4], gameAidLocalize)).toBe(-4);
   });
 
-  /* Worst, not last: the order the Game Aid hands the statuses back in is not the HUD's to rely on. */
-  test("the worst shock status arriving first", () => {
-    expect(shockPenalty(["shock4", "shock1"])).toBe(-4);
+  /* The Game Aid adds every shock level that is on to a roll, so the cell does too. */
+  it("adds up every shock level that is on", () => {
+    expect(shockPenalty([SHOCK4, STUNNED, SHOCK3], gameAidLocalize)).toBe(-7);
   });
 });
 
@@ -445,10 +457,25 @@ describe("buildHudView", () => {
 });
 
 describe("buildHudView, shock", () => {
-  it("offers every shock penalty, none first", () => {
-    expect(buildHudView({ name: "Thor", system: system({}) }, localize).shocks).toEqual([
-      0, -1, -2, -3, -4,
+  it("offers each shock level, mildest first", () => {
+    const view = buildHudView({ name: "Thor", system: system({}) }, localize);
+    expect(view.shocks.map((level) => level.penalty)).toEqual([-1, -2, -3, -4]);
+  });
+
+  it("marks the shock levels the actor has on", () => {
+    const actor = { name: "Thor", system: system({}), statuses: ["shock4", "reeling", "shock3"] };
+    expect(buildHudView(actor, localize).shocks.map((level) => level.on)).toEqual([
+      false,
+      false,
+      true,
+      true,
     ]);
+  });
+
+  it("shows the shock penalty the Game Aid applies to rolls", () => {
+    const conditions = { posture: "standing", self: { modifiers: [SHOCK4, SHOCK3] } };
+    const actor = { name: "Thor", system: system({ conditions } as Partial<GurpsSystem>) };
+    expect(buildHudView(actor, gameAidLocalize).shock).toBe(-7);
   });
 });
 

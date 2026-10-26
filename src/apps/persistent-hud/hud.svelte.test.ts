@@ -272,13 +272,25 @@ test("minimizing the strip with a panel open", () => {
   expect(hud.openPanel).toBeNull();
 });
 
-test("choosing a shock penalty", () => {
+/* Two levels can be on at once, so the menu stays up to switch on the next. */
+test("toggling a shock level", () => {
   stubHooks();
   stubGameAid({ actor: fixtureActor() });
   const hud = mountHud();
 
   hud.open("shock");
-  hud.selectShock(-2);
+  hud.toggleShock(-2);
 
-  expect(hud.openPanel).toBeNull();
+  expect(hud.openPanel).toBe("shock");
+});
+
+test("clearing shock", () => {
+  stubHooks();
+  stubGameAid({ actor: fixtureActor() });
+  const hud = mountHud();
+
+  hud.open("shock");
+  hud.clearShock();
+
+  expect(hud.openPanel).toBe("shock");
 });

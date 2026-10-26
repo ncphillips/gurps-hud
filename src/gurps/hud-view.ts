@@ -103,6 +103,11 @@ export interface ConditionVital {
   title: string;
 }
 
+export interface ShockLevel {
+  penalty: number;
+  on: boolean;
+}
+
 export interface HudView {
   name: string;
   img: string | null;
@@ -114,8 +119,8 @@ export interface HudView {
   qp: PoolVital | null;
   /** `null` when there is no actor to have taken a wound. */
   shock: number | null;
-  /** The penalties the shock cell offers to change to; empty when there is no actor to change. */
-  shocks: number[];
+  /** The shock levels the cell toggles; empty when there is no actor to change. */
+  shocks: ShockLevel[];
   condition: ConditionVital;
   dodge: string;
   move: string;
@@ -184,19 +189,29 @@ export function postureBadge(posture: string | undefined, localize: Localize): P
 }
 
 /**
- * Shock lives on the actor as a `shock1`..`shock4` status rather than a field. Only one should ever
- * be applied, but take the worst if the actor somehow carries several.
+ * The penalty the Game Aid takes off rolls for shock. Each level is its own status, and every one
+ * that is on adds its modifier to `system.conditions.self.modifiers` tagged with the status id --
+ * the list rolls read. So the sum is taken there rather than from the statuses, and whatever the
+ * Game Aid decides about stacking is what the cell shows. The number is only in the translation,
+ * found the way the Game Aid's own roll code finds it.
  */
-/** Shock runs from none to the -4 cap, one status per step. */
-export const SHOCK_PENALTIES = [0, -1, -2, -3, -4] as const;
-
-export function shockPenalty(statuses: Iterable<string> | undefined): number {
-  let worst = 0;
-  for (const status of statuses ?? []) {
-    const match = /^shock([1-4])$/.exec(status);
-    if (match) worst = Math.min(worst, -Number(match[1]));
+export function shockPenalty(modifiers: readonly string[] | undefined, localize: Localize): number {
+  let total = 0;
+  for (const modifier of modifiers ?? []) {
+    if (!/#shock\d+\b/i.test(modifier)) continue;
+    const key = /(GURPS\.\w+)/.exec(modifier)?.[1];
+    const text = key ? modifier.replace(key, localize(key)) : modifier;
+    total += Number(/[-+]\d+/.exec(text)?.[0] ?? 0);
   }
-  return worst;
+  return total;
+}
+
+/** The Game Aid's shock statuses, `shock1`..`shock4`, as the penalties its controls switch. */
+export const SHOCK_LEVELS = [-1, -2, -3, -4] as const;
+
+export function shockLevels(statuses: Iterable<string> | undefined): ShockLevel[] {
+  const on = new Set(statuses ?? []);
+  return SHOCK_LEVELS.map((penalty) => ({ penalty, on: on.has(`shock${-penalty}`) }));
 }
 
 /**
@@ -525,8 +540,8 @@ export function buildHudView(
     hp: poolVital(system.HP),
     fp: poolVital(system.FP),
     qp: quintessence ? quintessencePool(system.QP) : null,
-    shock: shockPenalty(actor.statuses),
-    shocks: [...SHOCK_PENALTIES],
+    shock: shockPenalty(conditions.self?.modifiers, localize),
+    shocks: shockLevels(actor.statuses),
     condition: conditionVital(conditions),
     dodge: str(system.currentdodge) || EM_DASH,
     move: str(system.currentmove) || EM_DASH,

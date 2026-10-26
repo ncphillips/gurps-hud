@@ -88,6 +88,8 @@ export interface GurpsConditions {
   maneuver?: string;
   reeling?: boolean;
   exhausted?: boolean;
+  /** Every active effect's roll modifier, as tagged strings; what the Game Aid's rolls read. */
+  self?: { modifiers?: string[] };
 }
 
 export interface GurpsSystem {
