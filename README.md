@@ -163,12 +163,6 @@ Symlink the build output into Foundry, then enable the module in a `gurps` world
 ln -s "$(pwd)/dist" "$HOME/Library/Application Support/FoundryVTT/Data/modules/gurps-hud"
 ```
 
-## Roadmap to v1
-
-- [ ] Accessibility Review
-- [x] Translatable Text
-- [x] UI Tests
-
 ## Releasing
 
 CI (`.github/workflows/ci.yml`) lints, type-checks, tests and builds every push to `main` and
