@@ -25,6 +25,7 @@ function props(overrides: Partial<Props> = {}): Props {
     drag: attackDrag(),
     onroll: vi.fn(),
     onacc: vi.fn(),
+    onedit: vi.fn(),
     onplace: vi.fn(),
     onremove: vi.fn(),
     onnudge: vi.fn(),
@@ -143,6 +144,26 @@ describe("WeaponTables, a ranged weapon's Acc", () => {
     render(WeaponTables, props({ view }));
 
     expect(screen.queryByTitle("Add Acc to the modifier bucket")).toBeNull();
+  });
+});
+
+describe("WeaponTables, a weapon's name", () => {
+  it("opens a melee attack's editor when double-clicked", async () => {
+    const onedit = vi.fn();
+    render(WeaponTables, props({ onedit }));
+
+    await fireEvent.dblClick(nameCellIn(SPEAR));
+
+    expect(onedit).toHaveBeenCalledWith(SPEAR);
+  });
+
+  it("opens a ranged attack's editor when double-clicked", async () => {
+    const onedit = vi.fn();
+    render(WeaponTables, props({ onedit }));
+
+    await fireEvent.dblClick(nameCellIn(THROWN));
+
+    expect(onedit).toHaveBeenCalledWith(THROWN);
   });
 });
 

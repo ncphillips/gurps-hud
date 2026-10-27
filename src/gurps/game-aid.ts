@@ -1,6 +1,6 @@
 import type { GurpsActorLike } from "./system-types";
 import type { TokenLike } from "./actor-choices";
-import { readPicks } from "./attack-picks";
+import { attackKind, readPicks } from "./attack-picks";
 import type { AttackPicks } from "./attack-picks";
 import { warn } from "@/log";
 
@@ -128,6 +128,54 @@ export async function clearShock(actor: GurpsActorLike | null): Promise<void> {
 
 export function openSheet(actor: GurpsActorLike | null): void {
   actor?.sheet?.render(true);
+}
+
+/** An attack or the item it was made from: the Game Aid edits whichever owns the data. */
+interface EditableItem {
+  editingActor?: GurpsActorLike;
+  system?: { fromItem?: string };
+  sheet?: { render(force?: boolean): unknown } | null;
+}
+
+/** The parts of the Game Aid's actor and sheet that its double-click-to-edit goes through. */
+interface EditableActor {
+  items?: { get(id: string): EditableItem | undefined };
+  _sanityCheckItemSettings?(attack: unknown): Promise<boolean>;
+  sheet?: {
+    editMelee?(actor: GurpsActorLike, key: string, attack: object): Promise<void>;
+    editRanged?(actor: GurpsActorLike, key: string, attack: object): Promise<void>;
+  } | null;
+}
+
+/**
+ * What double-clicking an attack's name on the character sheet does, step for step: an attack that
+ * belongs to an item opens that item's sheet, and any other opens the sheet's weapon editor. Every
+ * Game Aid sheet extends the one that defines the editors, so they are there whichever is in use.
+ */
+export async function editAttack(actor: GurpsActorLike | null, key: string): Promise<void> {
+  const kind = attackKind(key);
+  if (!actor || !kind) return;
+
+  const editable = actor as GurpsActorLike & EditableActor;
+  // A copy, because the editor tells what changed by comparing what it saves against the actor.
+  const attack = foundry.utils.duplicate(foundry.utils.getProperty(actor, key)) as
+    { itemid?: string } | undefined;
+  if (!attack) return;
+
+  if (attack.itemid) {
+    if (!(await editable._sanityCheckItemSettings?.(attack))) return;
+
+    let item = editable.items?.get(attack.itemid);
+    if (item?.system?.fromItem) item = editable.items?.get(item.system.fromItem);
+    if (!item) return;
+
+    item.editingActor = actor;
+    item.sheet?.render(true);
+    return;
+  }
+
+  if (kind === "melee") await editable.sheet?.editMelee?.(actor, key, attack);
+  else await editable.sheet?.editRanged?.(actor, key, attack);
 }
 
 const MODULE_ID = "gurps-hud";

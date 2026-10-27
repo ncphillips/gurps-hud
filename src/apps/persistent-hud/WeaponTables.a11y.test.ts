@@ -17,6 +17,7 @@ function props(
     drag: attackDrag(),
     onroll: vi.fn(),
     onacc: vi.fn(),
+    onedit: vi.fn(),
     onplace: vi.fn(),
     onremove: vi.fn(),
     onnudge: vi.fn(),

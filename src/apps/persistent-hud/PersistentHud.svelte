@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { openSheet, updatePool } from "@/gurps/game-aid";
+  import { editAttack, openSheet, updatePool } from "@/gurps/game-aid";
   import { t } from "@/i18n";
   import { droppedAttack } from "@/gurps/attack-picks";
   import { attackDrag } from "./attack-drag";
@@ -219,6 +219,7 @@
         bind:drag
         onroll={hud.roll}
         onacc={hud.addAcc}
+        onedit={(key) => void editAttack(hud.actor, key)}
         onplace={placeAttack}
         onremove={hud.removeAttack}
         onnudge={hud.nudgeAttack}

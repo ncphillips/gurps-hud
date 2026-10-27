@@ -15,6 +15,7 @@
     drag = $bindable(),
     onroll,
     onacc,
+    onedit,
     onplace,
     onremove,
     onnudge,
@@ -29,6 +30,8 @@
     drag: AttackDrag;
     onroll: (otf: string, event: MouseEvent) => void;
     onacc: (acc: AccCell) => void;
+    /** Opens the Game Aid's editor for an attack, as double-clicking its name on the sheet does. */
+    onedit: (key: string) => void;
     /**
      * A drop the tables accepted: the raw event, because the payload may have come from a character
      * sheet and only the strip can say whether it is the right character's.
@@ -188,9 +191,10 @@
           {onremove}
           {onnudge}
         />
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <span
           class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
-          >{row.name}</span
+          ondblclick={() => onedit(row.key)}>{row.name}</span
         >
         <span class="hud:w-[38px] hud:text-center {READOUT}">{row.reach}</span>
         <RollValue
@@ -257,9 +261,10 @@
           {onremove}
           {onnudge}
         />
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <span
           class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
-          >{row.name}</span
+          ondblclick={() => onedit(row.key)}>{row.name}</span
         >
         <AccValue acc={row.acc} class="hud:w-[38px] hud:text-center {READOUT}" {onacc} />
         <RollValue

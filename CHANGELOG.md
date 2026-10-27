@@ -17,6 +17,11 @@ from that tag.
   the ranged table is now clickable, like it is on the Game Aid's sheet, and adds the modifier under
   the sheet's own "Acc for _weapon_" label. A scoped Acc such as `5+2` adds its base 5, as the sheet
   does, and an Acc of 0 has nothing to add.
+- **Double-click a weapon's name to edit it.** The Game Aid's sheet opens its weapon editor when a
+  weapon's name is double-clicked, and the HUD's weapon tables did nothing, so fixing a weapon meant
+  opening the character sheet first ([#43](https://github.com/ncphillips/gurps-hud/issues/43)).
+  Double-clicking a melee or ranged weapon's name in the HUD now opens the same Melee or Ranged
+  Weapon Editor, or the item's own sheet for a weapon that comes from an item.
 
 ## v0.9.1
 
