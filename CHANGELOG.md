@@ -7,6 +7,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A version
 publishing a GitHub Release tagged `v<MAJOR>.<MINOR>.<PATCH>`; the manifest version is stamped
 from that tag.
 
+## v0.11.0
+
+### Added
+
+- **Right-click an attack to remove it.** Taking an attack off the HUD meant dragging it clear of the
+  strip or focusing its grip and pressing Delete, neither of which says it is there until you know.
+  Right-clicking an attack row now opens a menu with Remove, the same menu Foundry draws everywhere
+  else, and the place further actions on an attack will go.
+
 ## v0.10.0
 
 ### Added

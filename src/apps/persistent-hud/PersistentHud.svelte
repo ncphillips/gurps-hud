@@ -6,6 +6,8 @@
   import { saveHudPosition, toggleMinimized } from "@/settings";
   import type { HudPosition } from "@/settings";
   import { tick } from "svelte";
+  import type { Attachment } from "svelte/attachments";
+  import { attackMenuEntries } from "./attack-menu";
   import MacroBar from "./MacroBar.svelte";
   import PortraitBlock from "./PortraitBlock.svelte";
   import TopBar from "./TopBar.svelte";
@@ -24,6 +26,23 @@
   let drag = $state(attackDrag());
 
   let strip = $state<HTMLElement | null>(null);
+
+  /**
+   * Delegated from the tables rather than bound per row, so it survives the rows being re-keyed as
+   * attacks are picked and reordered. Every entry reads the strip at click time, so the menu is
+   * built once.
+   */
+  const attackMenu: Attachment<HTMLElement> = (tables) => {
+    // The harness mounts the strip with no Foundry behind it, and so no menu to open.
+    if (typeof foundry === "undefined") return;
+
+    new foundry.applications.ux.ContextMenu(
+      tables,
+      "[data-hud-attack]",
+      attackMenuEntries({ remove: hud.removeAttack }),
+      { jQuery: false, fixed: true },
+    );
+  };
 
   /**
    * The drag in progress: where the pointer went down, where the HUD was then, and where it has
@@ -224,6 +243,7 @@
         onremove={hud.removeAttack}
         onnudge={hud.nudgeAttack}
         onpickall={hud.pickAllAttacks}
+        menu={attackMenu}
       />
 
       {#if hud.macroBar.visible}

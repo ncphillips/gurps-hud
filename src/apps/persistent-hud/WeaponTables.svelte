@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Attachment } from "svelte/attachments";
   import { droppedAttack } from "@/gurps/attack-picks";
   import type { AccCell, HudView } from "@/gurps/hud-view";
   import { t } from "@/i18n";
@@ -20,6 +21,7 @@
     onremove,
     onnudge,
     onpickall,
+    menu,
   }: {
     view: HudView;
     /** False with nothing selected, which is a different emptiness from an actor who carries nothing. */
@@ -42,6 +44,8 @@
     onremove: (key: string) => void;
     onnudge: (key: string, step: number) => void;
     onpickall: () => void;
+    /** The right-click menu on the rows, which is Foundry's and so attached from outside. */
+    menu?: Attachment<HTMLElement>;
   } = $props();
 
   const HEADER =
@@ -160,6 +164,7 @@
   ondragenter={enterTables}
   ondragleave={leaveTables}
   ondrop={dropInTables}
+  {@attach menu}
 >
   {#if view.melee.length > 0}
     <div class={HEADER}>
