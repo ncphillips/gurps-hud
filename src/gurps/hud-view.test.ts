@@ -260,6 +260,19 @@ describe("meleeRows", () => {
     ).toBe("9F");
   });
 
+  it("carries the attack's notes, OtF buttons and all", () => {
+    const sword = { ...spear, notes: "Swish ['Swing!'/anim slash]" };
+    expect(
+      meleeRows(system({ melee: { "00000": sword } } as Partial<GurpsSystem>))[0].notes,
+    ).toBe("Swish ['Swing!'/anim slash]");
+  });
+
+  test("an attack with no notes", () => {
+    expect(meleeRows(system({ melee: { "00000": spear } } as Partial<GurpsSystem>))[0].notes).toBe(
+      "",
+    );
+  });
+
   test("a weapon with no usage mode", () => {
     expect(
       meleeRows(
@@ -296,6 +309,13 @@ describe("rangedRows", () => {
     expect(
       rangedRows(system({ ranged: { "00000": thrown } } as Partial<GurpsSystem>))[0].level.otf,
     ).toBe('R:"Spear (Thrown)"');
+  });
+
+  it("carries the attack's notes", () => {
+    const bow = { ...thrown, notes: "[/anim arrow]" };
+    expect(
+      rangedRows(system({ ranged: { "00000": bow } } as Partial<GurpsSystem>))[0].notes,
+    ).toBe("[/anim arrow]");
   });
 
   it("reads the range straight off the attack", () => {

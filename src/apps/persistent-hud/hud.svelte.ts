@@ -28,7 +28,16 @@ import { isAttackOtf } from "@/gurps/otf";
 import { maneuverById } from "@/gurps/maneuvers";
 import type { AccCell } from "@/gurps/hud-view";
 import type { GurpsActorLike } from "@/gurps/system-types";
-import { currentHudPosition, currentMinimized, MINIMIZED_HOOK, POSITION_HOOK } from "@/settings";
+import {
+  currentHudPosition,
+  currentMinimized,
+  currentNoteVisibility,
+  MINIMIZED_HOOK,
+  NOTES_HOOK,
+  POSITION_HOOK,
+  saveNoteOverrides,
+} from "@/settings";
+import { notesShown, withNotesShown } from "./note-visibility";
 import { MacroBarState } from "./macro-bar.svelte";
 import type { Panel } from "./panels";
 import { Revision } from "./revision.svelte";
@@ -108,6 +117,8 @@ export class Hud {
    */
   minimized = $derived(this.#revision.read(currentMinimized));
 
+  #noteVisibility = $derived(this.#revision.read(currentNoteVisibility));
+
   /** Where the reader dropped the strip, or `null` while it is docked. */
   position = $derived(this.#revision.read(currentHudPosition));
 
@@ -171,11 +182,13 @@ export class Hud {
       };
       Hooks.on(MINIMIZED_HOOK, fold);
       Hooks.on(POSITION_HOOK, refresh);
+      Hooks.on(NOTES_HOOK, refresh);
 
       return () => {
         for (const hook of refreshed) Hooks.off(hook, refresh);
         Hooks.off(MINIMIZED_HOOK, fold);
         Hooks.off(POSITION_HOOK, refresh);
+        Hooks.off(NOTES_HOOK, refresh);
         if (this.#closeTimer) clearTimeout(this.#closeTimer);
       };
     });
@@ -270,6 +283,19 @@ export class Hud {
 
   nudgeAttack = (key: string, step: number): void => {
     this.#savePicks(nudgePick(this.picks, key, step));
+  };
+
+  notesShown = (key: string): boolean =>
+    notesShown(this.#noteVisibility, this.actor?.id ?? "", key);
+
+  toggleNotes = (key: string): void => {
+    const actorId = this.actor?.id;
+    if (!actorId) return;
+
+    const shown = notesShown(this.#noteVisibility, actorId, key);
+    saveNoteOverrides(withNotesShown(this.#noteVisibility, actorId, key, !shown)).catch(
+      (reason: unknown) => warn("could not save which attack notes are shown", reason),
+    );
   };
 
   pickAllAttacks = (): void => {

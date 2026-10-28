@@ -1,4 +1,5 @@
 import { t } from "./i18n";
+import type { NoteOverrides, NoteVisibility } from "./apps/persistent-hud/note-visibility";
 
 /**
  * The HUD's own settings: how big the strip is drawn, which palette it is drawn in, and whose macro
@@ -27,6 +28,12 @@ export const MINIMIZED_SETTING = "minimized";
 
 /** The setting key, so `game.settings.get(MODULE, POSITION_SETTING)` and the registration agree. */
 export const POSITION_SETTING = "position";
+
+/** The setting key, so `game.settings.get(MODULE, ATTACK_NOTES_SETTING)` and the registration agree. */
+export const ATTACK_NOTES_SETTING = "attackNotes";
+
+/** The setting key, so `game.settings.get(MODULE, NOTE_OVERRIDES_SETTING)` and the registration agree. */
+export const NOTE_OVERRIDES_SETTING = "attackNoteOverrides";
 
 /** The custom property `gurps-hud.css` multiplies the UI scale by. */
 const SCALE_VAR = "--gurps-hud-scale";
@@ -220,6 +227,12 @@ export const MINIMIZED_HOOK = "gurps-hud.minimized";
 export const POSITION_HOOK = "gurps-hud.position";
 
 /**
+ * Fired whenever the default for attack notes changes or one attack's notes are shown or hidden.
+ * Both are client settings, which Foundry announces nowhere.
+ */
+export const NOTES_HOOK = "gurps-hud.attackNotes";
+
+/**
  * Where the reader dropped the strip, measured from the bottom-left of the screen to the bottom-left
  * of the HUD. The bottom rather than the top because that is the corner the strip grows away from: a
  * longer weapon table, or expanding a minimized strip, pushes the top up and leaves the rest put.
@@ -269,6 +282,24 @@ export function registerSettings(): void {
     },
     default: "hud",
     onChange: (mode) => Hooks.callAll(HOTBAR_MODE_HOOK, resolveHotbarMode(mode)),
+  });
+
+  game.settings!.register(MODULE, ATTACK_NOTES_SETTING, {
+    name: t("settings.attackNotes.name"),
+    hint: t("settings.attackNotes.hint"),
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true,
+    onChange: () => Hooks.callAll(NOTES_HOOK),
+  });
+
+  game.settings!.register(MODULE, NOTE_OVERRIDES_SETTING, {
+    scope: "client",
+    config: false,
+    type: Object,
+    default: {},
+    onChange: () => Hooks.callAll(NOTES_HOOK),
   });
 
   game.settings!.register(MODULE, MINIMIZED_SETTING, {
@@ -343,4 +374,16 @@ export function saveHudPosition(position: HudPosition | null): Promise<unknown> 
     POSITION_SETTING,
     position ? `${position.left},${position.bottom}` : "",
   );
+}
+
+export function currentNoteVisibility(): NoteVisibility {
+  const overrides = game.settings?.get(MODULE, NOTE_OVERRIDES_SETTING);
+  return {
+    shownByDefault: game.settings?.get(MODULE, ATTACK_NOTES_SETTING) !== false,
+    overrides: overrides && typeof overrides === "object" ? (overrides as NoteOverrides) : {},
+  };
+}
+
+export function saveNoteOverrides(overrides: NoteOverrides): Promise<unknown> {
+  return game.settings!.set(MODULE, NOTE_OVERRIDES_SETTING, overrides);
 }

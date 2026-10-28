@@ -1,5 +1,6 @@
 import type { AttackPicks } from "./gurps/attack-picks";
 import type { HotbarMode, HudPosition, HudTheme } from "./settings";
+import type { NoteOverrides } from "./apps/persistent-hud/note-visibility";
 import type { GurpsActorLike } from "./gurps/system-types";
 
 export {};
@@ -24,6 +25,8 @@ declare module "fvtt-types/configuration" {
       "gurps-hud.minimized": (minimized: boolean) => void;
       /** Fired by this module when the strip is moved or put back; see `POSITION_HOOK`. */
       "gurps-hud.position": (position: HudPosition | null) => void;
+      /** Fired by this module when attack notes are shown or hidden; see `NOTES_HOOK`. */
+      "gurps-hud.attackNotes": () => void;
     }
   }
 
@@ -53,6 +56,13 @@ declare module "fvtt-types/configuration" {
      * where the HUD is out of the way is a fact about the screen it is read on, not about the world.
      */
     "gurps-hud.position": string;
+    /**
+     * Whether attack notes start open under their names. Client-scoped: whether the flavour text is
+     * worth the room is one reader's call, not the table's.
+     */
+    "gurps-hud.attackNotes": boolean;
+    /** The attacks this reader has opened or closed against that default, by actor id. */
+    "gurps-hud.attackNoteOverrides": NoteOverrides;
   }
 
   interface FlagConfig {

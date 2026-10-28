@@ -1,6 +1,8 @@
 import type { GurpsActorLike } from "./system-types";
 import type { TokenLike } from "./actor-choices";
 import { attackKind, readPicks } from "./attack-picks";
+import { noteSegments } from "./attack-notes";
+import type { NoteSegment } from "./attack-notes";
 import type { AttackPicks } from "./attack-picks";
 import { warn } from "@/log";
 
@@ -15,6 +17,8 @@ interface GameAidGlobal {
   /** Makes an actor current and fires `updateLastActorGURPS`, as selecting its token would. */
   SetLastActor?(actor: GurpsActorLike, tokenDocument?: unknown): void;
   executeOTF(otf: string, priv?: boolean, event?: Event | null, actor?: unknown): Promise<boolean>;
+  /** What the sheet's `{{{gurpslink notes}}}` calls: `[OtF]` brackets become link spans. */
+  gurpslink?(str: string, clrdmods?: boolean): string;
   Maneuvers?: {
     /** Resolves any maneuver id the system knows, falling back to Do Nothing. */
     getManeuver(id?: string): { label?: string; name?: string } | undefined;
@@ -96,6 +100,16 @@ export function executeOtf(otf: string, actor: GurpsActorLike | null, event?: Ev
   }
 
   void api.executeOTF(otf, false, event ?? null, actor);
+}
+
+/** An attack's notes split the way the sheet shows them, or one plain run without the Game Aid. */
+export function attackNoteSegments(notes: string): NoteSegment[] {
+  if (!notes) return [];
+
+  const gurpslink = gameAid()?.gurpslink;
+  if (!gurpslink) return [{ text: notes }];
+
+  return noteSegments(gurpslink(notes, true));
 }
 
 /**

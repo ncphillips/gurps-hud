@@ -5,6 +5,7 @@
   import { t } from "@/i18n";
   import AccValue from "./AccValue.svelte";
   import AttackHandle from "./AttackHandle.svelte";
+  import AttackNotes from "./AttackNotes.svelte";
   import RollValue from "./RollValue.svelte";
   import type { AttackDrag } from "./attack-drag";
   import { DESIGNED_RANGE_COLUMN_PX, readoutWidth } from "./column-width";
@@ -21,6 +22,7 @@
     onremove,
     onnudge,
     onpickall,
+    notesshown,
     menu,
   }: {
     view: HudView;
@@ -44,6 +46,8 @@
     onremove: (key: string) => void;
     onnudge: (key: string, step: number) => void;
     onpickall: () => void;
+    /** Whether this reader has an attack's notes open; the default and every toggle are theirs. */
+    notesshown: (key: string) => boolean;
     /** The right-click menu on the rows, which is Foundry's and so attached from outside. */
     menu?: Attachment<HTMLElement>;
   } = $props();
@@ -196,11 +200,17 @@
           {onremove}
           {onnudge}
         />
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span
-          class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
-          ondblclick={() => onedit(row.key)}>{row.name}</span
-        >
+        <span class="hud:min-w-0 hud:flex-1">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <span
+            data-hud-attack-name
+            class="hud:block hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
+            ondblclick={() => onedit(row.key)}>{row.name}</span
+          >
+          {#if notesshown(row.key)}
+            <AttackNotes notes={row.notes} {onroll} />
+          {/if}
+        </span>
         <span class="hud:w-[38px] hud:text-center {READOUT}">{row.reach}</span>
         <RollValue
           cell={row.level}
@@ -266,11 +276,17 @@
           {onremove}
           {onnudge}
         />
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span
-          class="hud:flex-1 hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
-          ondblclick={() => onedit(row.key)}>{row.name}</span
-        >
+        <span class="hud:min-w-0 hud:flex-1">
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <span
+            data-hud-attack-name
+            class="hud:block hud:truncate hud:font-hud hud:text-[12.5px]/[1.35] hud:font-semibold hud:text-hud-ink"
+            ondblclick={() => onedit(row.key)}>{row.name}</span
+          >
+          {#if notesshown(row.key)}
+            <AttackNotes notes={row.notes} {onroll} />
+          {/if}
+        </span>
         <AccValue acc={row.acc} class="hud:w-[38px] hud:text-center {READOUT}" {onacc} />
         <RollValue
           cell={row.level}

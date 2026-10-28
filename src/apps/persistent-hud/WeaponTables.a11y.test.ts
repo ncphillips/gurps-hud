@@ -22,6 +22,7 @@ function props(
     onremove: vi.fn(),
     onnudge: vi.fn(),
     onpickall: vi.fn(),
+    notesshown: () => true,
     ...overrides,
   };
 }

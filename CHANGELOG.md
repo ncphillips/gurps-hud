@@ -15,6 +15,13 @@ from that tag.
   strip or focusing its grip and pressing Delete, neither of which says it is there until you know.
   Right-clicking an attack row now opens a menu with Remove, the same menu Foundry draws everywhere
   else, and the place further actions on an attack will go.
+- **An attack's notes, and their buttons, under its name.** People wire sounds and animations to an
+  attack with an On-the-Fly button in its VTT notes, and Token Action HUD put those a click away
+  while the GURPS HUD left them on the character sheet
+  ([#45](https://github.com/ncphillips/gurps-hud/issues/45)). Each attack now shows its notes beneath
+  its name, as the Game Aid's sheet does, with every button in them clickable. A new **Show attack
+  notes** setting decides whether notes start open, and right-clicking an attack shows or hides its
+  notes on their own; both choices are yours rather than the table's.
 
 ## v0.10.0
 

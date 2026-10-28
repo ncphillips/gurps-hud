@@ -39,7 +39,13 @@
     new foundry.applications.ux.ContextMenu(
       tables,
       "[data-hud-attack]",
-      attackMenuEntries({ remove: hud.removeAttack }),
+      attackMenuEntries({
+        hasNotes: (key) =>
+          [...hud.view.melee, ...hud.view.ranged].some((row) => row.key === key && row.notes),
+        notesShown: hud.notesShown,
+        toggleNotes: hud.toggleNotes,
+        remove: hud.removeAttack,
+      }),
       { jQuery: false, fixed: true },
     );
   };
@@ -243,6 +249,7 @@
         onremove={hud.removeAttack}
         onnudge={hud.nudgeAttack}
         onpickall={hud.pickAllAttacks}
+        notesshown={hud.notesShown}
         menu={attackMenu}
       />
 

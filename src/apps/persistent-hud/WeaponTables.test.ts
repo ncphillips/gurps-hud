@@ -6,6 +6,7 @@ import { dragging } from "@/testing/dragging";
 import type { Gesture } from "@/testing/dragging";
 import { dragPayload, noPicks } from "@/gurps/attack-picks";
 import { emptyHudView } from "@/gurps/hud-view";
+import type { HudView } from "@/gurps/hud-view";
 import { attackDrag } from "./attack-drag";
 import { fixtureView } from "./hud-fixture";
 import WeaponTables from "./WeaponTables.svelte";
@@ -30,6 +31,7 @@ function props(overrides: Partial<Props> = {}): Props {
     onremove: vi.fn(),
     onnudge: vi.fn(),
     onpickall: vi.fn(),
+    notesshown: () => true,
     ...overrides,
   };
 }
@@ -48,7 +50,7 @@ function row(key: string): Element {
 
 /** The name cell of a row -- one of the children the pointer crosses on its way across it. */
 function nameCellIn(key: string): Element {
-  return row(key).querySelector("span")!;
+  return row(key).querySelector("[data-hud-attack-name]")!;
 }
 
 function tables(): Element {
@@ -318,5 +320,27 @@ describe("WeaponTables, the grip", () => {
     render(WeaponTables, props());
 
     expect(grip(SPEAR).getAttribute("title")).toMatch(/^Spear · Thrust:/);
+  });
+});
+
+describe("WeaponTables, an attack's notes", () => {
+  function withNotes(): HudView {
+    const view = fixtureView();
+    return {
+      ...view,
+      melee: view.melee.map((row) => (row.key === SPEAR ? { ...row, notes: "Brace for it" } : row)),
+    };
+  }
+
+  it("shows them under the name", () => {
+    render(WeaponTables, props({ view: withNotes() }));
+
+    expect(row(SPEAR).querySelector("[data-hud-attack-notes]")?.textContent).toBe("Brace for it");
+  });
+
+  test("an attack whose notes the reader hid", () => {
+    render(WeaponTables, props({ view: withNotes(), notesshown: (key: string) => key !== SPEAR }));
+
+    expect(row(SPEAR).querySelector("[data-hud-attack-notes]")).toBeNull();
   });
 });

@@ -49,6 +49,8 @@ export interface MeleeRow {
   damage: RollableCell;
   block: RollableCell;
   parry: RollableCell;
+  /** Raw, as the Game Aid stores it: VTT notes with their `[OtF]` buttons still in brackets. */
+  notes: string;
   equipped: boolean;
 }
 
@@ -60,6 +62,8 @@ export interface RangedRow {
   rof: string;
   level: RollableCell;
   damage: RollableCell;
+  /** Raw, as the Game Aid stores it: VTT notes with their `[OtF]` buttons still in brackets. */
+  notes: string;
   equipped: boolean;
 }
 
@@ -348,6 +352,7 @@ export function meleeRows(system: GurpsSystem): MeleeRow[] {
     damage: damageCell(melee),
     block: defenceCell(melee.block, "B", melee),
     parry: defenceCell(melee.parry, "P", melee),
+    notes: str(melee.notes).trim(),
     equipped: isEquipped(melee.name, carried),
   }));
 }
@@ -362,6 +367,7 @@ export function rangedRows(system: GurpsSystem): RangedRow[] {
     rof: str(ranged.rof) || EM_DASH,
     level: levelCell(ranged, "R"),
     damage: damageCell(ranged),
+    notes: str(ranged.notes).trim(),
     equipped: isEquipped(ranged.name, carried),
   }));
 }
